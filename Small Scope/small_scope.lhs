@@ -34,7 +34,7 @@ Virtual machine:
 
 > type Stack 		=  [Int]
 >
-> type Mem 		=  [(Name,Int)]
+> type Mem 		=  [(Name,Int)]		
 >
 > type Code  		=  [Inst]
 > 
