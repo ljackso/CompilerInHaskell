@@ -2,6 +2,7 @@
 > import Text.ParserCombinators.Parsec
 > import System.IO
 > import Control.Monad
+> import Data.List.Split hiding (endBy, sepBy)
 
 ----------------------------------------------------------------
 
@@ -18,7 +19,7 @@ Imperative language:
 > data Expr  		=  Val Int | Var Name | App Op Expr Expr
 >			   deriving Show
 >
-> type Name  		=  Char
+> type Name  		=  String
 >
 > data Op    		=  Add | Sub | Mul | Div
 >			   deriving Show
@@ -71,32 +72,42 @@ Gets each line of the file and ends with }
 CONVERT THE LIST TOO OP CODE
 
 > convertToOp				:: Either ParseError [[String]] -> Prog 
-> convertToOp (Left m)		= Seq[]
-> convertToOp (Right ls)	= do
->								cls <- [ cleanLinesUp l | l <- ls]
->								prog <- Seqn [ interpretVar cl | cl <- cls ]
->								return prog
->
+> convertToOp (Left m)		= Seqn []
+> convertToOp (Right ls)	= Seqn [interpretVar cl | cl <- cls]
+>								where
+>									cls = concat [cleanLinesUp l | l <- ls]
+>									
+>								
 > interpretVar				:: String -> Prog
-> interpretVar "var	":ls:" ":rs:" = ":js
->							= Assign ls  						
+> interpretVar xs			= Assign (ls !! 1) (Val (asInt (last ls)))
+>								where
+>									ls = splitOn " " xs
 >
 >
 > cleanLinesUp				:: [String] -> [String]			-- removes white space
-> cleanLinesUp xs			= [ clean n | n <- xs, n /= "" ]
+> cleanLinesUp xs			= [clean n | n <- xs, n /= "" ]
 >								where 
 >									clean x = removeSpaceHT(reverse (removeSpaceHT (reverse x)))
 >
 > removeSpaceHT 			:: String -> String
 > removeSpaceHT (x:xs) 		= if (x == ' ') then (removeSpaceHT xs) else x:xs 
 >
->
+
 
 
 ----------------------------------------------------------------
 
 
+----------------------------------------------------------------
+
+HELPER FUNCTIONS 
+
+getString as an Int
+
+> asInt 				:: String -> Int
+> asInt s 				= (read s :: Int)
 
 
+----------------------------------------------------------------
 
 
