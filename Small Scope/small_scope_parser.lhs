@@ -3,6 +3,7 @@
 > import System.IO
 > import Control.Monad
 > import Data.List.Split hiding (endBy, sepBy)
+> import Data.List
 
 ----------------------------------------------------------------
 
@@ -65,7 +66,7 @@ Gets each line of the file and ends with }
 ----------------------------------------------------------------
 
 > testParse					:: Either ParseError [[String]]
-> testParse					= parseGo " var a int = 1\n var b int = 3 \n var c int = a + b \n}"
+> testParse					= parseGo " var a int = 1\n var b int = 3 \n var c int = a+b \n}"
 
 ----------------------------------------------------------------
 
@@ -73,25 +74,31 @@ CONVERT THE LIST TOO OP CODE
 
 > convertToOp				:: Either ParseError [[String]] -> Prog 
 > convertToOp (Left m)		= Seqn []
-> convertToOp (Right ls)	= Seqn [interpretVar cl | cl <- cls]
+> convertToOp (Right ls)	= Seqn [dealWithAss cl | cl <- cls]
 >								where
 >									cls = concat [cleanLinesUp l | l <- ls]
->									
->								
-> interpretVar				:: String -> Prog
-> interpretVar xs			= Assign (ls !! 1) (Val (asInt (last ls)))
+>
+>
+> dealWithAss				:: String -> Prog
+> dealWithAss xs			= Assign (ns !! 1) (interpretExp (clean (ls)))
 >								where
->									ls = splitOn " " xs
+>									ls = cleanLinesUp (splitOn "=" xs)
+>									ns = splitOn " " (head ls)
+>									
 >
 >
-> cleanLinesUp				:: [String] -> [String]			-- removes white space
-> cleanLinesUp xs			= [clean n | n <- xs, n /= "" ]
+> interpretExp				:: String -> Expr
+> interpretExp xs 			
+>							| (isInfixOf "+" xs)		= interpretApp xs   									
+>							| otherwise				= Val (asInt xs) 	
+>
+>
+> interpretApp 				:: String -> Expr								-- Just for Add right now
+> interpretApp	xs			= App Add (ls !! 1) (ls !! 0)  
 >								where 
->									clean x = removeSpaceHT(reverse (removeSpaceHT (reverse x)))
+>									ls = cleanLinesUp (splitOn "+" xs)
 >
-> removeSpaceHT 			:: String -> String
-> removeSpaceHT (x:xs) 		= if (x == ' ') then (removeSpaceHT xs) else x:xs 
->
+
 
 
 
@@ -104,8 +111,19 @@ HELPER FUNCTIONS
 
 getString as an Int
 
-> asInt 				:: String -> Int
-> asInt s 				= (read s :: Int)
+> asInt 					:: String -> Int
+> asInt s 					= (read s :: Int)
+
+> removeSpaceH	 			:: String -> String
+> removeSpaceH (x:xs) 		= if (x == ' ') then (removeSpaceH xs) else x:xs 
+
+> cleanLinesUp				:: [String] -> [String]			-- removes white space
+> cleanLinesUp xs			= [clean n | n <- xs, n /= "" ]
+>
+>
+> clean 					:: String -> String 
+> clean x 					= removeSpaceH(reverse (removeSpaceH (reverse x)))
+>
 
 
 ----------------------------------------------------------------
