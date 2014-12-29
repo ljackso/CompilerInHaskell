@@ -43,7 +43,7 @@ TODO : Add support fot elseif statements
 > 	   		                        | If Cond Prog
 >                                   | IfElse Cond Prog Prog
 > 	   		                        | While Cond Prog
->                                   | For Expr Cond
+>                                   | For Cond Prog Expr 		-- Where the Expr makes use of Val Assigned just before.
 > 	   		                        | Seqn [Prog]
 >                                   | Empty                     -- Allows blank sequences. may be useful 
 >                                   | Return Expr
