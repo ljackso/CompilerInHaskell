@@ -47,16 +47,17 @@ It is what we want our Program to be represented by once we have manged to parse
 TODO : Add support fot elseif statements
 
 > data Prog  		                =  Assign Name Expr
+>										| Switch Expr [Case]
 > 	   		                            | If Expr Prog
->                                       | IfElse Expr Prog Prog     -- change to work with cond
-> 	   		                            | While Expr Prog           -- change to cond
+>                                       | IfElse Expr Prog Prog    
+> 	   		                            | While Expr Prog           
 >                                       | For Expr Prog Expr 		-- Where the Expr makes use of Val Assigned just before.
 > 	   		                            | Seqn [Prog]
 >                                       | Empty                     -- Allows blank sequences. may be useful 
 >                                       | Return (Maybe Expr)
 >		                                    deriving Show
 >
-
+> data Case                         = Case Expr Prog    --used for switch cases
 
 How variables are represented and used.
 
@@ -98,8 +99,9 @@ Actually compiles to machine code
 > comp' (Seqn [])                   = return []
 > comp' (Seqn cs)                   = sequenceDealer cs
 > comp' (Assign n e)                = return (expression e ++ [POP n])
+> comp' (If c p)					= (ifDealer c p)
 > comp' (IfElse c p1 p2)            = (ifElseDealer c p1 p2)
-> comp' (While e p3)                = whileDealer e p3            
+> comp' (While e p3)                = (whileDealer e p3)            
 
 
 Deals with Expr
@@ -108,18 +110,23 @@ Deals with Expr
 > expression (Val i)                = [PUSH i]
 > expression (Var v)                = [PUSHV v]
 > expression (ExprApp o x y)        = expression x ++ expression y ++ [DO o] 
+> expression (CompApp o x y)		= expression x ++ expression y ++ [COMP o] 
 
 Deals with if 
 
+> ifDealer                          :: Expr -> Prog -> ST Code 
+> ifDealer c p1                     =   do  l       <- fresh
+>                                           p1code  <- comp' p1
+>                                           return (expression c ++ [JUMPZ l] ++ p1code ++ [LABEL l])   
 
 Deals with if else
 
 > ifElseDealer                      :: Expr -> Prog -> Prog -> ST Code
-> ifElseDealer c p1 p2              =   do  l1 <- fresh
->                                           l2 <- fresh
->                                           p1code <- comp' p1
->                                           p2code <- comp' p2
->                                           return (expression c ++ [JUMPZ l1] ++ p1code ++ [JUMP l2] ++ [LABEL l1] ++ p2code ++ [LABEL l2])
+> ifElseDealer c p1 p2              =	do l1 		<- fresh
+>                                          l2 		<- fresh
+>                                          p1code 	<- comp' p1
+>                                          p2code 	<- comp' p2
+>                                          return (expression c ++ [JUMPZ l1] ++ p1code ++ [JUMP l2] ++ [LABEL l1] ++ p2code ++ [LABEL l2])
 
 Deals with While
 
@@ -133,9 +140,14 @@ Deals with For
 
 TODO
 
+Deals with Return 
+
+> returnDealer						:: Maybe Expr -> ST Code
+> returnDealer e					= [STOP]
+
 Deals With Sequences
 
-> sequenceDealer                    :: [Prog] -> ST Code
+> sequenceDealer                    :: [Prog] -> ST Code 
 > sequenceDealer (c:cs)             =   do  head <- comp' c
 >                                           tail <- comp' (Seqn cs)
 >                                           return (head ++ tail)  
@@ -199,7 +211,8 @@ This is the function that actually does stuff
 >                                               COMP o      -> exec' c (pc+1) (comparison o s) m 
 >                                               LABEL l     -> exec' c (pc+1) s m
 >                                               JUMP l      -> exec' c (jump c l) s m
->                                               JUMPZ l     -> exec' c (jumpz c s l pc) (popz s) m                                                    
+>                                               JUMPZ l     -> exec' c (jumpz c s l pc) (popz s) m
+
 
 
 STACK FUCNTIONS
@@ -249,12 +262,12 @@ perform a comparison on the first two things on the stack (leave a 1 on top if t
 >
 > comparison'                   :: CompOp -> Int -> Int -> Number 
 > comparison' o v1 v2           =   case o of
->                                       EQU      -> if v1 == v2  then t else f    
+>                                       EQU		-> if v1 == v2  then t else f    
 >                                       NEQ     -> if v1 == v2  then f else t
 >                                       GEQ     -> if v1 >= v2  then t else f
 >                                       LEQ     -> if v1 <= v2  then t else f
->                                       GRT      -> if v1 > v2   then t else f
->                                       LET      -> if v1 < v2   then t else f                                       
+>                                       GRT     -> if v1 > v2   then t else f
+>                                       LET     -> if v1 < v2   then t else f                                       
 >                                   where 
 >                                       t = Integer 1
 >                                       f = Integer 0
@@ -318,7 +331,13 @@ returns true if is the label we are looking for
 > isLabel c l                   =   case c of 
 >                                       LABEL m         ->  (m == l) 
 >                                       otherwise       ->  False  
- 
+
+stops the program, just returns memory at the moment 
+
+> halt 							:: Mem -> Mem
+> halt m						= m 
+
+
 --------------------------------------------------------------------------------
 
 TYPE FUNCTIONS 
