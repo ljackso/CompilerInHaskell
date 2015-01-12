@@ -44,12 +44,11 @@ Go's features,
 
 It is what we want our Program to be represented by once we have manged to parse it.
 
-TODO : Add support fot elseif statements
-
 > data Prog  		                =  Assign Name Expr
->										| Switch Expr [Case]
+>										| Switch Expr [Case']
 > 	   		                            | If Expr Prog
->                                       | IfElse Expr Prog Prog    
+>                                       | IfElse Expr Prog Prog
+ >                                      | ElseIF Expr Prog [Case'] Prog       
 > 	   		                            | While Expr Prog           
 >                                       | For Expr Prog Expr 		-- Where the Expr makes use of Val Assigned just before.
 > 	   		                            | Seqn [Prog]
@@ -57,7 +56,10 @@ TODO : Add support fot elseif statements
 >                                       | Return (Maybe Expr)
 >		                                    deriving Show
 >
-> data Case                         = Case Expr Prog    --used for switch cases
+> data Case'                        = Case Expr Prog Break   --used for switch cases and else if 
+>                                       deriving Show
+>
+> type Break                        = Bool        
 
 How variables are represented and used.
 
@@ -71,8 +73,6 @@ How variables are represented and used.
 
 How conditionals are expressed
 
-TODO : and support for multiple conditonals eg implement and and or 
-
 > data CompOp                       = EQU | NEQ | GEQ | LEQ | GRT | LET    -- | AND | OR      -- Conditional operations
 >			                            deriving Show
 
@@ -82,6 +82,10 @@ For now just defing a generic type of just ints that can be updated
 
 > data Number                       = Integer Int
 >			                            deriving (Show, Eq)
+
+-----------------------------------------------------------------------------------------------------
+
+TEST CASES 
 
 -----------------------------------------------------------------------------------------------------
 
@@ -101,7 +105,9 @@ Actually compiles to machine code
 > comp' (Assign n e)                = return (expression e ++ [POP n])
 > comp' (If c p)					= (ifDealer c p)
 > comp' (IfElse c p1 p2)            = (ifElseDealer c p1 p2)
-> comp' (While e p3)                = (whileDealer e p3)            
+> comp' (For e1 p1 e2)              = (forDealer e1 p1 e2)
+> comp' (While e p3)                = (whileDealer e p3)
+> comp' (Empty)                     = return []            
 
 
 Deals with Expr
@@ -128,22 +134,31 @@ Deals with if else
 >                                          p2code 	<- comp' p2
 >                                          return (expression c ++ [JUMPZ l1] ++ p1code ++ [JUMP l2] ++ [LABEL l1] ++ p2code ++ [LABEL l2])
 
+deals with else if statements (with an if stament followed by else if then and else, though the else can be empty)
+
+> elseIfDealer                      :: 
+
+
 Deals with While
 
 > whileDealer                       :: Expr -> Prog -> ST Code
-> whileDealer e p                   =   do  l1 <- fresh
->                                           l2 <- fresh
->                                           pcode <- comp' p
+> whileDealer e p                   =   do  l1      <- fresh
+>                                           l2      <- fresh
+>                                           pcode   <- comp' p
 >                                           return ([LABEL l1] ++ expression e ++ [JUMPZ l2] ++ pcode ++ [JUMP l1] ++ [LABEL l2])
 
 Deals with For
 
-TODO
+> forDealer                         :: Expr -> Prog -> Expr -> ST Code 
+> forDealer e1 p1 e2                =   do  l1      <- fresh 
+>                                           l2      <- fresh 
+>                                           p1code  <- comp' p1
+>                                           return ([LABEL l1] ++ expression e1 ++ [JUMPZ l2] ++ p1code ++ expression e2 ++ [JUMP l1] ++ [LABEL l2]) 
 
 Deals with Return 
 
 > returnDealer						:: Maybe Expr -> ST Code
-> returnDealer e					= [STOP]
+> returnDealer e					= return [STOP]
 
 Deals With Sequences
 
