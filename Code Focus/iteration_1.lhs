@@ -48,12 +48,13 @@ It is what we want our Program to be represented by once we have manged to parse
 >										| Switch Expr [Case']
 > 	   		                            | If Expr Prog
 >                                       | IfElse Expr Prog Prog
- >                                      | ElseIF Expr Prog [Case'] Prog       
+>                                       | ElseIF Expr Prog [Case'] Prog       
 > 	   		                            | While Expr Prog           
 >                                       | For Expr Prog Expr 		-- Where the Expr makes use of Val Assigned just before.
 > 	   		                            | Seqn [Prog]
 >                                       | Empty                     -- Allows blank sequences. may be useful 
 >                                       | Return (Maybe Expr)
+>                                       | Func Name Prog
 >		                                    deriving Show
 >
 > data Case'                        = Case Expr Prog Break   --used for switch cases and else if 
@@ -87,6 +88,8 @@ For now just defing a generic type of just ints that can be updated
 
 TEST CASES 
 
+Drop and paste in test cases here 
+
 -----------------------------------------------------------------------------------------------------
 
 COMPILER
@@ -100,6 +103,7 @@ Converts program into machine code
 Actually compiles to machine code  
 
 > comp'                             :: Prog -> ST Code
+> comp' (Func n p1)                 = functionDealer n p1 
 > comp' (Seqn [])                   = return []
 > comp' (Seqn cs)                   = sequenceDealer cs
 > comp' (Assign n e)                = return (expression e ++ [POP n])
@@ -134,12 +138,7 @@ Deals with if else
 >                                          p2code 	<- comp' p2
 >                                          return (expression c ++ [JUMPZ l1] ++ p1code ++ [JUMP l2] ++ [LABEL l1] ++ p2code ++ [LABEL l2])
 
-deals with else if statements (with an if stament followed by else if then and else, though the else can be empty)
-
-> elseIfDealer                      :: 
-
-
-Deals with While
+Deals with While    
 
 > whileDealer                       :: Expr -> Prog -> ST Code
 > whileDealer e p                   =   do  l1      <- fresh
@@ -166,6 +165,11 @@ Deals With Sequences
 > sequenceDealer (c:cs)             =   do  head <- comp' c
 >                                           tail <- comp' (Seqn cs)
 >                                           return (head ++ tail)  
+
+Deals with Functions, assumes that ever function contains a return will be done at parsing level
+
+> functionDealer                    :: Name -> Prog -> ST Code
+> functionDealer n p1               =   do   return []
 
 
 -----------------------------------------------------------------------------------------------------
