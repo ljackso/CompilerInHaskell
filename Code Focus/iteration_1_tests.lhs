@@ -20,13 +20,29 @@ If Else
 > ifElseTest_2          :: Prog     --Should return Memory (Issy, Integer 18)
 > ifElseTest_2          = IfElse (Val (Integer 0)) (Assign "Luke" (Val (Integer 21))) (Assign "Issy" (Val (Integer 18))) 
 
+Else If
+
+> elseIfTest_1          :: Prog
+> elseIfTest_1          = ElseIF (Val (Integer 0)) (Assign "l" (Val (Integer 10)))  
+
+
 While
 
-> WhileTest_1           :: Prog     --Should run for ever
-> WhileTest_1           = While (Val (Integer 1)) (Assign "Luke" (Val (Integer 21)))
+> whileTest_1           :: Prog     --Should run for ever
+> whileTest_1           = While (Val (Integer 1)) (Assign "Luke" (Val (Integer 21)))
 
-> WhileTest_2           :: Prog     --Should do nothing
-> WhileTest_2           = While (Val (Integer 0)) (Assign "Luke" (Val (Integer 21)))
+> whileTest_2           :: Prog     --Should do nothing
+> whileTest_2           = While (Val (Integer 0)) (Assign "Luke" (Val (Integer 21)))
 
-> WhileTest_3           :: Prog 
-> WhileTest_3           = Seqn [(Assign "l" (Val (Integer 5)), (Assign "j" (Val (Integer 0))), (While (Var "l") Seqn [ 
+> whileTest_3           :: Prog     --Should return [(j ,5, (l, 0)] 
+> whileTest_3           = Seqn [(Assign "l" (Val (Integer 5))), 
+>                               (Assign "j" (Val (Integer 0))), 
+>                               (While (Var "l") 
+>                                   (Seqn [
+>                                       (Assign "j" (ExprApp ADD (Var "j") (Val (Integer 1)))),
+>                                       (Assign "l" (ExprApp SUB (Var "l") (Val (Integer 1))))
+>                                   ])
+>                               )]
+
+
+

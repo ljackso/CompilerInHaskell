@@ -50,9 +50,8 @@ It is what we want our Program to be represented by once we have manged to parse
 >                                       | IfElse Expr Prog Prog
 >                                       | ElseIF Expr Prog [Case'] Prog       
 > 	   		                            | While Expr Prog           
->                                       | For Expr Prog Expr 		-- Where the Expr makes use of Val Assigned just before.
 > 	   		                            | Seqn [Prog]
->                                       | Empty                     -- Allows blank sequences. may be useful 
+>                                       | Empty                     -- Allows blank Prog may be useful 
 >                                       | Return (Maybe Expr)
 >                                       | Func Name Prog
 >		                                    deriving Show
@@ -88,7 +87,15 @@ For now just defing a generic type of just ints that can be updated
 
 TEST CASES 
 
-Drop and paste in test cases here 
+> forTest_1         :: Prog --Should give l = 5 Luke = 32
+> forTest_1         = Seqn [
+>                               (Assign "Luke" (Val (Integer 1))),
+>                               (Assign "l" (Val (Integer 0))),
+>                               (For    (CompApp NEQ (Val (Integer 5)) (Var "l")) 
+>                                       (Assign "Luke" (ExprApp MUL (Var "Luke") (Val (Integer 2)))) 
+>                                       (ExprApp ADD (Var "l") (Val (Integer 1)))
+>                               )
+>                           ]
 
 -----------------------------------------------------------------------------------------------------
 
@@ -145,14 +152,6 @@ Deals with While
 >                                           l2      <- fresh
 >                                           pcode   <- comp' p
 >                                           return ([LABEL l1] ++ expression e ++ [JUMPZ l2] ++ pcode ++ [JUMP l1] ++ [LABEL l2])
-
-Deals with For
-
-> forDealer                         :: Expr -> Prog -> Expr -> ST Code 
-> forDealer e1 p1 e2                =   do  l1      <- fresh 
->                                           l2      <- fresh 
->                                           p1code  <- comp' p1
->                                           return ([LABEL l1] ++ expression e1 ++ [JUMPZ l2] ++ p1code ++ expression e2 ++ [JUMP l1] ++ [LABEL l2]) 
 
 Deals with Return 
 
