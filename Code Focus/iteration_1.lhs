@@ -45,10 +45,9 @@ Go's features,
 It is what we want our Program to be represented by once we have manged to parse it.
 
 > data Prog  		                =  Assign Name Expr
->										| Switch Expr [Case']
 > 	   		                            | If Expr Prog
 >                                       | IfElse Expr Prog Prog
->                                       | ElseIF Expr Prog [Case'] Prog       
+>                                       | ElseIF Expr Prog [ElseIfCase'] Prog       
 > 	   		                            | While Expr Prog           
 > 	   		                            | Seqn [Prog]
 >                                       | Empty                     -- Allows blank Prog may be useful 
@@ -56,7 +55,7 @@ It is what we want our Program to be represented by once we have manged to parse
 >                                       | Func Name Prog
 >		                                    deriving Show
 >
-> data Case'                        = Case Expr Prog Break   --used for switch cases and else if 
+> data ElseIfCase'                  = Case Expr Prog     --used for switch cases and else if 
 >                                       deriving Show
 >
 > type Break                        = Bool        
@@ -87,15 +86,6 @@ For now just defing a generic type of just ints that can be updated
 
 TEST CASES 
 
-> forTest_1         :: Prog --Should give l = 5 Luke = 32
-> forTest_1         = Seqn [
->                               (Assign "Luke" (Val (Integer 1))),
->                               (Assign "l" (Val (Integer 0))),
->                               (For    (CompApp NEQ (Val (Integer 5)) (Var "l")) 
->                                       (Assign "Luke" (ExprApp MUL (Var "Luke") (Val (Integer 2)))) 
->                                       (ExprApp ADD (Var "l") (Val (Integer 1)))
->                               )
->                           ]
 
 -----------------------------------------------------------------------------------------------------
 
@@ -139,11 +129,27 @@ Deals with if
 Deals with if else
 
 > ifElseDealer                      :: Expr -> Prog -> Prog -> ST Code
-> ifElseDealer c p1 p2              =	do l1 		<- fresh
->                                          l2 		<- fresh
->                                          p1code 	<- comp' p1
->                                          p2code 	<- comp' p2
->                                          return (expression c ++ [JUMPZ l1] ++ p1code ++ [JUMP l2] ++ [LABEL l1] ++ p2code ++ [LABEL l2])
+> ifElseDealer c p1 p2              =	do  l1 		<- fresh
+>                                           l2 		<- fresh
+>                                           p1code 	<- comp' p1
+>                                           p2code 	<- comp' p2
+>                                           return (expression c ++ [JUMPZ l1] ++ p1code ++ [JUMP l2] ++ [LABEL l1] ++ p2code ++ [LABEL l2])
+
+Deals with else if 
+
+> elseIfDealer                      :: Expr -> Prog -> [ElseIfCase'] -> Prog -> ST Code 
+> elseIfDealer  c p1 (c:cs) p2      =   do  l1      <- fresh
+>                                           l2      <- fresh
+>                                           l3      <- fresh
+>                                           p1code  <- comp' p1
+>                                           p2code  <- comp' p2
+>                                           csCode  <- caseDealer (c:cs)      
+>                                           return ()
+
+Deals with each indvidual  
+
+> caseDealer                        :: [ElseIfCase'] -> label -> ST Code  
+> caseDealer (Case c p1):cs         = do    l1 
 
 Deals with While    
 

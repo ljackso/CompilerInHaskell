@@ -23,7 +23,16 @@ If Else
 Else If
 
 > elseIfTest_1          :: Prog
-> elseIfTest_1          = ElseIF (Val (Integer 0)) (Assign "l" (Val (Integer 10)))  
+> elseIfTest_1          = ElseIF    (Val (Integer 0)) (Assign "l" (Val (Integer 10))) 
+>                                   [   (Case (Val (Integer 0)) (Assign "j" (Val (Integer 11)))),
+>                                       (Case (Val (Integer 0)) (Assign "k" (Val (Integer 12))))]
+>                                   ((Assign "m" (Val (Integer 13))))
+
+> elseIfTest_2          :: Prog
+> elseIfTest_2          = ElseIF    (Val (Integer 0)) (Assign "l" (Val (Integer 10))) 
+>                                   [   (Case (Val (Integer 0)) (Assign "j" (Val (Integer 11)))),
+>                                       (Case (Val (Integer 1)) (Assign "k" (Val (Integer 12))))]
+>                                   (Empty)                     
 
 
 While
@@ -43,6 +52,10 @@ While
 >                                       (Assign "l" (ExprApp SUB (Var "l") (Val (Integer 1))))
 >                                   ])
 >                               )]
+
+ 
+
+
 
 
 
