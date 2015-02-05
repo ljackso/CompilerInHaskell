@@ -47,7 +47,7 @@ It is what we want our Program to be represented by once we have manged to parse
 > data Prog  		                =  Assign Name Expr
 > 	   		                            | If Expr Prog
 >                                       | IfElse Expr Prog Prog
->                                       | ElseIF Expr Prog [ElseIfCase'] Prog       
+>                                       | ElseIf Expr Prog [ElseIfCase'] Prog       
 > 	   		                            | While Expr Prog           
 > 	   		                            | Seqn [Prog]
 >                                       | Empty                     -- Allows blank Prog may be useful 
@@ -57,8 +57,6 @@ It is what we want our Program to be represented by once we have manged to parse
 >
 > data ElseIfCase'                  = Case Expr Prog     --used for switch cases and else if 
 >                                       deriving Show
->
-> type Break                        = Bool        
 
 How variables are represented and used.
 
@@ -86,6 +84,18 @@ For now just defing a generic type of just ints that can be updated
 
 TEST CASES 
 
+> elseIfTest_1          :: Prog -- m 13
+> elseIfTest_1          = ElseIf    (Val (Integer 0)) (Assign "l" (Val (Integer 10))) 
+>                                   [   (Case (Val (Integer 0)) (Assign "j" (Val (Integer 11)))),
+>                                       (Case (Val (Integer 0)) (Assign "k" (Val (Integer 12))))]
+>                                   ((Assign "m" (Val (Integer 13))))
+
+> elseIfTest_2          :: Prog -- k 12
+> elseIfTest_2          = ElseIf    (Val (Integer 0)) (Assign "l" (Val (Integer 10))) 
+>                                   [   (Case (Val (Integer 0)) (Assign "j" (Val (Integer 11)))),
+>                                       (Case (Val (Integer 1)) (Assign "k" (Val (Integer 12))))]
+>                                   (Empty)  
+
 
 -----------------------------------------------------------------------------------------------------
 
@@ -106,7 +116,7 @@ Actually compiles to machine code
 > comp' (Assign n e)                = return (expression e ++ [POP n])
 > comp' (If c p)					= (ifDealer c p)
 > comp' (IfElse c p1 p2)            = (ifElseDealer c p1 p2)
-> comp' (For e1 p1 e2)              = (forDealer e1 p1 e2)
+> comp' (ElseIf c p1 cs p2)         = (elseIfDealer c p1 cs p2)
 > comp' (While e p3)                = (whileDealer e p3)
 > comp' (Empty)                     = return []            
 
@@ -138,18 +148,31 @@ Deals with if else
 Deals with else if 
 
 > elseIfDealer                      :: Expr -> Prog -> [ElseIfCase'] -> Prog -> ST Code 
-> elseIfDealer  c p1 (c:cs) p2      =   do  l1      <- fresh
+> elseIfDealer  c p1 cs p2          =   do  l1      <- fresh
 >                                           l2      <- fresh
->                                           l3      <- fresh
+>                                           el      <- fresh
 >                                           p1code  <- comp' p1
 >                                           p2code  <- comp' p2
->                                           csCode  <- caseDealer (c:cs)      
->                                           return ()
+>                                           csCode  <- listCaseDealer cs el      
+>                                           return (expression c ++ [JUMPZ l1] ++ p1code ++ [JUMP el] ++ [LABEL l1] ++ csCode ++ p2code ++ [LABEL el])
 
-Deals with each indvidual  
+TODO: Possibly exapnd these functions to take in switch cases
 
-> caseDealer                        :: [ElseIfCase'] -> label -> ST Code  
-> caseDealer (Case c p1):cs         = do    l1 
+Deals with a list of else if cases
+
+> listCaseDealer                    :: [ElseIfCase'] -> Label -> ST Code
+> listCaseDealer [] el              = return []  
+> listCaseDealer (c:cs) el          =   do  cCode   <- (caseDealer c el)
+>                                           csCode  <- (listCaseDealer cs el) 
+>                                           return (cCode ++ csCode)
+
+Deals with an individual else if case
+
+> caseDealer                        :: ElseIfCase' -> Label -> ST Code
+> caseDealer (Case c p1) el         =   do  l 		<- fresh
+>                                           p1code 	<- comp' p1
+>                                           return (expression c ++ [JUMPZ l] ++ p1code ++ [JUMP el] ++ [LABEL l])                          
+
 
 Deals with While    
 
@@ -162,7 +185,7 @@ Deals with While
 Deals with Return 
 
 > returnDealer						:: Maybe Expr -> ST Code
-> returnDealer e					= return [STOP]
+> returnDealer e					=   return [STOP]
 
 Deals With Sequences
 
@@ -174,7 +197,7 @@ Deals With Sequences
 Deals with Functions, assumes that ever function contains a return will be done at parsing level
 
 > functionDealer                    :: Name -> Prog -> ST Code
-> functionDealer n p1               =   do   return []
+> functionDealer n p1               =   return []
 
 
 -----------------------------------------------------------------------------------------------------
