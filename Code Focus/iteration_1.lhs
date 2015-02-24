@@ -50,29 +50,39 @@ It is what we want our Program to be represented by once we have manged to parse
 >                                   | ElseIf Expr Prog [ElseIfCase'] Prog       
 > 	   		                        | While Expr Prog           
 > 	   		                        | Seqn [Prog]
->                                   | Empty                     -- Allows blank Prog may be useful 
->                                   | Return (Expr)             -- Change so can Return nothing 
+>                                   | Empty                                     -- Allows blank Prog may be useful 
+>                                   | Return (Maybe Expr)                       -- Change so can Return nothing 
 >                                   | Func Name Prog
->                                   | FuncCall Name [Expr]      -- list of Expr is the arguments (can be empty)
+>                                   | Main Prog                                 -- gives us the main function to be run
 >		                                deriving Show
 >
-> data ElseIfCase'              = Case Expr Prog     --used for switch cases and else if 
+> data ElseIfCase'              = Case Expr Prog                                --used for switch cases and else if 
 >                                   deriving Show
 
 How variables are represented and used.
 
-> data Expr  		            =  Val Number | Var Name | ExprApp ArthOp Expr Expr | CompApp CompOp Expr Expr 
->			                        deriving Show
+> data Expr  		            =  Val Number 
+>                                   | Var Name 
+>                                   | ExprApp ArthOp Expr Expr 
+>                                   | CompApp CompOp Expr Expr
+>                                   | CondApp CondOp Expr Expr 
+>                                   | FuncCall Name [Expr]                      -- list of Expr is the arguments (can be empty), igonore posibilty for calling void functions for now
+>			                            deriving (Show, Eq)
 >
-> data ArthOp    		        =  ADD | SUB | MUL | DIV        -- Arithmetic operations
->			                        deriving Show
+> data ArthOp    		        =  ADD | SUB | MUL | DIV                        -- Arithmetic operations
+>			                        deriving (Show, Eq)
 >
 > type Name  		            =  String
 
 How conditionals are expressed
 
-> data CompOp                   = EQU | NEQ | GEQ | LEQ | GRT | LET    -- | AND | OR      -- Conditional operations
->			                        deriving Show
+> data CondOp                   = AND | OR
+>                                   deriving (Show, Eq)
+
+How comparisons are expressed
+
+> data CompOp                   = EQU | NEQ | GEQ | LEQ | GRT | LET             
+>			                        deriving (Show, Eq)
 
 Type System
 
@@ -86,8 +96,19 @@ For now just defing a generic type of just ints that can be updated
 TEST CASES 
 
 > returnTest_1                  :: Prog
-> returnTest_1                  = Seqn [(Assign "Luke" (Val (Integer 4))), (Return (Var "Luke"))]
+> returnTest_1                  = Seqn [(Assign "Luke" (Val (Integer 4))), (Return (Just (Var "Luke")))]
 
+> funcTest_1                    :: Prog
+> funcTest_1                    = Seqn [    (Main  
+>                                               ( Seqn [ 
+>                                                   (Assign "Luke" (FuncCall "testFunc" [])), 
+>                                                   (Return (Just (Var "Luke")))]
+>                                               )
+>                                           ), 
+>                                           (Func "testFunc" 
+>                                               (Return (Just (Val (Integer 13))))
+>                                           )
+>                                       ]  
 
 -----------------------------------------------------------------------------------------------------
 
@@ -102,16 +123,16 @@ Converts program into machine code
 Actually compiles to machine code  
 
 > comp'                         :: Prog -> ST Code
-> comp' (Func n p1)             = functionDealer n p1 
-> comp' (Seqn cs)               = sequenceDealer cs
+> comp' (Main p1)               = (mainDealer p1)
+> comp' (Func n p1)             = (functionDealer n p1) 
+> comp' (Seqn cs)               = (sequenceDealer cs)
 > comp' (Assign n e)            = return (expression e ++ [POP n])
 > comp' (If c p)				= (ifDealer c p)
 > comp' (IfElse c p1 p2)        = (ifElseDealer c p1 p2)
 > comp' (ElseIf c p1 cs p2)     = (elseIfDealer c p1 cs p2)
 > comp' (While e p3)            = (whileDealer e p3)
-> comp' (Empty)                 = return []  
 > comp' (Return e)              = (returnDealer e)          
-
+> comp' (Empty)                 = return []  
 
 Deals with Expr
 
@@ -120,6 +141,8 @@ Deals with Expr
 > expression (Var v)            = [PUSHV v]
 > expression (ExprApp o x y)    = expression x ++ expression y ++ [DO o] 
 > expression (CompApp o x y)	= expression x ++ expression y ++ [COMP o] 
+> expression (FuncCall n es)    = (callDealer n es) 
+
 
 Deals with if 
 
@@ -176,8 +199,10 @@ Deals with While
 
 Deals with Return 
 
-> returnDealer					:: Expr -> ST Code
-> returnDealer e				=  return (expression e ++ [STOP])
+> returnDealer					:: Maybe Expr -> ST Code
+> returnDealer e				=   case e of
+>                                       Just exp    -> return (expression exp ++ [RSTOP])    
+>                                       Nothing     -> return ([STOP])       
 
 Deals With Sequences
 
@@ -191,7 +216,21 @@ Deals with Functions, assumes that ever function contains a return will be done 
 
 > functionDealer                :: Name -> Prog -> ST Code
 > functionDealer n p1           =   do  p1code  <- comp' p1 
->                                       return ([FUNC n] ++ p1code ++ [FEND]) 
+>                                       return ([FUNC n] ++ p1code ++ [FEND])
+
+Deals with function call puts whatever it is ontop of the stack if there is a return statement
+
+TODO: Implement arguments
+
+> callDealer                    :: Name -> [Expr] -> Code
+> callDealer n []               = [CALL n]
+> callDealer n (e:es)           = [CALL n]
+
+Deals with setting up the Main function and all the code to be run
+
+> mainDealer                    :: Prog -> ST Code
+> mainDealer p1                 =   do  p1Code  <- comp' p1 
+>                                       return ([MAIN] ++ p1Code ++ [END]) 
 
 
 -----------------------------------------------------------------------------------------------------
@@ -223,9 +262,12 @@ as to focus n high level interpritation, look to improve this later.
 >          		                    | LABEL Label
 >                                   | FUNC Name 
 >                                   | FEND
->                                   | CALL Name       
->                                   | STOP         
->		                                deriving Show
+>                                   | CALL Name                       
+>                                   | STOP                      --Used for returning nothing
+>                                   | RSTOP                     --Used to return a variable from a function
+>                                   | MAIN
+>                                   | END                       --Signifies the end of the main function         
+>		                                deriving (Show, Eq)
 > 
 > type Label 		            =  Int
 
@@ -237,17 +279,18 @@ Almost entirely from AFP at this stage a simple compiler for executing the code 
 
 This takes a list of machine code instructions and executes them.
 
-> exec                          :: Code -> Number
+> exec                          :: Code -> Maybe Number
 > exec c                        = exec'  c 0 [] []
 
 
 This is the function that actually does stuff
 
-> exec'                         :: Code -> Int -> Stack -> Mem -> Number
+> exec'                         :: Code -> Int -> Stack -> Mem -> Maybe Number
 > exec' c pc s m                =      
->                                       if(length c) <= pc then (Integer 0)
+>                                       if(length c) <= pc then Nothing         --shouldn't happen anymore
 >                                       else 
 >                                           case c !! pc of 
+>                                               MAIN        -> exec' c (pc+1) s m        
 >                                               PUSH n      -> exec' c (pc+1) (push n s) m
 >                                               PUSHV v     -> exec' c (pc+1) (pushv v m s) m
 >                                               POP v       -> exec' c (pc+1) (pop s) (assignVariable v (head s) m)
@@ -256,8 +299,12 @@ This is the function that actually does stuff
 >                                               LABEL l     -> exec' c (pc+1) s m
 >                                               JUMP l      -> exec' c (jump c l) s m
 >                                               JUMPZ l     -> exec' c (jumpz c s l pc) (popz s) m
->                                               CALL n      -> handleCall c pc s m
->                                               STOP        -> (head s)
+>                                               CALL n      -> exec' c (pc+1) (push (handleCall c pc s m n) s) m
+>                                               RSTOP       -> Just (head s)
+>                                               STOP        -> Nothing
+>                                               END         -> Nothing 
+>                                               FEND        -> Nothing     
+>                                                         
 >                                               
 
 
@@ -387,24 +434,25 @@ stops the program, just returns memory at the moment
 
 CALL Functions 
 
-These functions deal with function calls
+These functions deal with function calls, if returns something put ontop off stack otherwise do 
 
 > handleCall                    :: Code -> Int -> Stack -> Mem -> Name -> Number
-> handleCall c pc s m n         = exec' c (pc+1) (push fc s) m
+> handleCall c pc s m n         =   case fCode of 
+>                                       Just fVal       -> fVal
+>                                       Nothing         -> Integer 0
 >                                   where
->                                       fc = exec (getFunction c n [] False)
-
+>                                       fCode = exec (getFunction c n [] False)
 
 Searches through code and returns a function's code, ct signifies if is currently cutting the code
 
-TODO: Make more efficent
-
 > getFunction                   :: Code -> Name -> Code -> Bool -> Code 
-> getFunction (c:cs) n fs ct    =   if n then
->                                       if (c == FEND) then fs
+> getFunction (c:cs) n fs ct    =   if ct then
+>                                       if (c == FEND) then (reverse fs)
 >                                       else getFunction cs n (c:fs) True                                            
 >                                   else  
->                                       if (c == (FUNC n)) then getFunction cs n fs True 
+>                                       if (c == (FUNC n)) then getFunction cs n fs True
+>                                       else getFunction cs n fs False 
+
 
 --------------------------------------------------------------------------------
 
@@ -443,6 +491,7 @@ Need to be carefull with divide because of how Go deals with int divison compare
 
 > divideInt                     :: Int -> Int -> Number 
 > divideInt x y                 = Integer (quot x y) 
+
 
 > divideDouble                  :: Double -> Double -> Number
 > divideDouble x y              = Double (x / y)

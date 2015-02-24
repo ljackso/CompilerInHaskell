@@ -105,12 +105,26 @@ Conditional Tests (using if statements) -- should all return (luke, 21)
 Type System test
 
 > doubleTest_1                  :: Prog 
-> doubleTest_1                  = Assign "Luke" (ExprApp ADD (Double 2.67) (Double 3.24))
+> doubleTest_1                  = Return (ExprApp ADD (Double 2.67) (Double 3.24))
 
-Return test
+Return tests
 
 > returnTest_1                  :: Prog
 > returnTest_1                  = Seqn [(Assign "Luke" (Val (Integer 4))), (Return (Var "Luke"))]
+
+Function tests
+
+> funcTest_1                    :: Prog
+> funcTest_1                    = Seqn [    (Main  
+>                                               ( Seqn [ 
+>                                                   Assign "Luke" (FuncCall "testFunc"), 
+>                                                   Return "Luke"]
+>                                               ), 
+>                                           (Func "testFunc" 
+>                                               (Return (Val (Integer 13)))
+>                                           )
+>                                       ]    
+
 
 
 
