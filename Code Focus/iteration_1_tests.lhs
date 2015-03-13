@@ -110,20 +110,105 @@ Type System test
 Return tests
 
 > returnTest_1                  :: Prog
-> returnTest_1                  = Seqn [(Assign "Luke" (Val (Integer 4))), (Return (Var "Luke"))]
+> returnTest_1                  = Main (
+>                                   Return (Just (ExprApp MUL (ExprApp ADD (Val (Integer 4)) (Val (Integer 4))) (Val (Integer 2))))
+>                                   )       
 
-Function tests
+Function Tests
 
 > funcTest_1                    :: Prog
 > funcTest_1                    = Seqn [    (Main  
 >                                               ( Seqn [ 
->                                                   Assign "Luke" (FuncCall "testFunc"), 
->                                                   Return "Luke"]
->                                               ), 
->                                           (Func "testFunc" 
->                                               (Return (Val (Integer 13)))
+>                                                   (Assign "Luke" (FuncCall "testFunc" [(FuncCall "testFunc" [Val (Integer 8), Val (Integer 2)]), Val (Integer 4)])), 
+>                                                   (Return (Just (Var "Luke")))]
+>                                               )
+>                                           ), 
+>                                           (Func "testFunc" ["a", "b" ]  
+>                                               (Return (Just (ExprApp SUB (Var "a") (Var "b"))))
 >                                           )
->                                       ]    
+>                                       ]
+
+Factorial tests, test recursion
+
+> funcTest_2a                   :: Prog
+> funcTest_2a                   =   Seqn[   Main 
+>                                               ( Seqn[
+>                                                   (Assign "fac" (FuncCall "fac_helper" [Val (Integer 12), Val (Integer 1)])),
+>                                                   (Return (Just (Var "fac")))
+>                                               ]),
+>                                           factorial_1,
+>                                           factorial_1_Helper
+>                                       ]   
+>                                   
+
+> factorial_1                   ::Prog
+> factorial_1                   = Func "factorial" ["n"] (Return (Just (FuncCall "fac_helper" [Var "n", Val (Integer 1)]))) 
+      
+> factorial_1_Helper            :: Prog
+> factorial_1_Helper            =   Func "fac_helper" ["n", "a"] (
+>                                       Seqn [
+>                                           IfElse  (CompApp EQU (Var "n") (Val (Integer 0)))
+>                                               (Return (Just (Var "a" )))
+>                                               (Seqn [
+>                                                       Assign "a" (ExprApp MUL (Var "n") (Var "a")),
+>                                                       Assign "n" (ExprApp SUB (Var "n") (Val (Integer 1))),
+>                                                       (Return (Just (FuncCall "fac_helper" [Var "n", Var "a"])))
+>                                               ])
+>                                       ]
+>                                   )         
+
+
+> funcTest_2b                   :: Prog
+> funcTest_2b                   =   Seqn[   Main 
+>                                               ( Seqn[
+>                                                   (Assign "fac" (FuncCall "factorial" [Val (Integer 7)])),
+>                                                   (Return (Just (Var "fac")))
+>                                               ]),
+>                                           factorial
+>                                       ]   
+>                                   
+
+
+
+
+> factorial                     :: Prog
+> factorial                     =   Func "factorial" ["n"] (
+>                                       Seqn [
+>                                           (If (CompApp EQU (Var "n") (Val (Integer 0)))
+>                                               (Return (Just (Val (Integer 1))))),
+>                                           (Return (Just (ExprApp MUL (Var "n") (FuncCall "factorial" [(ExprApp SUB (Var "n") (Val (Integer 1)))]))))
+>                                       ]
+>                                   )
+
+Nested function tests
+
+> funcTest_3                    :: Prog
+> funcTest_3                    =   Seqn [
+>                                       Main (
+>                                           Seqn [
+>                                               Assign "x" (FuncCall "f" [Val (Integer 3)]),
+>                                               Return (Just (Var "x"))
+>                                           ]
+>                                       ),
+>                                       Func "f" ["y"] (
+>                                           Return (Just (ExprApp ADD (Val (Integer 1)) (FuncCall "g" [Var "y"])))
+>                                       ),
+>                                       Func "g" ["z"] (
+>                                           Return (Just (ExprApp MUL (Var "z") (Val (Integer 2))))
+>                                       )
+>                                   ] 
+
+> funcTest_4                    :: Prog
+> funcTest_4                    =   Seqn [
+>                                       Main (
+>                                           Return (Just (ExprApp ADD (Val (Integer 1)) (FuncCall "g" [Val (Integer 3)]) ))
+>                                       ),
+>                                       Func "g" ["z"] (
+>                                           Return (Just (ExprApp MUL (Var "z") (Val (Integer 2))))
+>                                       )
+>                                   ] 
+                               
+    
 
 
 

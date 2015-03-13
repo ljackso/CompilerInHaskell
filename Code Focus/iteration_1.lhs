@@ -1,5 +1,6 @@
 
 > import Data.List
+> import Data.List.Split 
 
 ITERATION ONE
 
@@ -51,64 +52,55 @@ It is what we want our Program to be represented by once we have manged to parse
 > 	   		                        | While Expr Prog           
 > 	   		                        | Seqn [Prog]
 >                                   | Empty                                     -- Allows blank Prog may be useful 
->                                   | Return (Maybe Expr)                       -- Change so can Return nothing 
->                                   | Func Name Prog
+>                                   | Return (Maybe Expr)                       
+>                                   | Func Name [Name] Prog                     -- list of names is names of arguments
 >                                   | Main Prog                                 -- gives us the main function to be run
 >		                                deriving Show
->
+
+
+Prog helpers, these are used as extensions to the Prog data structure 
+
 > data ElseIfCase'              = Case Expr Prog                                --used for switch cases and else if 
 >                                   deriving Show
 
-How variables are represented and used.
+EXPRESSION IR
 
 > data Expr  		            =  Val Number 
 >                                   | Var Name 
 >                                   | ExprApp ArthOp Expr Expr 
 >                                   | CompApp CompOp Expr Expr
 >                                   | CondApp CondOp Expr Expr 
->                                   | FuncCall Name [Expr]                      -- list of Expr is the arguments (can be empty), igonore posibilty for calling void functions for now
->			                            deriving (Show, Eq)
->
-> data ArthOp    		        =  ADD | SUB | MUL | DIV                        -- Arithmetic operations
+>                                   | FuncCall Name [Expr]
+>                                       deriving Show
+
+For Arthimetic Operations
+
+> data ArthOp    		        =  ADD | SUB | MUL | DIV                        
 >			                        deriving (Show, Eq)
->
-> type Name  		            =  String
 
-How conditionals are expressed
-
-> data CondOp                   = AND | OR
->                                   deriving (Show, Eq)
-
-How comparisons are expressed
+For Comparisons
 
 > data CompOp                   = EQU | NEQ | GEQ | LEQ | GRT | LET             
->			                        deriving (Show, Eq)
+>			                        deriving (Show, Eq)    
 
-Type System
+For Conditionals, still to be finished 
 
-For now just defing a generic type of just ints that can be updated
+> data CondOp                   = AND | OR 
+>			                        deriving (Show, Eq)  
+
+Numerical Types, currently treating booleans as integers, where 0 is false and 1 is true 
 
 > data Number                   = Integer Int | Double Double
 >			                        deriving (Show, Eq)
 
+Name defintion
+
+> type Name                     = String 
+
+
 -----------------------------------------------------------------------------------------------------
 
 TEST CASES 
-
-> returnTest_1                  :: Prog
-> returnTest_1                  = Seqn [(Assign "Luke" (Val (Integer 4))), (Return (Just (Var "Luke")))]
-
-> funcTest_1                    :: Prog
-> funcTest_1                    = Seqn [    (Main  
->                                               ( Seqn [ 
->                                                   (Assign "Luke" (FuncCall "testFunc" [])), 
->                                                   (Return (Just (Var "Luke")))]
->                                               )
->                                           ), 
->                                           (Func "testFunc" 
->                                               (Return (Just (Val (Integer 13))))
->                                           )
->                                       ]  
 
 -----------------------------------------------------------------------------------------------------
 
@@ -124,7 +116,7 @@ Actually compiles to machine code
 
 > comp'                         :: Prog -> ST Code
 > comp' (Main p1)               = (mainDealer p1)
-> comp' (Func n p1)             = (functionDealer n p1) 
+> comp' (Func n vs p1)          = (functionDealer n vs p1) 
 > comp' (Seqn cs)               = (sequenceDealer cs)
 > comp' (Assign n e)            = return (expression e ++ [POP n])
 > comp' (If c p)				= (ifDealer c p)
@@ -137,11 +129,18 @@ Actually compiles to machine code
 Deals with Expr
 
 > expression                    :: Expr -> Code
+> expression (FuncCall n es)    = (callDealer n es)
 > expression (Val i)            = [PUSH i]
 > expression (Var v)            = [PUSHV v]
 > expression (ExprApp o x y)    = expression x ++ expression y ++ [DO o] 
-> expression (CompApp o x y)	= expression x ++ expression y ++ [COMP o] 
-> expression (FuncCall n es)    = (callDealer n es) 
+> expression (CompApp o x y)    = expression x ++ expression y ++ [COMP o]
+
+
+Deal with a list of Expr
+
+> multExpression                :: [Expr] -> Code
+> multExpression []             = []
+> multExpression (e:es)         = expression e ++ multExpression es             
 
 
 Deals with if 
@@ -170,8 +169,6 @@ Deals with else if
 >                                       p2code  <- comp' p2
 >                                       csCode  <- listCaseDealer cs el      
 >                                       return (expression c ++ [JUMPZ l1] ++ p1code ++ [JUMP el] ++ [LABEL l1] ++ csCode ++ p2code ++ [LABEL el])
-
-TODO: Possibly exapnd these functions to take in switch cases
 
 Deals with a list of else if cases
 
@@ -214,17 +211,15 @@ Deals With Sequences
 
 Deals with Functions, assumes that ever function contains a return will be done at parsing level
 
-> functionDealer                :: Name -> Prog -> ST Code
-> functionDealer n p1           =   do  p1code  <- comp' p1 
->                                       return ([FUNC n] ++ p1code ++ [FEND])
+> functionDealer                :: Name -> [Name] -> Prog ->  ST Code
+> functionDealer n vs p1        =   do  p1code  <- comp' p1
+>                                       return ([FUNC n] ++ [ POP v | v <-(reverse vs)] ++ p1code ++ [FEND])
 
 Deals with function call puts whatever it is ontop of the stack if there is a return statement
 
-TODO: Implement arguments
-
 > callDealer                    :: Name -> [Expr] -> Code
-> callDealer n []               = [CALL n]
-> callDealer n (e:es)           = [CALL n]
+> callDealer n []               = [CALL n 0] 
+> callDealer n (es)             = multExpression es ++ [CALL n (length es)] 
 
 Deals with setting up the Main function and all the code to be run
 
@@ -262,7 +257,7 @@ as to focus n high level interpritation, look to improve this later.
 >          		                    | LABEL Label
 >                                   | FUNC Name 
 >                                   | FEND
->                                   | CALL Name                       
+>                                   | CALL Name Int                       
 >                                   | STOP                      --Used for returning nothing
 >                                   | RSTOP                     --Used to return a variable from a function
 >                                   | MAIN
@@ -280,33 +275,53 @@ Almost entirely from AFP at this stage a simple compiler for executing the code 
 This takes a list of machine code instructions and executes them.
 
 > exec                          :: Code -> Maybe Number
-> exec c                        = exec'  c 0 [] []
+> exec c                        = exec' c c 0 [] []
 
 
-This is the function that actually does stuff
+This is the function that actually executes the code, c is the intial code, ec is what you're executing
 
-> exec'                         :: Code -> Int -> Stack -> Mem -> Maybe Number
-> exec' c pc s m                =      
->                                       if(length c) <= pc then Nothing         --shouldn't happen anymore
->                                       else 
->                                           case c !! pc of 
->                                               MAIN        -> exec' c (pc+1) s m        
->                                               PUSH n      -> exec' c (pc+1) (push n s) m
->                                               PUSHV v     -> exec' c (pc+1) (pushv v m s) m
->                                               POP v       -> exec' c (pc+1) (pop s) (assignVariable v (head s) m)
->                                               DO o        -> exec' c (pc+1) (operation o s) m
->                                               COMP o      -> exec' c (pc+1) (comparison o s) m 
->                                               LABEL l     -> exec' c (pc+1) s m
->                                               JUMP l      -> exec' c (jump c l) s m
->                                               JUMPZ l     -> exec' c (jumpz c s l pc) (popz s) m
->                                               CALL n      -> exec' c (pc+1) (push (handleCall c pc s m n) s) m
->                                               RSTOP       -> Just (head s)
->                                               STOP        -> Nothing
->                                               END         -> Nothing 
->                                               FEND        -> Nothing     
->                                                         
->                                               
+> exec'                         :: Code -> Code ->  Int -> Stack -> Mem -> Maybe Number
+> exec' c ec pc s m             =   case ec !! pc of 
+>                                       MAIN        -> exec' c ec (pc+1) s m
+>                                       FUNC n      -> exec' c ec (pc+1) s m        
+>                                       PUSH n      -> exec' c ec (pc+1) (push n s) m
+>                                       PUSHV v     -> exec' c ec (pc+1) (pushv v m s) m
+>                                       POP v       -> exec' c ec (pc+1) (pop s) (assignVariable v (head s) m)
+>                                       DO o        -> exec' c ec (pc+1) (operation o s) m
+>                                       COMP o      -> exec' c ec (pc+1) (comparison o s) m 
+>                                       LABEL l     -> exec' c ec (pc+1) s m
+>                                       JUMP l      -> exec' c ec (jump c l) s m
+>                                       JUMPZ l     -> exec' c ec (jumpz c s l pc) (pop s) m
+>                                       (CALL n a)  -> (handleCall c ec pc s m n a)  
+>                                       RSTOP       -> Just (head s)
+>                                       STOP        -> Nothing
+>                                       END         -> Nothing 
+>                                       FEND        -> exec' c ec (pc+1) s m     
+         
+Returns the stack, used for function calls to managing stack frames and make sure variables,
+don't get lost. Does the same as exec' but instead returns the stack.          
+         
+> stackExec                     :: Code -> Stack
+> stackExec c                   = stackExec' c c 0 [] []              
 
+> stackExec'                    :: Code -> Code -> Int -> Stack -> Mem -> Stack
+> stackExec' c ec pc s m        =   case ec !! pc of 
+>                                       MAIN        -> stackExec' c ec (pc+1) s m
+>                                       FUNC n      -> stackExec' c ec (pc+1) s m        
+>                                       PUSH n      -> stackExec' c ec (pc+1) (push n s) m
+>                                       PUSHV v     -> stackExec' c ec (pc+1) (pushv v m s) m
+>                                       POP v       -> stackExec' c ec (pc+1) (pop s) (assignVariable v (head s) m)
+>                                       DO o        -> stackExec' c ec (pc+1) (operation o s) m
+>                                       COMP o      -> stackExec' c ec (pc+1) (comparison o s) m 
+>                                       LABEL l     -> stackExec' c ec (pc+1) s m
+>                                       JUMP l      -> stackExec' c ec (jump ec l) s m
+>                                       JUMPZ l     -> stackExec' c ec (jumpz ec s l pc) (pop s) m
+>                                       (CALL n a)  -> (handleCallReStack c ec pc s m n a)  
+>                                       RSTOP       -> s
+>                                       STOP        -> s
+>                                       END         -> s 
+>                                       FEND        -> stackExec' c ec (pc+1) s m
+         
 
 
 STACK FUCNTIONS
@@ -336,13 +351,13 @@ Perform an operation on the first two things of the stack and leave the result o
 
 > operation                     :: ArthOp -> Stack -> Stack
 > operation o s                 =   case o of 
->                                       ADD -> push (Integer (v2+v1)) ns 
->                                       SUB -> push (Integer (v2-v1)) ns
->                                       MUL -> push (Integer (v2*v1)) ns 
->                                       DIV -> push (Integer (div v2 v1)) ns
+>                                       ADD -> push (addNumbers v2 v1) ns 
+>                                       SUB -> push (subNumbers v2 v1) ns
+>                                       MUL -> push (mulNumbers v2 v1) ns 
+>                                       DIV -> push (divNumbers v2 v1) ns
 >                                   where
->                                       v1 = getNumber (head s)
->                                       v2 = getNumber (head (tail s))
+>                                       v1 = head s
+>                                       v2 = head (tail s)
 >                                       ns = (pop (pop s))
 
 Perform a comparison on the first two things on the stack (leave a 1 on top if true and 0 if false)
@@ -350,18 +365,18 @@ Perform a comparison on the first two things on the stack (leave a 1 on top if t
 > comparison                    ::  CompOp -> Stack -> Stack
 > comparison o s                =   push (comparison' o v1 v2) ns 
 >                                       where
->                                           v2 = getNumber (head s)
->                                           v1 = getNumber (head (tail s))
+>                                           v2 = (head s)
+>                                           v1 = (head (tail s))
 >                                           ns = (pop (pop s))
 >
-> comparison'                   :: CompOp -> Int -> Int -> Number 
+> comparison'                   :: CompOp -> Number -> Number -> Number 
 > comparison' o v1 v2           =   case o of
->                                       EQU		-> if v1 == v2  then t else f    
->                                       NEQ     -> if v1 == v2  then f else t
->                                       GEQ     -> if v1 >= v2  then t else f
->                                       LEQ     -> if v1 <= v2  then t else f
->                                       GRT     -> if v1 > v2   then t else f
->                                       LET     -> if v1 < v2   then t else f                                       
+>                                       EQU		-> if isNumEqu v1 v2  then t else f    
+>                                       NEQ     -> if isNumNeq v1 v2  then f else t
+>                                       GEQ     -> if isNumGeq v1 v2  then t else f
+>                                       LEQ     -> if isNumLeq v1 v2  then t else f
+>                                       GRT     -> if isNumGrt v1 v2  then t else f
+>                                       LET     -> if isNumLet v1 v2  then t else f                                       
 >                                   where 
 >                                       t = Integer 1
 >                                       f = Integer 0
@@ -374,7 +389,15 @@ pops the head if it is 0 if not it leaves it be
 >                               | top == 0          = pop s
 >                               | otherwise         = s
 >                                   where
->                                       top = getNumber (head s)                
+>                                       top = getInt (head s)                
+
+
+Multiple pop, pops the required number of things
+
+> multiplePop                   :: Stack -> Int -> Stack
+> multiplePop ss 0              = ss
+> multiplePop ss n              = multiplePop (pop ss) (n-1)   
+ 
 
 MEMORY FUNCTIONS
 
@@ -428,38 +451,47 @@ returns true if is the label we are looking for
 
 stops the program, just returns memory at the moment 
 
-> halt 							:: Mem -> Mem
+> halt 							:: Mem -> Mem   
 > halt m						= m 
 
 
-CALL Functions 
+CALL Functions
 
 These functions deal with function calls, if returns something put ontop off stack otherwise do 
 
-> handleCall                    :: Code -> Int -> Stack -> Mem -> Name -> Number
-> handleCall c pc s m n         =   case fCode of 
->                                       Just fVal       -> fVal
->                                       Nothing         -> Integer 0
+> handleCall                    :: Code -> Code -> Int -> Stack -> Mem -> Name -> Int -> Maybe Number
+> handleCall c ec pc s m n a    =   exec' c ec (pc+1) fs m   
 >                                   where
->                                       fCode = exec (getFunction c n [] False)
+>                                       fs      = stackExec' c fCode 0 s m
+>                                       fCode   = (getFunction c n [] False False)
+>                 
 
+                      
+Returns Stack, used for nested and recursive function calls
+
+> handleCallReStack             :: Code -> Code-> Int -> Stack -> Mem -> Name -> Int -> Stack
+> handleCallReStack c ec pc s m n a
+>                               = stackExec' c ec (pc+1) (fRun) m
+>                                   where
+>                                       fRun    = stackExec' c fCode 0 s m
+>                                       fCode   = (getFunction c n [] False False)
+> 
+
+  
 Searches through code and returns a function's code, ct signifies if is currently cutting the code
 
-> getFunction                   :: Code -> Name -> Code -> Bool -> Code 
-> getFunction (c:cs) n fs ct    =   if ct then
->                                       if (c == FEND) then (reverse fs)
->                                       else getFunction cs n (c:fs) True                                            
+> getFunction                   :: Code -> Name -> Code -> Bool -> Bool -> Code 
+> getFunction (c:cs) n fs ct mt =   if ct then
+>                                       if (c == FEND) then (reverse (c:fs))
+>                                       else getFunction cs n (c:fs) True mt                                           
 >                                   else  
->                                       if (c == (FUNC n)) then getFunction cs n fs True
->                                       else getFunction cs n fs False 
-
+>                                       if (c == (FUNC n)) then getFunction cs n (c:fs) True mt
+>                                       else getFunction cs n fs False mt 
+>                                   
 
 --------------------------------------------------------------------------------
 
 TYPE FUNCTIONS 
-
-> getNumber                     :: Number -> Int
-> getNumber n                   = getInt n
 
 > getInt                        :: Number -> Int
 > getInt (Integer n)            = n
@@ -475,6 +507,34 @@ TYPE FUNCTIONS
 > isDouble (Double n)           = True
 > isDouble _                    = False
 
+Comparison Operations
+
+> isNumEqu                      :: Number -> Number -> Bool
+> isNumEqu x y                  | (isInt x)         = (getInt x) == (getInt y) 
+>                               | otherwise         = (getDouble x) == (getDouble y)
+
+> isNumNeq                      :: Number -> Number -> Bool
+> isNumNeq x y                  | (isInt x)         = (getInt x) /= (getInt y) 
+>                               | otherwise         = (getDouble x) /= (getDouble y)
+
+> isNumGeq                      :: Number -> Number -> Bool
+> isNumGeq x y                  | (isInt x)         = (getInt x) >= (getInt y) 
+>                               | otherwise         = (getDouble x) >= (getDouble y)
+
+> isNumLeq                      :: Number -> Number -> Bool
+> isNumLeq x y                  | (isInt x)         = (getInt x) <= (getInt y) 
+>                               | otherwise         = (getDouble x) <= (getDouble y)
+
+> isNumGrt                      :: Number -> Number -> Bool
+> isNumGrt x y                  | (isInt x)         = (getInt x) > (getInt y) 
+>                               | otherwise         = (getDouble x) > (getDouble y)
+
+> isNumLet                      :: Number -> Number -> Bool
+> isNumLet x y                  | (isInt x)         = (getInt x) < (getInt y) 
+>                               | otherwise         = (getDouble x) < (getDouble y)
+
+Arthimetic opperations
+
 > addNumbers                    :: Number -> Number -> Number   -- (x + y)
 > addNumbers x y                =   if (isInt x) then Integer ((getInt x) + (getInt y)) 
 >                                   else Double ((getDouble x) + (getDouble y))
@@ -485,8 +545,8 @@ TYPE FUNCTIONS
 
 Need to be carefull with divide because of how Go deals with int divison compared to haskell
 
-> divideNumbers			        :: Number -> Number -> Number   -- (x / y)
-> divideNumbers x y             =   if (isInt x) then (divideInt (getInt x) (getInt y))
+> divNumbers			        :: Number -> Number -> Number   -- (x / y)
+> divNumbers x y                =   if (isInt x) then (divideInt (getInt x) (getInt y))
 >                                   else (divideDouble (getDouble x) (getDouble y))
 
 > divideInt                     :: Int -> Int -> Number 
@@ -496,8 +556,8 @@ Need to be carefull with divide because of how Go deals with int divison compare
 > divideDouble                  :: Double -> Double -> Number
 > divideDouble x y              = Double (x / y)
 
-> multiplyNumbers               :: Number -> Number -> Number   -- (x * y)
-> multiplyNumbers x y           =   if (isInt x) then Integer ((getInt x) * (getInt y))
+> mulNumbers                    :: Number -> Number -> Number   -- (x * y)
+> mulNumbers x y                =   if (isInt x) then Integer ((getInt x) * (getInt y))
 >                                   else Double ((getDouble x) * (getDouble y))
 
 --------------------------------------------------------------------------------
