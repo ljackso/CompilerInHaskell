@@ -58,6 +58,43 @@ Name defintion
 
 > type Name                     = String 
 
+
+-----------------------------------------------------------------------------------------------------
+
+IF STATEMENTS 
+
+> evalIf                        :: String -> Prog 
+> evalIf xs                     = case (parse ifParse xs) of
+>                                     [(e,[])]  -> e
+>                                     [(_,out)] -> error ("unused input " ++ out)
+>                                     []        -> error "invalid input"
+
+> ifParse                       :: Parse Prog 
+> ifParse                       = do string "if" 
+>                                    e <- arthExpr    
+>                                    symbol "{"
+>                                    r <- return'
+>                                    symbol "{"
+>                                    return (If e r)                                   
+    
+-----------------------------------------------------------------------------------------------------
+
+RETURN 
+
+> evalReturn                    :: String -> Prog 
+> evalReturn xs                 =  case (parse return' xs) of
+>                                     [(e,[])]  -> e
+>                                     [(_,out)] -> error ("unused input " ++ out)
+>                                     []        -> error "invalid input"
+
+User return' so as not to get mixed up with haskells "return" function
+
+> return'                       :: Parser Prog
+> return'                       =  do string "return"
+>                                     e <- arthExpr
+>                                     return (Return (Just e))
+
+
 -----------------------------------------------------------------------------------------------------
 
 ASSIGNMENT
@@ -68,19 +105,19 @@ ASSIGNMENT
 >                                     [(_,out)] -> error ("unused input " ++ out)
 >                                     []        -> error "invalid input"
 
+> assign                        :: Parser Prog
+> assign                        =  do n <- getName
+>                                     do symbol "="               
+>                                        e <- arthExpr
+>                                        return (Assign n e)
 
 Deals with variable name
 
-> assign                        :: Parser Prog
-> assign                        = do n <- getName
->                                    do symbol "=" 
->                                       e <- arthExpr 
->                                       return (Assign n e)
->                                     +++ return n
-
-> getName                       :: Parser String
-> getName                       =  
-
+> getName                      :: Parser String 
+> getName                      = do string "var"
+>                                   n <- identifier
+>                                   string "int"
+>                                   return n
 
 -----------------------------------------------------------------------------------------------------
 
@@ -132,6 +169,6 @@ Deals with Division and Multiply currently prioritses division, like go does!
 >                                     symbol ")"
 >                                     return e
 >                                   +++ do n <- natural
->				           return (Val n)
+>				           return (Val (Integer n))
 
 -----------------------------------------------------------------------------------------------------
