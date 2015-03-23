@@ -1,12 +1,15 @@
 
+> module GoRunner where
+
 > import Data.List
-> import Data.List.Split 
+> import Data.List.Split
+> import GoParser
 
-ITERATION ONE
 
-This is a new iteration of my project where I focus on code genration, for now igonring the 
-problems parsing was giving. I treat my input as a high level representation of Go as a data 
-structure
+COMPILER & EXECUTOR
+
+This is where I focus on code genration and creating a virtual machine to, compile and execute my code.
+I treat my input as a high level representation of Go as a data structure that I get from GoParser. 
 
 -----------------------------------------------------------------------------------------------------
 
@@ -38,69 +41,11 @@ Fresh function to update states
 
 -----------------------------------------------------------------------------------------------------
 
-HIGH LEVEL
+RUNNER
 
-First define the program features we want to compile these are amore formal definitons of 
-Go's features,
+Parses, then compiles, then executes a go program from a file. 
 
-It is what we want our Program to be represented by once we have manged to parse it.
-
-> data Prog                     = Assign Name Expr
-> 	   		                        | If Expr Prog
->                                   | IfElse Expr Prog Prog
->                                   | ElseIf Expr Prog [ElseIfCase'] Prog       
-> 	   		                        | While Expr Prog           
-> 	   		                        | Seqn [Prog]
->                                   | Empty                                     -- Allows blank Prog may be useful 
->                                   | Return (Maybe Expr)                       
->                                   | Func Name [Name] Prog                     -- list of names is names of arguments
->                                   | Main Prog                                 -- gives us the main function to be run
->		                                deriving Show
-
-
-Prog helpers, these are used as extensions to the Prog data structure 
-
-> data ElseIfCase'              = Case Expr Prog                                --used for switch cases and else if 
->                                   deriving Show
-
-EXPRESSION IR
-
-> data Expr  		            =  Val Number 
->                                   | Var Name 
->                                   | ExprApp ArthOp Expr Expr 
->                                   | CompApp CompOp Expr Expr
->                                   | CondApp CondOp Expr Expr 
->                                   | FuncCall Name [Expr]
->                                       deriving Show
-
-For Arthimetic Operations
-
-> data ArthOp    		        =  ADD | SUB | MUL | DIV                        
->			                        deriving (Show, Eq)
-
-For Comparisons
-
-> data CompOp                   = EQU | NEQ | GEQ | LEQ | GRT | LET             
->			                        deriving (Show, Eq)    
-
-For Conditionals, still to be finished 
-
-> data CondOp                   = AND | OR 
->			                        deriving (Show, Eq)  
-
-Numerical Types, currently treating booleans as integers, where 0 is false and 1 is true 
-
-> data Number                   = Integer Int | Double Double
->			                        deriving (Show, Eq)
-
-Name defintion
-
-> type Name                     = String 
-
-
------------------------------------------------------------------------------------------------------
-
-TEST CASES
+> run f                         = exec (comp (parseGo f))
 
 -----------------------------------------------------------------------------------------------------
 
@@ -241,11 +186,11 @@ language.
 This can be represented as a mini virtual machine, we will use the same vm as was used in AFP so
 as to focus n high level interpritation, look to improve this later. 
 
-> type Stack 		            =  [Number]
+> type Stack 		            = [Number]
 >
-> type Mem 		                =  [(Name, Number)]		
+> type Mem 		                = [(Name, Number)]
 >   
-> type Code  		            =  [Inst]
+> type Code  		            = [Inst]
 > 
 > data Inst  		            =  PUSH Number
 >          		                    | PUSHV Name
@@ -266,6 +211,12 @@ as to focus n high level interpritation, look to improve this later.
 > 
 > type Label 		            =  Int
 
+
+> instantiateMemory             :: Mem 
+> instantiateMemory             = [("", Integer 0) | x <- [1..10]]
+
+
+
 -----------------------------------------------------------------------------------------------------
  
  EXECUTER 
@@ -275,52 +226,61 @@ Almost entirely from AFP at this stage a simple compiler for executing the code 
 This takes a list of machine code instructions and executes them.
 
 > exec                          :: Code -> Maybe Number
-> exec c                        = exec' c c 0 [] []
+> exec c                        = exec' c c 0 [] instantiateMemory True
 
 
 This is the function that actually executes the code, c is the intial code, ec is what you're executing
 
-> exec'                         :: Code -> Code ->  Int -> Stack -> Mem -> Maybe Number
-> exec' c ec pc s m             =   case ec !! pc of 
->                                       MAIN        -> exec' c ec (pc+1) s m
->                                       FUNC n      -> exec' c ec (pc+1) s m        
->                                       PUSH n      -> exec' c ec (pc+1) (push n s) m
->                                       PUSHV v     -> exec' c ec (pc+1) (pushv v m s) m
->                                       POP v       -> exec' c ec (pc+1) (pop s) (assignVariable v (head s) m)
->                                       DO o        -> exec' c ec (pc+1) (operation o s) m
->                                       COMP o      -> exec' c ec (pc+1) (comparison o s) m 
->                                       LABEL l     -> exec' c ec (pc+1) s m
->                                       JUMP l      -> exec' c ec (jump c l) s m
->                                       JUMPZ l     -> exec' c ec (jumpz c s l pc) (pop s) m
->                                       (CALL n a)  -> (handleCall c ec pc s m n a)  
+Variable Explanations;
+
+c = all the code
+ec = the current batch of code being executed
+pc = program counter
+s = stack
+m = memory 
+g = isGlobal, says whether you are workin within a function or working globally, used for memory mangement
+
+> exec'                         :: Code -> Code ->  Int -> Stack -> Mem -> Bool -> Maybe Number
+> exec' c ec pc s m g           =   case ec !! pc of 
+>                                       MAIN        -> exec' c ec (pc+1) s m False
+>                                       FUNC n      -> exec' c ec (pc+1) s m g       
+>                                       PUSH n      -> exec' c ec (pc+1) (push n s) m g
+>                                       PUSHV v     -> exec' c ec (pc+1) (pushv v m s g) m g
+>                                       POP v       -> exec' c ec (pc+1) (pop s) (assignVariable v (head s) m g) g
+>                                       DO o        -> exec' c ec (pc+1) (operation o s) m g
+>                                       COMP o      -> exec' c ec (pc+1) (comparison o s) m g
+>                                       LABEL l     -> exec' c ec (pc+1) s m g
+>                                       JUMP l      -> exec' c ec (jump c l) s m g
+>                                       JUMPZ l     -> exec' c ec (jumpz c s l pc) (pop s) m g
+>                                       (CALL n a)  -> (handleCall c ec pc s m n a g)  
 >                                       RSTOP       -> Just (head s)
 >                                       STOP        -> Nothing
 >                                       END         -> Nothing 
->                                       FEND        -> exec' c ec (pc+1) s m     
+>                                       FEND        -> exec' c ec (pc+1) s m g                  --- happens for void functions     
          
 Returns the stack, used for function calls to managing stack frames and make sure variables,
 don't get lost. Does the same as exec' but instead returns the stack.          
          
 > stackExec                     :: Code -> Stack
-> stackExec c                   = stackExec' c c 0 [] []              
+> stackExec c                   = stackExec' c c 0 [] [] True               
 
-> stackExec'                    :: Code -> Code -> Int -> Stack -> Mem -> Stack
-> stackExec' c ec pc s m        =   case ec !! pc of 
->                                       MAIN        -> stackExec' c ec (pc+1) s m
->                                       FUNC n      -> stackExec' c ec (pc+1) s m        
->                                       PUSH n      -> stackExec' c ec (pc+1) (push n s) m
->                                       PUSHV v     -> stackExec' c ec (pc+1) (pushv v m s) m
->                                       POP v       -> stackExec' c ec (pc+1) (pop s) (assignVariable v (head s) m)
->                                       DO o        -> stackExec' c ec (pc+1) (operation o s) m
->                                       COMP o      -> stackExec' c ec (pc+1) (comparison o s) m 
->                                       LABEL l     -> stackExec' c ec (pc+1) s m
->                                       JUMP l      -> stackExec' c ec (jump ec l) s m
->                                       JUMPZ l     -> stackExec' c ec (jumpz ec s l pc) (pop s) m
->                                       (CALL n a)  -> (handleCallReStack c ec pc s m n a)  
+> stackExec'                    :: Code -> Code -> Int -> Stack -> Mem -> Bool -> Stack
+> stackExec' c ec pc s m g      =   case ec !! pc of 
+>                                       MAIN        -> stackExec' c ec (pc+1) s m False 
+>                                       FUNC n      -> stackExec' c ec (pc+1) s m g        
+>                                       PUSH n      -> stackExec' c ec (pc+1) (push n s) m g
+>                                       PUSHV v     -> stackExec' c ec (pc+1) (pushv v m s g) m g
+>                                       POP v       -> stackExec' c ec (pc+1) (pop s) (assignVariable v (head s) m g) g
+>                                       DO o        -> stackExec' c ec (pc+1) (operation o s) m g
+>                                       COMP o      -> stackExec' c ec (pc+1) (comparison o s) m g 
+>                                       LABEL l     -> stackExec' c ec (pc+1) s m g
+>                                       JUMP l      -> stackExec' c ec (jump ec l) s m g
+>                                       JUMPZ l     -> stackExec' c ec (jumpz ec s l pc) (pop s) m g
+>                                       (CALL n a)  -> (handleCallReStack c ec pc s m n a g)  
 >                                       RSTOP       -> s
 >                                       STOP        -> s
 >                                       END         -> s 
->                                       FEND        -> stackExec' c ec (pc+1) s m
+>                                       FEND        -> stackExec' c ec (pc+1) s m g
          
 
 
@@ -337,8 +297,8 @@ push onto top of stack an integer
 
 push variable onto top of the stack
 
-> pushv                         :: Name ->  Mem -> Stack -> Stack
-> pushv v m s                   =  push (getVariable v m) s
+> pushv                         :: Name ->  Mem -> Stack -> Bool -> Stack
+> pushv v m s g                 =  push (getVariable v m g) s
 
 
 pop an integer from the stack and places it into memory under that variable name
@@ -406,14 +366,15 @@ Functions that deal with memory
 
 This function assigns an integer to a variable
 
-> assignVariable                :: Name -> Number -> Mem -> Mem
-> assignVariable  v n m         = (deleteVariable v m) ++ [(v, n)]
+> assignVariable                :: Name -> Number -> Mem -> Bool -> Mem
+> assignVariable v n m g        = if g then [(v, n)] ++ (deleteVariable v m)
+>                                 else localAssign v n m 
 
 
 Get the variable from memory, if not assigned already just assume that variable is 0 
 
-> getVariable                   :: Name -> Mem -> Number
-> getVariable v ms        
+> getVariable                   :: Name -> Mem -> Bool -> Number
+> getVariable v ms g            
 >                               | null memV     = Integer 0 
 >                               | otherwise     = snd (head memV)
 >                                   where 
@@ -424,7 +385,17 @@ Checks that the variable isn't being reassigned and if it is deletes that variab
 > deleteVariable                :: Name -> Mem -> Mem
 > deleteVariable v ms           = [ m | m <- ms, fst m /= v] 
 
+> localAssign                   :: Name -> Number -> Mem -> Mem  
+> localAssign v n ms            = if (isGlobal v ms) then [(v,n)] ++ deleteVariable v ms
+>                                 else deleteVariable v ms ++ [(v,n)]  
 
+> isGlobal                      :: Name -> Mem -> Bool
+> isGlobal v (("",(Integer 0)):xs) 
+>                               = False
+> isGlobal v (x:xs)             = if (fst x) == v then True
+>                                 else (isGlobal v xs) 
+ 
+ 
 JUMP FUNCTIONS
 
 All the functions that deal with jumping arounbd our code
@@ -459,22 +430,23 @@ CALL Functions
 
 These functions deal with function calls, if returns something put ontop off stack otherwise do 
 
-> handleCall                    :: Code -> Code -> Int -> Stack -> Mem -> Name -> Int -> Maybe Number
-> handleCall c ec pc s m n a    =   exec' c ec (pc+1) fs m   
+> handleCall                    :: Code -> Code -> Int -> Stack -> Mem -> Name -> Int -> Bool -> Maybe Number
+> handleCall c ec pc s m n a g  =   exec' c ec (pc+1) fs m g   
 >                                   where
->                                       fs      = stackExec' c fCode 0 s m
+>                                       fs      = stackExec' c fCode 0 s gm g
 >                                       fCode   = (getFunction c n [] False False)
->                 
+>                                       gm      = getGlobalMemmory m
 
                       
 Returns Stack, used for nested and recursive function calls
 
-> handleCallReStack             :: Code -> Code-> Int -> Stack -> Mem -> Name -> Int -> Stack
-> handleCallReStack c ec pc s m n a
->                               = stackExec' c ec (pc+1) (fRun) m
+> handleCallReStack             :: Code -> Code-> Int -> Stack -> Mem -> Name -> Int -> Bool -> Stack
+> handleCallReStack c ec pc s m n a g
+>                               = stackExec' c ec (pc+1) (fRun) m g
 >                                   where
->                                       fRun    = stackExec' c fCode 0 s m
+>                                       fRun    = stackExec' c fCode 0 s gm g
 >                                       fCode   = (getFunction c n [] False False)
+>                                       gm      = getGlobalMemmory m   
 > 
 
   
@@ -490,6 +462,23 @@ Searches through code and returns a function's code, ct signifies if is currentl
 >                                   
 
 --------------------------------------------------------------------------------
+
+MEMORY MANGEMENT
+
+These series of function deal with memory mangement and handling global and local variables
+
+Memory is split into 2 sections the first 20% of memory is for global variables and the rest is for local memory!  
+
+
+> getGlobalMemmory              :: Mem -> Mem
+> getGlobalMemmory  ms          =  getGlobalMemmory' ms [] ++ instantiateMemory
+>
+> getGlobalMemmory'             :: Mem -> Mem -> Mem 
+> getGlobalMemmory' (m:ms) gs   = if (fst m) == "" then reverse gs
+>                                 else getGlobalMemmory' ms (m:gs)   
+
+--------------------------------------------------------------------------------
+
 
 TYPE FUNCTIONS 
 
