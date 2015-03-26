@@ -1,20 +1,22 @@
 
+var globalOne int = 1;
+var globalVar int = 2;
 
-func main() int {
-    var luke int = fac( add(addOne(2), 5));
-    return luke;
+func main() {
+    var luke int = fac( add(addOne(globalVar), 5));
+    show (luke);
 }; 
 
 func fac(n int) int {
 	if (n == 0) {
-		return 1;
+		return globalOne;
 	} else {
-		return n * fac(n-1);
+		return n * fac(n-globalOne);
 	};
 };
 
 func addOne(n int) int {
-    return n + 1;
+    return n + globalOne;
 };
 
 func add(n int, m int) int {

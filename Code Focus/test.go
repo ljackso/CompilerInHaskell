@@ -1,10 +1,9 @@
+
 var luke int = 10;
-func main() int {
-    
-    return f(3);
+
+func main() {
+    var c chan int = 
+    var l int = 10;
+    l += <-c; 
 };
 
-func f(n int) int {
-    luke += 5;
-    return n + luke;
-};

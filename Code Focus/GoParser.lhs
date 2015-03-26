@@ -12,7 +12,10 @@ Uses the Parsing library from Hutton (2008) which focuses on using Monadic Parse
 
 PROGRAM IR 
 
-> data Prog                     = Assign Name Expr
+> data Prog                     = CreateChan Name 
+>                                   | PushToChan Name Expr
+>                                   | Assign Name Expr
+>                                   | Show Expr
 > 	   		                        | If Expr Prog
 >                                   | IfElse Expr Prog Prog
 >                                   | ElseIf Expr Prog [ElseIfCase'] Prog       
@@ -35,6 +38,7 @@ EXPRESSION IR
 >                                   | CompApp CompOp Expr Expr
 >                                   | CondApp CondOp Expr Expr 
 >                                   | FuncCall Name [Expr]
+>                                   | PopFromChan Name
 >                                       deriving Show
 
 For Arthimetic Operations
@@ -117,7 +121,6 @@ Changed so main can return an int unlike in Go
 > parseMain                     :: Parser Prog                  
 > parseMain                     = do string "func main"
 >                                    symbol "()"
->                                    string "int"
 >                                    symbol "{"
 >                                    p <- parseCommands
 >                                    symbol "}"                                    
@@ -170,6 +173,8 @@ Evaluates a list of commands you might find in a functions
 >                                     return a  
 >                                   +++ do r <- return'
 >                                          return r
+>                                   +++ do s <- parseShow
+>                                          return s 
 >                                   +++ do fe <- elseIfParse
 >                                          return fe
 >                                   +++ do e <- ifElseParse
@@ -375,6 +380,55 @@ A Multiple Assignments, deals with a list of MultipleAssignments
 
 -----------------------------------------------------------------------------------------------------
 
+SHOW 
+
+This is a simple print statement that jsut prints out an expression
+
+> evalShow                      :: String -> Prog
+> evalShow xs                   =  case (parse parseShow xs) of
+>                                     [(e,[])]  -> e
+>                                     [(_,out)] -> error ("unused input " ++ out)
+>                                     []        -> error "invalid input"
+
+> parseShow                     :: Parser Prog
+> parseShow                     = do string "show"
+>                                    symbol "("    
+>                                    e <- parseExpr
+>                                    symbol ")"
+>                                    return (Show e)
+
+-----------------------------------------------------------------------------------------------------
+
+CHANNELS 
+
+Handles the creating of channels and pushing values to a channel
+
+> evalChannels                  :: String -> Prog
+> evalChannels xs               =   case (parse parseChanelPush xs) of
+>                                       [(e,[])]  -> e
+>                                       [(_,out)] -> error ("unused input " ++ out)
+>                                       []        -> error "invalid input"
+>
+
+> parseChanelCreation           :: Parser Prog
+> parseChanelCreation           = do string "var" 
+>                                    n <- identifier
+>                                    string "chan int"
+>                                    symbol "="
+>                                    string "make"         
+>                                    symbol "("
+>                                    string  "chan int"
+>                                    symbol ")"
+>                                    return (CreateChan n)
+
+> parseChanelPush               :: Parser Prog 
+> parseChanelPush               = do c <-  identifier
+>                                    symbol "<-"   
+>                                    a <- arthExpr
+>                                    return (PushToChan c a)   
+
+-----------------------------------------------------------------------------------------------------
+
 EXPRESSIONS 
 
 > evalExpr                      :: String -> [Expr]
@@ -467,6 +521,9 @@ Deals with Division and Multiply currently prioritses division, like Go does!
 >                                          return (FuncCall i []) 
 >                                   +++ do i <- identifier
 >                                          return (Var i)
+>                                   +++ do symbol "<-" 
+>                                          c <- identifier
+>                                          return (PopFromChan c) 
                                                  
  
 -----------------------------------------------------------------------------------------------------

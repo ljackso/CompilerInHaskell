@@ -1,6 +1,8 @@
 
 > module GoRunner where
 
+> import Debug.Trace
+> import System.IO.Unsafe
 > import Data.List
 > import Data.List.Split
 > import GoParser
@@ -56,7 +58,6 @@ Converts program into machine code
 > comp                          :: Prog -> Code
 > comp p                        =  fst (apply (comp' p) (0))
 
-
 Actually compiles to machine code  
 
 > comp'                         :: Prog -> ST Code
@@ -69,7 +70,10 @@ Actually compiles to machine code
 > comp' (ElseIf c p1 cs p2)     = (elseIfDealer c p1 cs p2)
 > comp' (While e p3)            = (whileDealer e p3)
 > comp' (Return e)              = (returnDealer e)          
-> comp' (Empty)                 = return []  
+> comp' (Empty)                 = return [] 
+> comp' (Show e)                = return (expression e ++ [SHOW])
+> comp' (CreateChan n)          = return ([CHANNEL n])
+> comp' (PushToChan n e)        = return (expression e ++ [PUSHC n])
 
 Deals with Expr
 
@@ -79,7 +83,7 @@ Deals with Expr
 > expression (Var v)            = [PUSHV v]
 > expression (ExprApp o x y)    = expression x ++ expression y ++ [DO o] 
 > expression (CompApp o x y)    = expression x ++ expression y ++ [COMP o]
-
+> expression (PopFromChan n)    = [POPC n]
 
 Deal with a list of Expr
 
@@ -195,6 +199,7 @@ as to focus n high level interpritation, look to improve this later.
 > data Inst  		            =  PUSH Number
 >          		                    | PUSHV Name
 >          		                    | POP Name
+>                                   | SHOW 
 >          		                    | DO ArthOp
 >          		                    | COMP CompOp
 >                                   | JUMP Label
@@ -206,11 +211,23 @@ as to focus n high level interpritation, look to improve this later.
 >                                   | STOP                      --Used for returning nothing
 >                                   | RSTOP                     --Used to return a variable from a function
 >                                   | MAIN
->                                   | END                       --Signifies the end of the main function         
+>                                   | END                       --Signifies the end of the main function 
+>                                   | PUSHC Name                --Takes element from top of stack and pushes to channel
+>                                   | POPC Name                 --Pops element from a channel and puts ontop of the stack
+>                                   | CHANNEL Name              --Creates new channel
 >		                                deriving (Show, Eq)
 > 
 > type Label 		            =  Int
 
+
+Data Structures needed for Concurrency
+
+> type Channel                  = (Name, [Number])              -- basically a stack used for concurrency
+
+> data GoRoutine                = Go Code Int Stack Mem
+>                                   deriving (Show, Eq)
+
+Iniation functioins
 
 > instantiateMemory             :: Mem 
 > instantiateMemory             = [("", Integer 0) | x <- [1..10]]
@@ -219,53 +236,64 @@ as to focus n high level interpritation, look to improve this later.
 
 -----------------------------------------------------------------------------------------------------
  
- EXECUTER 
+EXECUTER 
  
 Almost entirely from AFP at this stage a simple compiler for executing the code we have will update later on
 
 This takes a list of machine code instructions and executes them.
 
-> exec                          :: Code -> Maybe Number
-> exec c                        = exec' c c 0 [] instantiateMemory True
+> exec                          :: Code -> String
+> exec c                        =   case ex of 
+>                                       Just n  -> "Return " ++ (getNumberAsString n) 
+>                                       Nothing -> ""
+>                                   where
+>                                       ex = exec' c c 0 [] instantiateMemory True []
 
 
 This is the function that actually executes the code, c is the intial code, ec is what you're executing
 
 Variable Explanations;
 
-c = all the code
-ec = the current batch of code being executed
-pc = program counter
-s = stack
-m = memory 
-g = isGlobal, says whether you are workin within a function or working globally, used for memory mangement
+c   = all the code
+ec  = the current batch of code being executed
+pc  = program counter
+s   = stack
+m   = memory 
+g   = isGlobal, says whether you are workin within a function or working globally, used for memory mangement
+cs  = list of channels
 
-> exec'                         :: Code -> Code ->  Int -> Stack -> Mem -> Bool -> Maybe Number
-> exec' c ec pc s m g           =   case ec !! pc of 
->                                       MAIN        -> exec' c ec (pc+1) s m False
->                                       FUNC n      -> exec' c ec (pc+1) s m g       
->                                       PUSH n      -> exec' c ec (pc+1) (push n s) m g
->                                       PUSHV v     -> exec' c ec (pc+1) (pushv v m s g) m g
->                                       POP v       -> exec' c ec (pc+1) (pop s) (assignVariable v (head s) m g) g
->                                       DO o        -> exec' c ec (pc+1) (operation o s) m g
->                                       COMP o      -> exec' c ec (pc+1) (comparison o s) m g
->                                       LABEL l     -> exec' c ec (pc+1) s m g
->                                       JUMP l      -> exec' c ec (jump c l) s m g
->                                       JUMPZ l     -> exec' c ec (jumpz c s l pc) (pop s) m g
->                                       (CALL n a)  -> (handleCall c ec pc s m n a g)  
+> exec'                         :: Code -> Code ->  Int -> Stack -> Mem -> Bool -> [Channel] -> Maybe Number
+> exec' c ec pc s m g cs        =   case ec !! pc of 
+>                                       SHOW        -> trace (getNumberAsString (head s)) (exec' c ec (pc+1) (pop s) m g cs) 
+>                                       MAIN        -> exec' c ec (pc+1) s m False cs
+>                                       FUNC n      -> exec' c ec (pc+1) s m g cs      
+>                                       PUSH n      -> exec' c ec (pc+1) (push n s) m g cs
+>                                       PUSHV v     -> exec' c ec (pc+1) (pushv v m s g) m g cs
+>                                       POP v       -> exec' c ec (pc+1) (pop s) (assignVariable v (head s) m g) g cs
+>                                       DO o        -> exec' c ec (pc+1) (operation o s) m g cs
+>                                       COMP o      -> exec' c ec (pc+1) (comparison o s) m g cs
+>                                       LABEL l     -> exec' c ec (pc+1) s m g cs
+>                                       JUMP l      -> exec' c ec (jump c l) s m g cs
+>                                       JUMPZ l     -> exec' c ec (jumpz c s l pc) (pop s) m g cs
+>                                       (CALL n a)  -> (handleCall c ec pc s m n a g cs)  
 >                                       RSTOP       -> Just (head s)
 >                                       STOP        -> Nothing
 >                                       END         -> Nothing 
->                                       FEND        -> exec' c ec (pc+1) s m g                  --- happens for void functions     
+>                                       FEND        -> exec' c ec (pc+1) s m g cs    --- happens for void functions
+>                                       CHANNEL n   -> exec' c ec (pc+1) s m g cs 
+>                                       PUSHC n     -> exec' c ec (pc+1) s m g cs
+>                                       POPC n      -> exec' c ec (pc+1) s m g cs      
          
-Returns the stack, used for function calls to managing stack frames and make sure variables,
+         
+Returns the stack and memory, used for function calls to managing stack frames and make sure variables,
 don't get lost. Does the same as exec' but instead returns the stack.          
          
-> stackExec                     :: Code -> Stack
-> stackExec c                   = stackExec' c c 0 [] [] True               
+> stackExec                     :: Code -> (Stack,Mem)
+> stackExec c                   = stackExec' c c 0 [] instantiateMemory True               
 
-> stackExec'                    :: Code -> Code -> Int -> Stack -> Mem -> Bool -> Stack
+> stackExec'                    :: Code -> Code -> Int -> Stack -> Mem -> Bool -> (Stack, Mem)
 > stackExec' c ec pc s m g      =   case ec !! pc of 
+>                                       SHOW        -> trace (getNumberAsString (head s)) (stackExec' c ec (pc+1) (pop s) m  g)
 >                                       MAIN        -> stackExec' c ec (pc+1) s m False 
 >                                       FUNC n      -> stackExec' c ec (pc+1) s m g        
 >                                       PUSH n      -> stackExec' c ec (pc+1) (push n s) m g
@@ -277,12 +305,12 @@ don't get lost. Does the same as exec' but instead returns the stack.
 >                                       JUMP l      -> stackExec' c ec (jump ec l) s m g
 >                                       JUMPZ l     -> stackExec' c ec (jumpz ec s l pc) (pop s) m g
 >                                       (CALL n a)  -> (handleCallReStack c ec pc s m n a g)  
->                                       RSTOP       -> s
->                                       STOP        -> s
->                                       END         -> s 
+>                                       RSTOP       -> (s,m)
+>                                       STOP        -> (s,m)
+>                                       END         -> (s,m) 
 >                                       FEND        -> stackExec' c ec (pc+1) s m g
          
-
+-----------------------------------------------------------------------------------------------------
 
 STACK FUCNTIONS
 
@@ -359,6 +387,8 @@ Multiple pop, pops the required number of things
 > multiplePop ss n              = multiplePop (pop ss) (n-1)   
  
 
+-----------------------------------------------------------------------------------------------------
+ 
 MEMORY FUNCTIONS
 
 Functions that deal with memory
@@ -395,6 +425,7 @@ Checks that the variable isn't being reassigned and if it is deletes that variab
 > isGlobal v (x:xs)             = if (fst x) == v then True
 >                                 else (isGlobal v xs) 
  
+----------------------------------------------------------------------------------------------------- 
  
 JUMP FUNCTIONS
 
@@ -425,29 +456,33 @@ stops the program, just returns memory at the moment
 > halt 							:: Mem -> Mem   
 > halt m						= m 
 
+-----------------------------------------------------------------------------------------------------
 
 CALL Functions
 
 These functions deal with function calls, if returns something put ontop off stack otherwise do 
 
-> handleCall                    :: Code -> Code -> Int -> Stack -> Mem -> Name -> Int -> Bool -> Maybe Number
-> handleCall c ec pc s m n a g  =   exec' c ec (pc+1) fs m g   
->                                   where
->                                       fs      = stackExec' c fCode 0 s gm g
->                                       fCode   = (getFunction c n [] False False)
->                                       gm      = getGlobalMemmory m
-
-                      
-Returns Stack, used for nested and recursive function calls
-
-> handleCallReStack             :: Code -> Code-> Int -> Stack -> Mem -> Name -> Int -> Bool -> Stack
-> handleCallReStack c ec pc s m n a g
->                               = stackExec' c ec (pc+1) (fRun) m g
+> handleCall                    :: Code -> Code -> Int -> Stack -> Mem -> Name -> Int -> Bool -> [Channel] -> Maybe Number
+> handleCall c ec pc s m n a g cs 
+>                               =   exec' c ec (pc+1) fs fm g cs  
 >                                   where
 >                                       fRun    = stackExec' c fCode 0 s gm g
 >                                       fCode   = (getFunction c n [] False False)
->                                       gm      = getGlobalMemmory m   
-> 
+>                                       gm      = getGlobalMemmory m
+>                                       fs      = fst fRun
+>                                       fm      = updateMemory m (snd fRun)
+                      
+Returns Stack, used for nested and recursive function calls
+
+> handleCallReStack             :: Code -> Code-> Int -> Stack -> Mem -> Name -> Int -> Bool -> (Stack, Mem)
+> handleCallReStack c ec pc s m n a g
+>                               = stackExec' c ec (pc+1) fs fm g
+>                                   where 
+>                                       gMem    = getGlobalMemmory m
+>                                       fCode   = (getFunction c n [] False False)
+>                                       fRun    = stackExec' c fCode 0 s gMem g
+>                                       fs      = fst fRun
+>                                       fm      = updateMemory m (snd fRun) 
 
   
 Searches through code and returns a function's code, ct signifies if is currently cutting the code
@@ -467,17 +502,73 @@ MEMORY MANGEMENT
 
 These series of function deal with memory mangement and handling global and local variables
 
-Memory is split into 2 sections the first 20% of memory is for global variables and the rest is for local memory!  
+Memory is split into 2 sections the first part of memory is for global variables and the rest is for local memory!  
 
 
 > getGlobalMemmory              :: Mem -> Mem
 > getGlobalMemmory  ms          =  getGlobalMemmory' ms [] ++ instantiateMemory
 >
-> getGlobalMemmory'             :: Mem -> Mem -> Mem 
+> getGlobalMemmory'             :: Mem -> Mem -> Mem
 > getGlobalMemmory' (m:ms) gs   = if (fst m) == "" then reverse gs
->                                 else getGlobalMemmory' ms (m:gs)   
+>                                 else getGlobalMemmory' ms (m:gs)
+
+> getLocalMemmory               :: Mem -> Mem
+> getLocalMemmory  ms           = head (reverse (splitOn instantiateMemory ms)) 
+
+> updateMemory                  :: Mem -> Mem -> Mem
+> updateMemory (o:os) (n:ns)    = getGlobalMemmory (n:ns) ++ getLocalMemmory (o:os)   
 
 --------------------------------------------------------------------------------
+
+OUTPUTING 
+
+This are used for the SHOW key word which needs to output what is on top of the stack
+
+TODO: This needs to be fixed as trace is not a good way to do this
+
+> showHead                      :: Stack -> Stack 
+> showHead s                    = unsafePerformIO( do printNumber (head s)
+>                                                     return (pop s))                                                   
+                                                     
+> printNumber                   :: Number -> IO ()
+> printNumber n                 = putStrLn (getNumberAsString n)
+
+> getNumberAsString             :: Number -> String
+> getNumberAsString (Integer n) = "Int " ++ (show n) 
+> getNumberAsString (Double n)  = "Double " ++ (show n) 
+
+--------------------------------------------------------------------------------
+
+CHANNELS
+
+These functions deal with handlinf channel requests
+
+> createChannel                 :: Name -> [Channel] -> [Channel]
+> createChannel n cs            = ((n,[]):cs) 
+
+> getChannel                    :: Name -> [Channel] -> Channel
+> getChannel n []               = error "referenced non-existent channel" 
+> getChannel n (c:cs)           = if ((fst c) == n) then c else getChannel n cs 
+
+How I handle poping of a channel 
+
+> popChannel                    :: Name -> [Channel] -> [Channel]            --doesn't maintian channel order 
+> popChannel n cs               =  [(n, pop (snd pc))] ++ [c | c <- cs, fst c /= n]
+>                                   where
+>                                       pc = getChannel n cs 
+
+> getHeadChannel                :: Name -> [Channel] -> Number 
+> getHeadChannel n cs           = head (snd (getChannel n cs))           
+
+Handling pushing to a channel
+
+> pushChannel                   :: Name -> [Channel] -> Number -> [Channel]
+> pushChannel n cs v            = [(n,v:(snd pc))] ++ [c | c <- cs, fst c /= n]
+>                                   where
+>                                       pc = getChannel n cs
+
+
+------------------------------------------------------------------------------------
 
 
 TYPE FUNCTIONS 
