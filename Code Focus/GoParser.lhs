@@ -184,7 +184,11 @@ Evaluates a list of commands you might find in a functions
 >                                   +++ do fr <- forParse
 >                                          return fr
 >                                   +++ do w <- whileParse
->                                          return w 
+>                                          return w
+>                                   +++ do c <- parseChanelCreation
+>                                          return c
+>                                   +++ do p <- parseChanelPush
+>                                          return p    
   
 
 -----------------------------------------------------------------------------------------------------
@@ -391,7 +395,7 @@ This is a simple print statement that jsut prints out an expression
 >                                     []        -> error "invalid input"
 
 > parseShow                     :: Parser Prog
-> parseShow                     = do string "show"
+> parseShow                     = do string "Show"
 >                                    symbol "("    
 >                                    e <- parseExpr
 >                                    symbol ")"

@@ -167,8 +167,8 @@ Deals with Functions, assumes that ever function contains a return will be done 
 Deals with function call puts whatever it is ontop of the stack if there is a return statement
 
 > callDealer                    :: Name -> [Expr] -> Code
-> callDealer n []               = [CALL n 0] 
-> callDealer n (es)             = multExpression es ++ [CALL n (length es)] 
+> callDealer n []               = [CALL n] 
+> callDealer n (es)             = multExpression es ++ [CALL n] 
 
 Deals with setting up the Main function and all the code to be run
 
@@ -207,7 +207,7 @@ as to focus n high level interpritation, look to improve this later.
 >          		                    | LABEL Label
 >                                   | FUNC Name 
 >                                   | FEND
->                                   | CALL Name Int                       
+>                                   | CALL Name                       
 >                                   | STOP                      --Used for returning nothing
 >                                   | RSTOP                     --Used to return a variable from a function
 >                                   | MAIN
@@ -227,11 +227,17 @@ Data Structures needed for Concurrency
 > data GoRoutine                = Go Code Int Stack Mem
 >                                   deriving (Show, Eq)
 
-Iniation functioins
+Data Structure needed to use functions that returna value, don't worry about passing round Go subroutines 
+as cannot start a go subroutine in a function
+
+> data FuncParam                = FuncP Stack Mem [Channel] 
+>                                   deriving (Show, Eq)
+
+
+Iniation functions
 
 > instantiateMemory             :: Mem 
 > instantiateMemory             = [("", Integer 0) | x <- [1..10]]
-
 
 
 -----------------------------------------------------------------------------------------------------
@@ -268,48 +274,52 @@ cs  = list of channels
 >                                       MAIN        -> exec' c ec (pc+1) s m False cs
 >                                       FUNC n      -> exec' c ec (pc+1) s m g cs      
 >                                       PUSH n      -> exec' c ec (pc+1) (push n s) m g cs
->                                       PUSHV v     -> exec' c ec (pc+1) (pushv v m s g) m g cs
+>                                       PUSHV v     -> exec' c ec (pc+1) (pushv v m s) m g cs
 >                                       POP v       -> exec' c ec (pc+1) (pop s) (assignVariable v (head s) m g) g cs
 >                                       DO o        -> exec' c ec (pc+1) (operation o s) m g cs
 >                                       COMP o      -> exec' c ec (pc+1) (comparison o s) m g cs
 >                                       LABEL l     -> exec' c ec (pc+1) s m g cs
 >                                       JUMP l      -> exec' c ec (jump c l) s m g cs
 >                                       JUMPZ l     -> exec' c ec (jumpz c s l pc) (pop s) m g cs
->                                       (CALL n a)  -> (handleCall c ec pc s m n a g cs)  
+>                                       CALL n      -> (handleCall c ec pc s m n g cs)  
 >                                       RSTOP       -> Just (head s)
 >                                       STOP        -> Nothing
 >                                       END         -> Nothing 
->                                       FEND        -> exec' c ec (pc+1) s m g cs    --- happens for void functions
->                                       CHANNEL n   -> exec' c ec (pc+1) s m g cs 
->                                       PUSHC n     -> exec' c ec (pc+1) s m g cs
->                                       POPC n      -> exec' c ec (pc+1) s m g cs      
+>                                       FEND        -> exec' c ec (pc+1) s m g cs                           -- happens for void functions
+>                                       CHANNEL n   -> exec' c ec (pc+1) s m g (createChannel n cs) 
+>                                       PUSHC n     -> exec' c ec (pc+1) (pop s) m g (pushChannel n cs (head s))
+>                                       POPC n      -> exec' c ec (pc+1) (push (getHeadChannel n cs) s) m g (popChannel n cs)      
          
          
 Returns the stack and memory, used for function calls to managing stack frames and make sure variables,
 don't get lost. Does the same as exec' but instead returns the stack.          
-         
-> stackExec                     :: Code -> (Stack,Mem)
-> stackExec c                   = stackExec' c c 0 [] instantiateMemory True               
+        
+TODO: Implement a data structure that fully represents the necessary aparamaters of a fucntion return; stack, memory, channels etc
+
 
 > stackExec'                    :: Code -> Code -> Int -> Stack -> Mem -> Bool -> (Stack, Mem)
+
+> stackExec' c [] pc s m g      = error "non existent function call"
+
 > stackExec' c ec pc s m g      =   case ec !! pc of 
 >                                       SHOW        -> trace (getNumberAsString (head s)) (stackExec' c ec (pc+1) (pop s) m  g)
 >                                       MAIN        -> stackExec' c ec (pc+1) s m False 
 >                                       FUNC n      -> stackExec' c ec (pc+1) s m g        
 >                                       PUSH n      -> stackExec' c ec (pc+1) (push n s) m g
->                                       PUSHV v     -> stackExec' c ec (pc+1) (pushv v m s g) m g
+>                                       PUSHV v     -> stackExec' c ec (pc+1) (pushv v m s) m g
 >                                       POP v       -> stackExec' c ec (pc+1) (pop s) (assignVariable v (head s) m g) g
 >                                       DO o        -> stackExec' c ec (pc+1) (operation o s) m g
 >                                       COMP o      -> stackExec' c ec (pc+1) (comparison o s) m g 
 >                                       LABEL l     -> stackExec' c ec (pc+1) s m g
 >                                       JUMP l      -> stackExec' c ec (jump ec l) s m g
 >                                       JUMPZ l     -> stackExec' c ec (jumpz ec s l pc) (pop s) m g
->                                       (CALL n a)  -> (handleCallReStack c ec pc s m n a g)  
+>                                       CALL n     -> (handleCallReStack c ec pc s m n g)  
 >                                       RSTOP       -> (s,m)
 >                                       STOP        -> (s,m)
 >                                       END         -> (s,m) 
 >                                       FEND        -> stackExec' c ec (pc+1) s m g
-         
+
+        
 -----------------------------------------------------------------------------------------------------
 
 STACK FUCNTIONS
@@ -325,8 +335,8 @@ push onto top of stack an integer
 
 push variable onto top of the stack
 
-> pushv                         :: Name ->  Mem -> Stack -> Bool -> Stack
-> pushv v m s g                 =  push (getVariable v m g) s
+> pushv                         :: Name ->  Mem -> Stack -> Stack
+> pushv v m s                   =  push (getVariable v m) s
 
 
 pop an integer from the stack and places it into memory under that variable name
@@ -367,18 +377,7 @@ Perform a comparison on the first two things on the stack (leave a 1 on top if t
 >                                       LET     -> if isNumLet v1 v2  then t else f                                       
 >                                   where 
 >                                       t = Integer 1
->                                       f = Integer 0
-                                                           
-
-pops the head if it is 0 if not it leaves it be 
-
-> popz                          :: Stack -> Stack
-> popz s                
->                               | top == 0          = pop s
->                               | otherwise         = s
->                                   where
->                                       top = getInt (head s)                
-
+>                                       f = Integer 0          
 
 Multiple pop, pops the required number of things
 
@@ -400,15 +399,15 @@ This function assigns an integer to a variable
 > assignVariable v n m g        = if g then [(v, n)] ++ (deleteVariable v m)
 >                                 else localAssign v n m 
 
-
 Get the variable from memory, if not assigned already just assume that variable is 0 
 
-> getVariable                   :: Name -> Mem -> Bool -> Number
-> getVariable v ms g            
->                               | null memV     = Integer 0 
+> getVariable                   :: Name -> Mem -> Number
+> getVariable v ms            
+>                               | null memV     = error ("reference to non-existent variable " ++ v) 
 >                               | otherwise     = snd (head memV)
 >                                   where 
 >                                       memV = [ m | m <- ms, fst m == v] 
+
 
 Checks that the variable isn't being reassigned and if it is deletes that variable
 
@@ -424,6 +423,7 @@ Checks that the variable isn't being reassigned and if it is deletes that variab
 >                               = False
 > isGlobal v (x:xs)             = if (fst x) == v then True
 >                                 else (isGlobal v xs) 
+
  
 ----------------------------------------------------------------------------------------------------- 
  
@@ -458,43 +458,39 @@ stops the program, just returns memory at the moment
 
 -----------------------------------------------------------------------------------------------------
 
-CALL Functions
+FUNCTION CALLS
 
 These functions deal with function calls, if returns something put ontop off stack otherwise do 
 
-> handleCall                    :: Code -> Code -> Int -> Stack -> Mem -> Name -> Int -> Bool -> [Channel] -> Maybe Number
-> handleCall c ec pc s m n a g cs 
+> handleCall                    :: Code -> Code -> Int -> Stack -> Mem -> Name -> Bool -> [Channel] -> Maybe Number
+> handleCall c ec pc s m n g cs 
 >                               =   exec' c ec (pc+1) fs fm g cs  
 >                                   where
->                                       fRun    = stackExec' c fCode 0 s gm g
->                                       fCode   = (getFunction c n [] False False)
->                                       gm      = getGlobalMemmory m
+>                                       fMem    = (getGlobalMemmory m ++ instantiateMemory)
+>                                       fRun    = stackExec' c fCode 0 s fMem g  
+>                                       fCode   = getFunction c n
 >                                       fs      = fst fRun
 >                                       fm      = updateMemory m (snd fRun)
                       
 Returns Stack, used for nested and recursive function calls
 
-> handleCallReStack             :: Code -> Code-> Int -> Stack -> Mem -> Name -> Int -> Bool -> (Stack, Mem)
-> handleCallReStack c ec pc s m n a g
+> handleCallReStack             :: Code -> Code-> Int -> Stack -> Mem -> Name -> Bool -> (Stack, Mem)
+> handleCallReStack c ec pc s m n g
 >                               = stackExec' c ec (pc+1) fs fm g
 >                                   where 
->                                       gMem    = getGlobalMemmory m
->                                       fCode   = (getFunction c n [] False False)
->                                       fRun    = stackExec' c fCode 0 s gMem g
+>                                       fMem    = (getGlobalMemmory m ++ instantiateMemory)
+>                                       fCode   = getFunction c n
+>                                       fRun    = stackExec' c fCode 0 s fMem g
 >                                       fs      = fst fRun
 >                                       fm      = updateMemory m (snd fRun) 
 
   
 Searches through code and returns a function's code, ct signifies if is currently cutting the code
 
-> getFunction                   :: Code -> Name -> Code -> Bool -> Bool -> Code 
-> getFunction (c:cs) n fs ct mt =   if ct then
->                                       if (c == FEND) then (reverse (c:fs))
->                                       else getFunction cs n (c:fs) True mt                                           
->                                   else  
->                                       if (c == (FUNC n)) then getFunction cs n (c:fs) True mt
->                                       else getFunction cs n fs False mt 
->                                   
+> getFunction                   :: Code -> Name -> Code 
+> getFunction cs n              = concat [ f | f <- fList, (head f) == (FUNC n)]  
+>                                   where 
+>                                       fList = filter (not. null) (splitOneOf [END, FEND] cs) 
 
 --------------------------------------------------------------------------------
 
@@ -506,17 +502,13 @@ Memory is split into 2 sections the first part of memory is for global variables
 
 
 > getGlobalMemmory              :: Mem -> Mem
-> getGlobalMemmory  ms          =  getGlobalMemmory' ms [] ++ instantiateMemory
->
-> getGlobalMemmory'             :: Mem -> Mem -> Mem
-> getGlobalMemmory' (m:ms) gs   = if (fst m) == "" then reverse gs
->                                 else getGlobalMemmory' ms (m:gs)
+> getGlobalMemmory ms           = head (splitOn instantiateMemory ms) 
 
 > getLocalMemmory               :: Mem -> Mem
 > getLocalMemmory  ms           = head (reverse (splitOn instantiateMemory ms)) 
 
 > updateMemory                  :: Mem -> Mem -> Mem
-> updateMemory (o:os) (n:ns)    = getGlobalMemmory (n:ns) ++ getLocalMemmory (o:os)   
+> updateMemory os ns            = getGlobalMemmory ns ++  instantiateMemory ++ getLocalMemmory os   
 
 --------------------------------------------------------------------------------
 
@@ -541,15 +533,27 @@ TODO: This needs to be fixed as trace is not a good way to do this
 
 CHANNELS
 
-These functions deal with handlinf channel requests
+These functions deal with handling channel requests
 
 > createChannel                 :: Name -> [Channel] -> [Channel]
-> createChannel n cs            = ((n,[]):cs) 
+> createChannel n cs            =   if doesChannelExist n cs then error ("channel " ++ n ++ " already exists") 
+>                                   else ((n,[]):cs) 
+
+Says whether a channel exists or not
+
+> doesChannelExist              :: Name -> [Channel] -> Bool
+> doesChannelExist n cs         =   case c of
+>                                       [] -> False 
+>                                       _  -> True
+>                                   where 
+>                                       c = [ c | c <- cs, fst c == n] 
+
+Gets channel, returns an error if channel isn't found
 
 > getChannel                    :: Name -> [Channel] -> Channel
-> getChannel n []               = error "referenced non-existent channel" 
-> getChannel n (c:cs)           = if ((fst c) == n) then c else getChannel n cs 
-
+> getChannel n cs               =   if doesChannelExist n cs then head [c | c <- cs, fst c == n]
+>                                   else error ("referenced non existent channel " ++ n)                   
+   
 How I handle poping of a channel 
 
 > popChannel                    :: Name -> [Channel] -> [Channel]            --doesn't maintian channel order 

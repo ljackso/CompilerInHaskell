@@ -1,18 +1,19 @@
 
 var globalOne int = 1;
-var globalVar int = 2;
+var globalTwo int = 20;
 
 func main() {
-    var luke int = fac( add(addOne(globalVar), 5));
-    show (luke);
+    var luke int = fac( add(addOne(2), 5));
+    Show (luke);
 }; 
 
 func fac(n int) int {
-	if (n == 0) {
-		return globalOne;
-	} else {
-		return n * fac(n-globalOne);
-	};
+    Show(n);
+    if (n == 0) {
+        return 1;
+    } else {
+        return n * fac(n-1);
+    };
 };
 
 func addOne(n int) int {
