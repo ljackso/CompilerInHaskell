@@ -224,10 +224,10 @@ Data Structures needed for Concurrency
 
 > type Channel                  = (Name, [Number])              -- basically a stack used for concurrency
 
-> data GoRoutine                = Go Code Int Stack Mem
+> data GoRoutine                = Go Code Int Stack Mem         -- Go ec pc ls lm
 >                                   deriving (Show, Eq)
 
-Data Structure needed to use functions that returna value, don't worry about passing round Go subroutines 
+Data Structure needed to use functions that return a value, don't worry about passing round Go subroutines 
 as cannot start a go subroutine in a function
 
 > data FuncParam                = FuncP Stack Mem [Channel] 
@@ -561,8 +561,13 @@ How I handle poping of a channel
 >                                   where
 >                                       pc = getChannel n cs 
 
+Gets the head of a channel, if channel is empty it will return 0.
+
 > getHeadChannel                :: Name -> [Channel] -> Number 
-> getHeadChannel n cs           = head (snd (getChannel n cs))           
+> getHeadChannel n cs           = if (s == []) then (Integer 0) else (head s)
+>                                   where
+>                                       c   = getChannel n cs
+>                                       s   = snd c          
 
 Handling pushing to a channel
 
@@ -574,6 +579,27 @@ Handling pushing to a channel
 
 ------------------------------------------------------------------------------------
 
+GO SUBROUTINES
+
+Handles running of concurrent processes, will handle one instruction at a time
+
+gs = list of GoRoutines Running
+gc = current counter for which process is running, meaning order of gs must be maintained
+cs = list of channels
+
+TODO: Implement memory and handling changes in global memory
+
+> subRoutsHandler               :: [GoRoutine] -> Int -> [Channel] -> (([GoRoutine],Int) , [Channel]) 
+> subRoutsHandler [] gc cs      = (([],0),cs)
+> subRoutsHandler gs gc cs      =  subRoutHandler' gs gc cs
+
+> subRoutsHandler'              :: [GoRoutine] -> Int -> [Channel] -> (([GoRoutine],Int) , [Channel]) 
+> subRoutsHandler' gs gc cs     = 
+
+
+ 
+ 
+------------------------------------------------------------------------------------
 
 TYPE FUNCTIONS 
 

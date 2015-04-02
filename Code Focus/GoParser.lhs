@@ -247,21 +247,32 @@ ELSE IF STATEMENTS
 >                                     []        -> error "invalid input"
 
 > elseIfParse                   :: Parser Prog 
-> elseIfParse                   = do string "if" 
->                                    e <- arthExpr    
+> elseIfParse                   = do string "if"
+>                                    symbol "(" 
+>                                    e <- compExpr
+>                                    symbol ")"    
 >                                    symbol "{"
 >                                    p1 <- parseCommands                       --needs to be rreplaced with progParser
 >                                    symbol "}"
->                                    ec <- elseIfCase                    -- need to do multiple cases
+>                                    ec <- multipleElseIfCase                    -- need to do multiple cases
 >                                    string "else"
 >                                    symbol "{"
 >                                    p2 <- parseCommands                       --needs to be rreplaced with progParser
 >                                    symbol "}"
->                                    return (IfElse e p1 p2) 
+>                                    return (ElseIf e p1 ec p2) 
+
+> multipleElseIfCase            :: Parser [ElseIfCase']
+> multipleElseIfCase            = do e <- elseIfCase
+>                                    do es <- multipleElseIfCase
+>                                       return (e:es)
+>                                     +++ return [e]     
+
 
 > elseIfCase                    :: Parser ElseIfCase'            
-> elseIfCase                    = do string "else if" 
->                                    e <- arthExpr    
+> elseIfCase                    = do string "else if"
+>                                    symbol "(" 
+>                                    e <- compExpr
+>                                    symbol ")"    
 >                                    symbol "{"
 >                                    p1 <- parseCommands
 >                                    symbol "}"
@@ -564,14 +575,14 @@ TODO: Fix this to allow only one comparison (don't allow nested comparisons!)
 >                                      +++ return e1
 >                                    
 > letExpr                       :: Parser Expr
-> letExpr                       =  do e1 <- getExpr 
+> letExpr                       =  do e1 <- geqExpr 
 >                                     do symbol "<"               
 >                                        e2 <- arthExpr
 >                                        return (CompApp LET e1 e2)
 >                                      +++ return e1
 >
-> getExpr                       :: Parser Expr
-> getExpr                       =  do e1 <- leqExpr 
+> geqExpr                       :: Parser Expr
+> geqExpr                       =  do e1 <- leqExpr 
 >                                     do symbol ">="               
 >                                        e2 <- arthExpr
 >                                        return (CompApp GRT e1 e2)

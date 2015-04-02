@@ -1,24 +1,20 @@
 
-
 func main() {
     var c chan int = make(chan int);
-    var n chan int = make(chan int); 
-    c <- 5;
-    c <- 24;
-    n <- 4;
-    var l int = 10;
-    Show(l);
-    l += <-c;
-    Show(l);
-    l += <-c;
-    Show(l);
-    l += <-n;
-    Show(l);
-    
+    go pushNum(c);
+    go showNum(c);
 };
-func test(n int) int {
-    return n;
+
+func pushNum(c) int{
+    for(var i int = 0; i < 5; i++){
+        c <- i;
+    };
 };
-func testb(n int) int {
-    return n+1;
+
+func showNum(c) int {
+    var int l = 0;
+    for(var i int = 0; i < 5; i++){
+        l = <- c;
+        Show(l);
+    };    
 };
