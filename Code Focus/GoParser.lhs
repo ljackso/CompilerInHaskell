@@ -24,7 +24,12 @@ PROGRAM IR
 >                                   | Empty                                     -- Allows blank Prog may be useful 
 >                                   | Return (Maybe Expr)                       
 >                                   | Func Name [Name] Prog                     -- list of names is names of arguments
->                                   | Main Prog                                 -- gives us the main function to be run                                     
+>                                   | NFunc FName [Name] Prog
+>                                   | Main Prog                                 -- gives us the main function to be run
+>                                   | VoidFuncCall Name [Expr]
+>                                   | GoCall Name                                                                    
+>                                   | Wait 
+>                                   | Kill
 >		                                deriving Show
 >
 > data ElseIfCase'              = Case Expr Prog                                --used for switch cases and else if 
@@ -64,6 +69,13 @@ Numerical Types, currently treating booleans as integers, where 0 is false and 1
 Name defintion
 
 > type Name                     = String 
+
+Function Names, they must have return type aswell
+
+> type FName                    = (Name, FType)
+
+> data FType                    = VOID | INT 
+>                                   deriving (Show, Eq)
 
 -----------------------------------------------------------------------------------------------------
 
@@ -130,13 +142,20 @@ Changed so main can return an int unlike in Go
 > parseFunc                     = do string "func"
 >                                    n <- identifier
 >                                    symbol "("
->                                    ns <- listNames
->                                    symbol ")"
->                                    string "int" 
->                                    symbol "{"
->                                    p1 <- parseCommands
->                                    symbol "}"
->                                    return (Func n ns p1) 
+>                                    do ns <- listNames
+>                                       symbol ")"
+>                                       string "int" 
+>                                       symbol "{"
+>                                       p1 <- parseCommands
+>                                       symbol "}"
+>                                       return (Func n ns p1) 
+>                                     +++ do symbol ")"
+>                                            string "int"
+>                                            symbol "{"
+>                                            p2 <- parseCommands
+>                                            symbol "}"
+>                                            return (Func n [] p2)           
+
 
 
 > listNames                     :: Parser [Name] 
@@ -188,7 +207,11 @@ Evaluates a list of commands you might find in a functions
 >                                   +++ do c <- parseChanelCreation
 >                                          return c
 >                                   +++ do p <- parseChanelPush
->                                          return p    
+>                                          return p
+>                                   +++ do g <- parseGoCall
+>                                          return g 
+>                                   +++ do gc <- parseProcessCommand
+>                                          return gc   
   
 
 -----------------------------------------------------------------------------------------------------
@@ -441,6 +464,30 @@ Handles the creating of channels and pushing values to a channel
 >                                    symbol "<-"   
 >                                    a <- arthExpr
 >                                    return (PushToChan c a)   
+
+-----------------------------------------------------------------------------------------------------
+
+CONCURRENT COMMANDS
+
+> evalGoCommand                 :: String -> Prog
+> evalGoCommand xs              =   case (parse parseProcessCommand xs) of
+>                                       [(e,[])]  -> e
+>                                       [(_,out)] -> error ("unused input " ++ out)
+>                                       []        -> error "invalid input"
+
+> parseGoCall                   :: Parser Prog
+> parseGoCall                   = do string "go "
+>                                    i <- identifier
+>                                    symbol "("
+>                                    symbol ")"
+>                                    return (GoCall i) 
+
+> parseProcessCommand           :: Parser Prog
+> parseProcessCommand           = do string "Wait()"
+>                                    return (Wait)
+>                                  +++ do string "Kill()"
+>                                         return (Kill) 
+
 
 -----------------------------------------------------------------------------------------------------
 

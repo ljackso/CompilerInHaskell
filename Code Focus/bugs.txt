@@ -1,0 +1,5 @@
+BUGS;
+
+- No void functions
+- Sub routines loop forever, possible problem with context switches and infinte looping 
+- Function type declarations don't work 
