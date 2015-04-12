@@ -24,7 +24,7 @@ I treat my input as a high level representation of Go as a data structure that I
 MONANDS
 
 Define any monads needed here
-
+ 
 State monad:
 
 > type State 		            =  Label
@@ -53,7 +53,7 @@ RUNNER
 
 Parses, then compiles, then executes a go program from a file. 
 
-> run f                         = exec (comp (parseGo f))
+> run f                         = exec (typeChecker (comp (parseGo f)))
 
 -----------------------------------------------------------------------------------------------------
 
@@ -67,9 +67,9 @@ Converts program into machine code
 Actually compiles to machine code  
 
 > comp'                         :: Prog -> ST Code
+> comp' (Seqn cs)               = (sequenceDealer cs)
 > comp' (Main p1)               = (mainDealer p1)
 > comp' (Func n vs p1)          = (functionDealer n vs p1) 
-> comp' (Seqn cs)               = (sequenceDealer cs)
 > comp' (Assign n e)            = return (expression e ++ [POP n])
 > comp' (If c p)				= (ifDealer c p)
 > comp' (IfElse c p1 p2)        = (ifElseDealer c p1 p2)
@@ -78,17 +78,20 @@ Actually compiles to machine code
 > comp' (Return e)              = (returnDealer e)          
 > comp' (Empty)                 = return [] 
 > comp' (Show e)                = return (expression e ++ [SHOW])
+> comp' (Print p)               = return ([PRINT p])
 > comp' (CreateChan n)          = return ([CHANNEL n])
 > comp' (PushToChan n e)        = return (expression e ++ [PUSHC n])
 > comp' (Wait)                  = return [WAIT]
 > comp' (Kill)                  = return [KILL]
-> comp' (GoCall n)              = (goCallDealer n)
+> comp' (GoCall n es)           = (goCallDealer n es)
+> comp' (VoidFuncCall n es)     = (voidCallDealer n es)
 
 Deals with Expr
 
 > expression                    :: Expr -> Code
 > expression (FuncCall n es)    = (callDealer n es)
 > expression (Val i)            = [PUSH i]
+> expression (Valb b)           = [PUSH b]
 > expression (Var v)            = [PUSHV v]
 > expression (ExprApp o x y)    = expression x ++ expression y ++ [DO o] 
 > expression (CompApp o x y)    = expression x ++ expression y ++ [COMP o]
@@ -169,7 +172,7 @@ Deals With Sequences
 
 Deals with Functions, assumes that ever function contains a return will be done at parsing level
 
-> functionDealer                :: Name -> [Name] -> Prog ->  ST Code
+> functionDealer                :: FName -> [Name] -> Prog ->  ST Code
 > functionDealer n vs p1        =   do  p1code  <- comp' p1
 >                                       return ([FUNC n] ++ [ POP v | v <-(reverse vs)] ++ p1code ++ [FEND])
 
@@ -183,12 +186,64 @@ Deals with setting up the Main function and all the code to be run
 
 > mainDealer                    :: Prog -> ST Code
 > mainDealer p1                 =   do  p1Code  <- comp' p1 
->                                       return ([MAIN] ++ p1Code ++ [END]) 
+>                                       return ([MAIN] ++ p1Code ++ [FEND]) 
 
 Deal with creating a new go subroutine
 
-> goCallDealer                  :: Name -> ST Code
-> goCallDealer n                = return ([GO n]) 
+> goCallDealer                  :: Name -> [Expr] -> ST Code
+> goCallDealer n es             = return (multExpression es ++ [GO n])
+
+Deal with void function calls
+
+> voidCallDealer                :: Name -> [Expr] -> ST Code
+> voidCallDealer n []           = return ([VCALL n]) 
+> voidCallDealer n (es)         = return (multExpression es ++ [VCALL n])  
+
+
+
+-----------------------------------------------------------------------------------------------------
+
+TYPE CHECKER
+
+This is a simple type checker that scans over compiled code mainly to check all the function calls are 
+in order 
+
+> typeChecker                   :: Code -> Code
+> typeChecker  cs               = checkFuncTypes cs
+
+> checkFuncTypes                :: Code -> Code 
+> checkFuncTypes cs             = concat [ (checkFuncType f) ++ [FEND]| f <- fList] 
+>                                   where
+>                                       fList = filter (not. null) (splitOn [FEND] cs) 
+
+> checkFuncType                 :: Code -> Code
+> checkFuncType cs              =   case t of 
+>                                       VOID     -> checkIfVoid cs n
+>                                       INT      -> checkIfInt cs n  
+>                                   where
+>                                       n = getFuncName (head cs)
+>                                       t = getFuncType (head cs)
+
+> checkIfVoid                   :: Code -> Name -> Code
+> checkIfVoid cs n              = if s == [] then cs else error ("Cannot return a value in void function; " ++ n)  
+>                                   where
+>                                       s = [ c | c <- cs, c == (RSTOP)] 
+
+> checkIfInt                    :: Code -> Name -> Code
+> checkIfInt cs n               = if s == [] then error ("Must return a value in function; " ++ n) else cs   
+>                                   where
+>                                       s = [ c | c <- cs, c == (RSTOP)] 
+
+> getFuncName                   :: Inst -> Name 
+> getFuncName (FUNC n)          = fst n
+> getFuncName (MAIN)            = "main"
+> getFuncName  i                = error "Type Checker Error T-01"
+
+> getFuncType                   :: Inst -> FType
+> getFuncType (FUNC n)          = snd n
+> getFuncType (MAIN)            = VOID
+> getFuncType i                 = error "Type Checker Error T-02"
+ 
 
 
 
@@ -214,19 +269,20 @@ as to focus n high level interpritation, look to improve this later.
 > data Inst  		            =  PUSH Number
 >          		                    | PUSHV Name
 >          		                    | POP Name
->                                   | SHOW 
+>                                   | SHOW
+>                                   | PRINT String  
 >          		                    | DO ArthOp
 >          		                    | COMP CompOp
 >                                   | JUMP Label
 >          		                    | JUMPZ Label
 >          		                    | LABEL Label
->                                   | FUNC Name 
+>                                   | FUNC FName 
 >                                   | FEND
->                                   | CALL Name                       
+>                                   | VCALL Name                --Used for void function calls
+>                                   | CALL Name                 --Calls a function that returns a value      
 >                                   | STOP                      --Used for returning nothing
 >                                   | RSTOP                     --Used to return a variable from a function
 >                                   | MAIN
->                                   | END                       --Signifies the end of the main function 
 >                                   | PUSHC Name                --Takes element from top of stack and pushes to channel
 >                                   | POPC Name                 --Pops element from a channel and puts ontop of the stack
 >                                   | CHANNEL Name              --Creates new channel
@@ -292,6 +348,7 @@ gc  = count of current process
 > exec'                         :: Code -> Code ->  Int -> Stack -> Mem -> Bool -> [Channel] -> (S.Seq GoRoutine, Int) ->  Maybe Number
 > exec' c ec pc s m g cs (gs ,gc)
 >                               =   case ec !! pc of 
+>                                       PRINT p     -> trace (p) (exec' c ec (pc+1) s m g ncs (ngs, ngc)) 
 >                                       SHOW        -> trace (getNumberAsString (head s)) (exec' c ec (pc+1) (pop s) m g ncs (ngs, ngc) ) 
 >                                       MAIN        -> exec' c ec (pc+1) s m False ncs (ngs, ngc)
 >                                       FUNC n      -> exec' c ec (pc+1) s m g ncs (ngs, ngc)      
@@ -303,17 +360,17 @@ gc  = count of current process
 >                                       LABEL l     -> exec' c ec (pc+1) s m g ncs (ngs, ngc)
 >                                       JUMP l      -> exec' c ec (jump c l) s m g ncs (ngs, ngc)
 >                                       JUMPZ l     -> exec' c ec (jumpz c s l pc) (pop s) m g ncs (ngs, ngc)
->                                       CALL n      -> (handleCall c ec pc s m n g ncs (ngs, ngc))  
+>                                       VCALL n     -> (handleCall c ec pc s m n g ncs (ngs, ngc) True)
+>                                       CALL n      -> (handleCall c ec pc s m n g ncs (ngs, ngc) False)  
 >                                       STOP        -> Nothing
->                                       END         -> Nothing
+>                                       FEND        -> Nothing
 >                                       CHANNEL n   -> exec' c ec (pc+1) s m g (createChannel n cs) (ngs, ngc)
 >                                       PUSHC n     -> exec' c ec (pc+1) (pop s) m g (pushChannel n cs (head s)) (ngs, ngc)
 >                                       POPC n      -> exec' c ec (pc+1) (push (getHeadChannel n cs) s) m g (popChannel n cs) (ngs, ngc)
 >                                       KILL        -> exec' c ec (pc+1) s m g ncs (S.fromList [], 0)
 >                                       WAIT        -> if (S.null gs) then exec' c ec (pc+1) s m g ncs (S.fromList [], 0) else exec' c ec pc s m g ncs (ngs, ngc)
 >                                       GO n        -> exec' c ec (pc+1) s m g ncs ((ngs S.|> (startSubRoutine c n s)),ngc)    
->                                       RSTOP       -> error "main() cannot return a value"
->                                       FEND        -> error "Compiler Error F-01"
+>                                       RSTOP       -> error "main() cannot return a value"             --Type checker should catch this 
 >                                   where
 >                                       con     = subRoutsHandler gs gc cs
 >                                       ncs     = snd con
@@ -342,12 +399,13 @@ TODO: Implement a data structure that fully represents the necessary aparamaters
 >                                       LABEL l     -> stackExec' c ec (pc+1) s m g cs 
 >                                       JUMP l      -> stackExec' c ec (jump ec l) s m g cs
 >                                       JUMPZ l     -> stackExec' c ec (jumpz ec s l pc) (pop s) m g cs
->                                       CALL n      -> (handleCallReStack c ec pc s m n g cs)
+>                                       VCALL n     -> (handleCallReStack c ec pc s m n g cs True)
+>                                       CALL n      -> (handleCallReStack c ec pc s m n g cs False)
 >                                       PUSHC n     -> stackExec' c ec (pc+1) (pop s) m g (pushChannel n cs (head s)) 
 >                                       POPC n      -> stackExec' c ec (pc+1) (push (getHeadChannel n cs) s) m g (popChannel n cs) 
 >                                       RSTOP       -> ((s, m), cs) 
->                                       STOP        -> ((s, m), cs)  
->                                       FEND        -> ((s, m), cs)
+>                                       STOP        -> (([], m), cs)  
+>                                       FEND        -> (([], m), cs)
 >                                       CHANNEL n   -> error "Cannnot make new channel within a function must be created in main()"
 
         
@@ -401,7 +459,7 @@ Perform a comparison on the first two things on the stack (leave a 1 on top if t
 > comparison'                   :: CompOp -> Number -> Number -> Number 
 > comparison' o v1 v2           =   case o of
 >                                       EQU		-> if isNumEqu v1 v2  then t else f    
->                                       NEQ     -> if isNumNeq v1 v2  then f else t
+>                                       NEQ     -> if isNumNeq v1 v2  then t else f
 >                                       GEQ     -> if isNumGeq v1 v2  then t else f
 >                                       LEQ     -> if isNumLeq v1 v2  then t else f
 >                                       GRT     -> if isNumGrt v1 v2  then t else f
@@ -473,6 +531,7 @@ deals with jumpz
 > jumpz                         :: Code -> Stack -> Int -> Int -> Int
 > jumpz c s l pc
 >                               | head s == (Integer 0)     = jump c l
+>                               | getInt (head s) < 0       = jump c l
 >                               | otherwise                 = (pc + 1)
 
 returns true if is the label we are looking for
@@ -493,9 +552,11 @@ FUNCTION CALLS
 
 These functions deal with function calls, if returns something put ontop off stack otherwise do 
 
-> handleCall                    :: Code -> Code -> Int -> Stack -> Mem -> Name -> Bool -> [Channel] -> (S.Seq GoRoutine, Int) -> Maybe Number
-> handleCall c ec pc s m n g cs (gs, gc)
->                               =   exec' c ec (pc+1) fs fm g fcs (gs, gc) 
+v = isthe function call void  
+
+> handleCall                    :: Code -> Code -> Int -> Stack -> Mem -> Name -> Bool -> [Channel] -> (S.Seq GoRoutine, Int)  -> Bool -> Maybe Number
+> handleCall c ec pc s m n g cs (gs, gc) v
+>                               =   if v then exec' c ec (pc+1) [] fm g fcs (gs, gc) else exec' c ec (pc+1) fs fm g fcs (gs, gc)  
 >                                   where
 >                                       fMem    = (getGlobalMemmory m ++ instantiateMemory)
 >                                       fCode   = getFunction c n
@@ -506,9 +567,9 @@ These functions deal with function calls, if returns something put ontop off sta
                         
 Returns Stack, used for nested and recursive function calls
 
-> handleCallReStack             :: Code -> Code-> Int -> Stack -> Mem -> Name -> Bool -> [Channel] -> FuncParam
-> handleCallReStack c ec pc s m n g cs 
->                               = stackExec' c ec (pc+1) fs fm g fcs 
+> handleCallReStack             :: Code -> Code-> Int -> Stack -> Mem -> Name -> Bool -> [Channel] -> Bool -> FuncParam
+> handleCallReStack c ec pc s m n g cs v
+>                               = if v then stackExec' c ec (pc+1) [] fm g fcs  else stackExec' c ec (pc+1) fs fm g fcs 
 >                                   where 
 >                                       fMem    = (getGlobalMemmory m ++ instantiateMemory)
 >                                       fCode   = getFunction c n
@@ -521,9 +582,14 @@ Returns Stack, used for nested and recursive function calls
 Searches through code and returns a function's code, ct signifies if is currently cutting the code
 
 > getFunction                   :: Code -> Name -> Code 
-> getFunction cs n              = (concat [ f | f <- fList, (head f) == (FUNC n)] ) ++ [FEND]
+> getFunction cs n              = (concat [ f | f <- fList, getFunctionName (head f) == n]) ++ [FEND]
 >                                   where 
->                                       fList = filter (not. null) (splitOneOf [END, FEND] cs) 
+>                                       fList = filter (not. null) (splitOn [FEND] cs) 
+
+> getFunctionName               :: Inst -> Name 
+> getFunctionName (FUNC n)      = fst n
+> getFunctionName o             = ""                --function can't be an empty string
+
 
 --------------------------------------------------------------------------------
 
@@ -618,7 +684,7 @@ GO SUBROUTINES
 Sets up a new Go sub routine.
 
 > startSubRoutine               :: Code -> Name -> Stack -> GoRoutine
-> startSubRoutine cs n s        = Go code 0 [] instantiateMemory
+> startSubRoutine cs n s        = Go code 0 s instantiateMemory
 >                                   where 
 >                                       code    = getFunction cs n 
 

@@ -1,0 +1,38 @@
+
+\chapter{Designing Goal}
+
+This chapter deals with how I approached designing a new language and how I went about choosing the features I wished for Goal to contain. I will discuss some reasoning behind why certain features differ from how they are handled in Go and also talk about how I tried to make the language as complete as possible.
+
+I think it is also important to note here that the main focus of this project is not on the design and creation of a new language but rather the implementation of the compiler itself.
+
+\section{Picking Features}
+
+As I mentioned before, rather than designing Goal from scratch I chose to instead choose features from Go I was interested in, then find a way of putting them into Goal. I did not create Goal with a target audience or with potential uses in mind, hence the lack of a specification or market research. Instead I created Goal as a means to let me implement a compiler that could handle a number of different interesting features.
+
+Therefore you will find the features Goal can handle my seem quite varied and not completely complimentary of each other, but I do feel that Goal still has many uses. 
+
+As much as Goal was created simply as a tool for creating an interesting compiler, I did also attempt to make it as user friendly as possible. I have created supporting documentation for Goal that has full examples of the syntax it uses and detailed explanations of how to use each of it's features.  
+ 
+A good summary of my approach to creating Goal is that I filled it with features I wanted to explore, then added extra functionality to try and make the language as easy to use, complete and useful as possible.
+ 
+\subsection{Syntax}
+
+A language's syntax can be said to describe the form that commands and expressions in a language must take \cite[p.~72]{CompGen1997}. In the case of programming languages it defines how you must write your code so that it can perform the computations you wish.
+
+The syntax for Goal is pretty simple and almost identical to that of Go, with some minor differences. I decided to follow Go's syntax rules not only for simplicity but also so it was easy to see where Goal got it's functionality from. I felt it would make sense to give it syntax rules close to the language it was emulating.
+ 
+A key part of Goal's syntax is that each command must end with a semi-colon, including if statements, functions and for loops. A more detailed outline and examples of valid Goal syntax can be seen in the accompanying documentation for Goal with examples of syntactically correct Goal \cite{GoalDoc}. 
+
+\subsection{Types}
+
+\subsection{Basic Commands}
+
+\subsection{Functions}
+
+\subsection{Concurrency}
+
+
+
+\section{Differences From Go}
+
+\section{Possible Uses}

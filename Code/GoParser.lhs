@@ -8,6 +8,7 @@ Uses the Parsing library from Hutton (2008) which focuses on using Monadic Parse
 > import Parsing
 > import System.IO.Unsafe
 
+
 -----------------------------------------------------------------------------------------------------
 
 PROGRAM IR 
@@ -16,6 +17,7 @@ PROGRAM IR
 >                                   | PushToChan Name Expr
 >                                   | Assign Name Expr
 >                                   | Show Expr
+>                                   | Print String
 > 	   		                        | If Expr Prog
 >                                   | IfElse Expr Prog Prog
 >                                   | ElseIf Expr Prog [ElseIfCase'] Prog       
@@ -23,11 +25,10 @@ PROGRAM IR
 > 	   		                        | Seqn [Prog]
 >                                   | Empty                                     -- Allows blank Prog may be useful 
 >                                   | Return (Maybe Expr)                       
->                                   | Func Name [Name] Prog                     -- list of names is names of arguments
->                                   | NFunc FName [Name] Prog
+>                                   | Func FName [Name] Prog                     -- list of names is names of arguments
 >                                   | Main Prog                                 -- gives us the main function to be run
 >                                   | VoidFuncCall Name [Expr]
->                                   | GoCall Name                                                                    
+>                                   | GoCall Name [Expr]                                                                    
 >                                   | Wait 
 >                                   | Kill
 >		                                deriving Show
@@ -37,7 +38,8 @@ PROGRAM IR
 
 EXPRESSION IR
 
-> data Expr  		            =  Val Number 
+> data Expr  		            =  Val Number
+>                                   | Valb Number 
 >                                   | Var Name 
 >                                   | ExprApp ArthOp Expr Expr 
 >                                   | CompApp CompOp Expr Expr
@@ -61,9 +63,13 @@ For Conditionals, still to be finished
 > data CondOp                   = AND | OR 
 >			                        deriving (Show, Eq)  
 
+
+Type system 
+  
+
 Numerical Types, currently treating booleans as integers, where 0 is false and 1 is true 
 
-> data Number                   = Integer Int | Double Double
+> data Number                   = Integer Int | Double Double | Bool Int 
 >			                        deriving (Show, Eq)
 
 Name defintion
@@ -77,6 +83,7 @@ Function Names, they must have return type aswell
 > data FType                    = VOID | INT 
 >                                   deriving (Show, Eq)
 
+
 -----------------------------------------------------------------------------------------------------
 
 PROGRAM PARSE
@@ -87,9 +94,13 @@ athough this is optional in Go.
 Evaluates a whole program 
 
 > parseGo                       :: String -> Prog  
-> parseGo fs                    = unsafePerformIO( do go <- readFile fs
->                                                     return (evalProg ( go)))  
+> parseGo fs                    =   if validFile fs then 
+>                                       unsafePerformIO( do go <- readFile fs
+>                                                           return (evalProg ( go)))
+>                                   else error "Unvalid file, ust be a .gol file!"  
 
+> validFile                     :: String -> Bool
+> validFile s                   = reverse (take 4 (reverse s)) == ".gol"  
 
 > evalProg                      :: String -> Prog 
 > evalProg xs                   = case (parse parseProg xs) of
@@ -144,18 +155,35 @@ Changed so main can return an int unlike in Go
 >                                    symbol "("
 >                                    do ns <- listNames
 >                                       symbol ")"
->                                       string "int" 
->                                       symbol "{"
->                                       p1 <- parseCommands
->                                       symbol "}"
->                                       return (Func n ns p1) 
+>                                       do string "int" 
+>                                          symbol "{"
+>                                          p1 <- parseCommands
+>                                          symbol "}"
+>                                          return (Func (n,INT) ns p1)
+>                                        +++ do string "bool" 
+>                                               symbol "{"
+>                                               p1 <- parseCommands
+>                                               symbol "}"
+>                                               return (Func (n,INT) ns p1)
+>                                        +++ do symbol "{"
+>                                               p3 <- parseCommands
+>                                               symbol "}"
+>                                               return (Func (n,VOID) ns p3)
 >                                     +++ do symbol ")"
->                                            string "int"
->                                            symbol "{"
->                                            p2 <- parseCommands
->                                            symbol "}"
->                                            return (Func n [] p2)           
-
+>                                            do string "int"
+>                                               symbol "{"
+>                                               p2 <- parseCommands
+>                                               symbol "}"
+>                                               return (Func (n, INT) [] p2)
+>                                             +++ do string "bool"
+>                                                    symbol "{"
+>                                                    p2 <- parseCommands
+>                                                    symbol "}"
+>                                                    return (Func (n, INT) [] p2)           
+>                                             +++ do symbol "{"
+>                                                    p4 <- parseCommands
+>                                                    symbol "}"
+>                                                    return (Func (n,VOID) [] p4)  
 
 
 > listNames                     :: Parser [Name] 
@@ -163,12 +191,15 @@ Changed so main can return an int unlike in Go
 >                                    do symbol ","
 >                                       ar <- listNames
 >                                       return (a:ar)
->                                     +++ return [a] 
+>                                     +++ return [a]                                   
+         
 >
 > getArgument                   :: Parser Name
 > getArgument                   = do a <- identifier
->                                    string "int" 
->                                    return a
+>                                    do string "int" 
+>                                       return a
+>                                     +++ do string "bool"
+>                                            return a 
 
 Evaluates a list of commands you might find in a functions
 
@@ -193,7 +224,9 @@ Evaluates a list of commands you might find in a functions
 >                                   +++ do r <- return'
 >                                          return r
 >                                   +++ do s <- parseShow
->                                          return s 
+>                                          return s
+>                                   +++ do p <- parsePrint
+>                                          return p  
 >                                   +++ do fe <- elseIfParse
 >                                          return fe
 >                                   +++ do e <- ifElseParse
@@ -206,12 +239,14 @@ Evaluates a list of commands you might find in a functions
 >                                          return w
 >                                   +++ do c <- parseChanelCreation
 >                                          return c
->                                   +++ do p <- parseChanelPush
->                                          return p
+>                                   +++ do cp <- parseChanelPush
+>                                          return cp
 >                                   +++ do g <- parseGoCall
 >                                          return g 
 >                                   +++ do gc <- parseProcessCommand
->                                          return gc   
+>                                          return gc
+>                                   +++ do v <- parseVoidFun
+>                                          return v   
   
 
 -----------------------------------------------------------------------------------------------------
@@ -369,8 +404,8 @@ User return' so as not to get mixed up with haskells "return" function
 
 ASSIGNMENT
 
-> evalAssignment                :: String -> [Prog] 
-> evalAssignment xs             =  case (parse multipleAssign xs) of
+> evalAssignment                :: String -> Prog 
+> evalAssignment xs             =  case (parse assign xs) of
 >                                     [(e,[])]  -> e
 >                                     [(_,out)] -> error ("unused input " ++ out)
 >                                     []        -> error "invalid input"
@@ -389,27 +424,27 @@ ASSIGNMENT
 >                                             return (Assign n (ExprApp ADD (Var n) e1))
 >                                      +++ do symbol "-="
 >                                             e2 <- arthExpr
->                                             return (Assign n (ExprApp SUB (Var n) e2))            
+>                                             return (Assign n (ExprApp SUB (Var n) e2))
+>                                      +++ do c <- compExpr
+>                                             return (Assign n c)           
 
 
 Deals with variable name
 
-> getName                       :: Parser String 
+> getName                       :: Parser Name 
 > getName                       = do n1 <- identifier
->                                    if n1 == "var" 
->                                       then do n2 <- getName2
->                                               return n2
->                                       else return n1                               
+>                                    return n1
 
 > getName2                      :: Parser String
 > getName2                      = do n <- identifier
 >                                    string "int"   
 >                                    return n      
 
-A Multiple Assignments, deals with a list of MultipleAssignments
+A Multiple Assignments, deals with a list of MultipleAssignments wich would be global declarations at the top of a 
 
 > multipleAssign                :: Parser [Prog]
-> multipleAssign                = do a <- assign
+> multipleAssign                = do string "global"
+>                                    a <- assign
 >                                    do symbol ";"
 >                                       ma <- multipleAssign                                    
 >                                       return (a:ma)
@@ -423,7 +458,7 @@ SHOW
 This is a simple print statement that jsut prints out an expression
 
 > evalShow                      :: String -> Prog
-> evalShow xs                   =  case (parse parseShow xs) of
+> evalShow xs                   =  case (parse parsePrint xs) of
 >                                     [(e,[])]  -> e
 >                                     [(_,out)] -> error ("unused input " ++ out)
 >                                     []        -> error "invalid input"
@@ -434,6 +469,23 @@ This is a simple print statement that jsut prints out an expression
 >                                    e <- parseExpr
 >                                    symbol ")"
 >                                    return (Show e)
+
+
+> parsePrint                    :: Parser Prog
+> parsePrint                    = do string "Print"
+>                                    symbol "("
+>                                    p <- parseString
+>                                    symbol ")"
+>                                    return (Print p)
+
+
+> parseString                   :: Parser String 
+> parseString                   = do symbol "\""
+>                                    s <- identifier
+>                                    symbol "\""
+>                                    return s     
+
+
 
 -----------------------------------------------------------------------------------------------------
 
@@ -451,9 +503,9 @@ Handles the creating of channels and pushing values to a channel
 > parseChanelCreation           :: Parser Prog
 > parseChanelCreation           = do string "var" 
 >                                    n <- identifier
->                                    string "chan int"
+>                                    string "chan"
 >                                    symbol "="
->                                    string "make"         
+>                                    string "Make"         
 >                                    symbol "("
 >                                    string  "chan int"
 >                                    symbol ")"
@@ -479,14 +531,37 @@ CONCURRENT COMMANDS
 > parseGoCall                   = do string "go "
 >                                    i <- identifier
 >                                    symbol "("
->                                    symbol ")"
->                                    return (GoCall i) 
+>                                    do symbol ")"
+>                                       return (GoCall i []) 
+>                                     +++ do es <- manyExpr
+>                                            symbol ")"
+>                                            return (GoCall i es)         
+
 
 > parseProcessCommand           :: Parser Prog
 > parseProcessCommand           = do string "Wait()"
 >                                    return (Wait)
 >                                  +++ do string "Kill()"
 >                                         return (Kill) 
+
+-----------------------------------------------------------------------------------------------------
+
+VOID FUNCTION CALLS
+
+> evalVoidFunc                  :: String -> Prog 
+> evalVoidFunc xs               =  case (parse parseVoidFun xs) of
+>                                     [(e,[])]  -> e
+>                                     [(_,out)] -> error ("unused input " ++ out)
+>                                     []        -> error "invalid input"
+
+> parseVoidFun                  :: Parser Prog
+> parseVoidFun                  = do n <- identifier
+>                                    symbol "("
+>                                    do es <- manyExpr
+>                                       symbol ")"    
+>                                       return (VoidFuncCall n es)
+>                                     +++ do symbol ")"
+>                                            return (VoidFuncCall n [])      
 
 
 -----------------------------------------------------------------------------------------------------
@@ -566,9 +641,9 @@ Deals with Division and Multiply currently prioritses division, like Go does!
 >                                     e <- arthExpr
 >                                     symbol ")"
 >                                     return e
->                                   +++ do string "true"
+>                                   +++ do string "True"
 >                                          return (Val (Integer 1))
->                                   +++ do string "false"
+>                                   +++ do string "False"
 >                                          return (Val (Integer 0))
 >                                   +++ do n <- natural
 >                                          return (Val (Integer n))
@@ -605,15 +680,15 @@ TODO: Fix this to allow only one comparison (don't allow nested comparisons!)
 >                                    do symbol "=="               
 >                                       e <- arthExpr
 >                                       return (CompApp EQU n e)
->                                     +++ return n
->
+>                                     +++ return n 
+
 > neqExpr                       :: Parser Expr
 > neqExpr                       =  do e1 <- grtExpr 
 >                                     do symbol "!="               
 >                                        e2 <- arthExpr
 >                                        return (CompApp NEQ e1 e2)
->                                      +++ return e1 
->
+>                                      +++ return e1
+
 > grtExpr                       :: Parser Expr
 > grtExpr                       =  do e1 <- letExpr 
 >                                     do symbol ">"               

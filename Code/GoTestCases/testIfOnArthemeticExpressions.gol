@@ -1,0 +1,16 @@
+
+func main () {
+
+    if ( 4 - 6) {
+        Print("fail");
+    };
+    
+    if ( 5) {
+        Print("success");
+    };
+    
+    if (0) {
+        Print("fail");
+    }; 
+    
+}; 
