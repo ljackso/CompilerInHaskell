@@ -1,9 +1,9 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2015.4.11)  12 APR 2015 18:12
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2015.4.11)  13 APR 2015 17:57
 entering extended mode
 **Dissertation.tex
 
-("C:\Dev_Dissertation\Dissertation-Stuff-One\Write Up\Learning Latex\Dissertati
-on.tex"
+("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Dissertatio
+n.tex"
 LaTeX2e <2011/06/27>
 Babel <v3.8m> and hyphenation patterns for english, afrikaans, ancientgreek, ar
 abic, armenian, assamese, basque, bengali, bokmal, bulgarian, catalan, coptic, 
@@ -250,6 +250,27 @@ Now handling font encoding U ...
    defining Unicode char U+2122 (decimal 8482)
    defining Unicode char U+2423 (decimal 9251)
 ))
+("C:\Program Files\MikTex\tex\generic\babel\babel.sty"
+Package: babel 2008/07/08 v3.8m The Babel package
+
+*************************************
+* Local config file bblopts.cfg used
+*
+("C:\Program Files\MikTex\tex\latex\00miktex\bblopts.cfg"
+File: bblopts.cfg 2006/07/31 v1.0 MiKTeX 'babel' configuration
+)
+("C:\Program Files\MikTex\tex\generic\babel\english.ldf"
+Language: english 2005/03/30 v3.3o English support from the babel system
+
+("C:\Program Files\MikTex\tex\generic\babel\babel.def"
+File: babel.def 2008/07/08 v3.8m Babel common definitions
+\babel@savecnt=\count88
+\U@D=\dimen103
+)
+\l@canadian = a dialect from \language\l@american 
+\l@australian = a dialect from \language\l@british 
+\l@newzealand = a dialect from \language\l@british 
+))
 ("C:\Program Files\MikTex\tex\latex\csquotes\csquotes.sty"
 Package: csquotes 2011/10/22 v5.1d context-sensitive quotations
 
@@ -258,20 +279,20 @@ Package: etoolbox 2011/01/03 v2.1 e-TeX tools for LaTeX
 
 ("C:\Program Files\MikTex\tex\latex\misc\etex.sty"
 Package: etex 1998/03/26 v2.0 eTeX basic definition package (PEB)
-\et@xins=\count88
+\et@xins=\count89
 )
-\etb@tempcnta=\count89
+\etb@tempcnta=\count90
 )
 ("C:\Program Files\MikTex\tex\latex\graphics\keyval.sty"
 Package: keyval 1999/03/16 v1.13 key=value parser (DPC)
 \KV@toks@=\toks16
 )
-\csq@reset=\count90
-\csq@gtype=\count91
-\csq@glevel=\count92
-\csq@qlevel=\count93
-\csq@maxlvl=\count94
-\csq@tshold=\count95
+\csq@reset=\count91
+\csq@gtype=\count92
+\csq@glevel=\count93
+\csq@qlevel=\count94
+\csq@maxlvl=\count95
+\csq@tshold=\count96
 \csq@ltx@everypar=\toks17
 
 ("C:\Program Files\MikTex\tex\latex\csquotes\csquotes.def"
@@ -282,128 +303,153 @@ Package csquotes Info: ... configuration file loaded successfully.
 
 ("C:\Program Files\MikTex\tex\latex\csquotes\csquotes.cfg"
 File: csquotes.cfg 
-))
-Package csquotes Info: Checking for multilingual support...
-Package csquotes Info: ... none found.
+)
+Package csquotes Info: Enabling multilingual quotes.
+Package csquotes Info: Redefining alias 'english' -> 'english/american'.
+)
+Package csquotes Info: Allocating character ".
 
-("C:\Dev_Dissertation\Dissertation-Stuff-One\Write Up\Learning Latex\Dissertati
-on.aux"
-("C:\Dev_Dissertation\Dissertation-Stuff-One\Write Up\Learning Latex\Introducti
-onAndOverview.aux")
-("C:\Dev_Dissertation\Dissertation-Stuff-One\Write Up\Learning Latex\DesigningG
-oal.aux")
-("C:\Dev_Dissertation\Dissertation-Stuff-One\Write Up\Learning Latex\Parsing.au
-x"))
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 10.
-LaTeX Font Info:    ... okay on input line 10.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 10.
-LaTeX Font Info:    ... okay on input line 10.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 10.
-LaTeX Font Info:    ... okay on input line 10.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 10.
-LaTeX Font Info:    ... okay on input line 10.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 10.
-LaTeX Font Info:    ... okay on input line 10.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 10.
-LaTeX Font Info:    ... okay on input line 10.
+("C:\Program Files\MikTex\tex\latex\listings\listings.sty"
+\lst@mode=\count97
+\lst@gtempboxa=\box26
+\lst@token=\toks18
+\lst@length=\count98
+\lst@currlwidth=\dimen104
+\lst@column=\count99
+\lst@pos=\count100
+\lst@lostspace=\dimen105
+\lst@width=\dimen106
+\lst@newlines=\count101
+\lst@lineno=\count102
+\lst@maxwidth=\dimen107
+
+("C:\Program Files\MikTex\tex\latex\listings\lstmisc.sty"
+File: lstmisc.sty 2013/08/26 1.5b (Carsten Heinz)
+\c@lstnumber=\count103
+\lst@skipnumbers=\count104
+\lst@framebox=\box27
+)
+("C:\Program Files\MikTex\tex\latex\listings\listings.cfg"
+File: listings.cfg 2013/08/26 1.5b listings configuration
+))
+Package: listings 2013/08/26 1.5b (Carsten Heinz)
+Package csquotes Info: Checking for multilingual support...
+Package csquotes Info: ... found 'babel' package.
+
+("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Dissertatio
+n.aux"
+("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Introductio
+nAndOverview.aux")
+("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\DesigningGo
+al.aux")
+("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Parsing.aux
+"))
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 14.
+LaTeX Font Info:    ... okay on input line 14.
+Package csquotes Info: Making character " active on input line 14.
+\c@lstlisting=\count105
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <12> on input line 12.
+(Font)              <12> on input line 16.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <8> on input line 12.
+(Font)              <8> on input line 16.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <6> on input line 12.
+(Font)              <6> on input line 16.
  [1
 
 {C:/ProgramData/MiKTeX/2.9/pdftex/config/pdftex.map}]
-("C:\Dev_Dissertation\Dissertation-Stuff-One\Write Up\Learning Latex\Dissertati
-on.toc"
+("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Dissertatio
+n.toc"
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <7> on input line 2.
+(Font)              <7> on input line 3.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <5> on input line 2.
+(Font)              <5> on input line 3.
 )
 \tf@toc=\write3
  [1
 
 ]
-("C:\Dev_Dissertation\Dissertation-Stuff-One\Write Up\Learning Latex\Introducti
-onAndOverview.tex"
+("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Introductio
+nAndOverview.tex"
 Chapter 1.
 [2
 
 
-] [3] [4]
-Overfull \hbox (3.06808pt too wide) in paragraph at lines 77--77
+] [3] [4] [5]
+Overfull \hbox (3.06808pt too wide) in paragraph at lines 86--86
 []\OT1/cmr/bx/n/14.4 Development Pro-cess & Method-olo-gies Used 
  []
 
-[5]
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 86.
- ("C:\Program Files\MikTex\tex\latex\base\omscmr.fd"
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 95.
+("C:\Program Files\MikTex\tex\latex\base\omscmr.fd"
 File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 86.
-) [6]
-("C:\Dev_Dissertation\Dissertation-Stuff-One\Write Up\Learning Latex\DesigningG
-oal.tex"
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 95.
+ [6]) [7]
+("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\DesigningGo
+al.tex"
 Chapter 2.
-[7
+[8
 
 
 
-]
-
-LaTeX Warning: Citation `GoalDoc' on page 8 undefined on input line 24.
-
-) [8]
-("C:\Dev_Dissertation\Dissertation-Stuff-One\Write Up\Learning Latex\Parsing.te
-x"
+] [9] [10]) [11] [12]
+("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Parsing.tex
+"
 Chapter 3.
-) [9
+) [13
 
 
 
 ]
-("C:\Dev_Dissertation\Dissertation-Stuff-One\Write Up\Learning Latex\Dissertati
-on.bbl"
+("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Dissertatio
+n.bbl"
 Underfull \hbox (badness 5245) in paragraph at lines 9--12
 []\OT1/cmr/m/n/10 A. V. Aho, M. S. Lam,
  []
 
-) [10
+) [14
 
 
 ]
-("C:\Dev_Dissertation\Dissertation-Stuff-One\Write Up\Learning Latex\Dissertati
-on.aux"
-("C:\Dev_Dissertation\Dissertation-Stuff-One\Write Up\Learning Latex\Introducti
-onAndOverview.aux")
-("C:\Dev_Dissertation\Dissertation-Stuff-One\Write Up\Learning Latex\DesigningG
-oal.aux")
-("C:\Dev_Dissertation\Dissertation-Stuff-One\Write Up\Learning Latex\Parsing.au
-x"))
-
-LaTeX Warning: There were undefined references.
-
- ) 
+("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Dissertatio
+n.aux"
+("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Introductio
+nAndOverview.aux")
+("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\DesigningGo
+al.aux")
+("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Parsing.aux
+")) ) 
 Here is how much of TeX's memory you used:
- 1427 strings out of 493921
- 20184 string characters out of 3148889
- 81314 words of memory out of 3000000
- 4728 multiletter control sequences out of 15000+200000
- 9453 words of font info for 33 fonts, out of 3000000 for 9000
+ 3339 strings out of 493921
+ 44819 string characters out of 3148889
+ 109112 words of memory out of 3000000
+ 6615 multiletter control sequences out of 15000+200000
+ 9621 words of font info for 34 fonts, out of 3000000 for 9000
  841 hyphenation exceptions out of 8191
- 30i,6n,21p,849b,181s stack positions out of 5000i,500n,10000p,200000b,50000s
-<C:/Program Files/MikTex/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Progra
-m Files/MikTex/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Program Files/MikT
-ex/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Program Files/MikTex/fonts/type
-1/public/amsfonts/cm/cmr12.pfb><C:/Program Files/MikTex/fonts/type1/public/amsf
-onts/cm/cmr17.pfb><C:/Program Files/MikTex/fonts/type1/public/amsfonts/cm/cmsy1
-0.pfb><C:/Program Files/MikTex/fonts/type1/public/amsfonts/cm/cmti10.pfb>
-Output written on Dissertation.pdf (11 pages, 123510 bytes).
+ 30i,6n,32p,849b,974s stack positions out of 5000i,500n,10000p,200000b,50000s
+<C:/Program Files/MikTex/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Pro
+gram Files/MikTex/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Program Files/M
+ikTex/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Program Files/MikTex/fonts/
+type1/public/amsfonts/cm/cmr10.pfb><C:/Program Files/MikTex/fonts/type1/public/
+amsfonts/cm/cmr12.pfb><C:/Program Files/MikTex/fonts/type1/public/amsfonts/cm/c
+mr17.pfb><C:/Program Files/MikTex/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/P
+rogram Files/MikTex/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Program Files
+/MikTex/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Program Files/MikTex/font
+s/type1/public/amsfonts/cm/cmtt10.pfb>
+Output written on Dissertation.pdf (15 pages, 163668 bytes).
 PDF statistics:
- 66 PDF objects out of 1000 (max. 8388607)
+ 91 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 

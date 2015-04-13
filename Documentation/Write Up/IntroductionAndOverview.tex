@@ -3,13 +3,11 @@
 
 \section{Introduction To Project}
 
-This project focuses on creating a compiler in Haskell for a simple language based on Google's relatively new language, Go. As part of this project I decided to create my own language, Goal, which is a simplified version of Go but contains all of the features I was interested in implementing. I then created a compiler and executor for Goal. 
+For my final year project I have created a compiler in Haskell for a simple programming language of my own design, which I based on Google's relatively new language Go. I called this language Goal, and it is a simplified version of Go but contains all of the features I was interested in implementing in my compiler, most importantly allowing concurrent programming.
 
-The aim of this project was never too create something that can handle Go exactly as Google designed it. It was to create something that could handle a simpler language of my own design that will get most of its ideas, features and syntax from Go, although it's scope will be much smaller. Thus making the main focus of this project implementing a compiler and executer for a modern programming language. Though I also ended up exploring some aspects of programming language design.
+The main focus of this project was to implement a parser, compiler and executor for a modern concurrent programming language, not on designing a completely new language. Though I will briefly discuss the reasons behind creating Goal, it is important to understand the focus of this project is on compiler implementation not programming language design.
 
-Another important focus of this project is creating a parser. Rather than just using a basic approach to this I chose to use monadic parser combinators. 
-
-This document is split into five main sections; Designing Goal, Parsing, Code Generation \& Intermediate Representations, Code Execution and Testing. In each of these sections I will go into more detail about how I approached each of these problems in my project. 
+This document is split into five main sections; Designing Goal, Parsing, Code Generation \& Intermediate Representations, Code Execution and Testing. In each of these sections I will go into more detail about how I approached each of these problems. 
 
 These next few pages will give a brief introduction to compilers and programming languages, also giving more information about Go and the motivation behind the project. I will also briefly discuss any development methodologies used and give a justification for certain technical decisions.
 
@@ -25,9 +23,9 @@ Programs that run on computers have to be represented in someway that both human
 Programming Languages are notations for describing computations to people and machines … But, before a program (in this format) can be run it first must be translated into a form which can be executed by a computer.
 \end{displayquote}
 
-So this brings us nicely to being able to define what a compiler is, a compiler is something that takes programs written in one programming language and translates it into another programming language. Often taking a program written in a high level language, that humans write code in, and translating them into lower level languages that computers can understand and then execute.
+So this brings us nicely to being able to define what a compiler is, a compiler is something that takes programs written in one programming language and translates it into another programming language. Often taking a program written in a high level language, that humans write code in, and translating them into lower level languages that computers can more easily understand and then execute.
 
-Finally an executer is something that executes code written in a given programming language. You will usually only see executors created to execute low level languages given the smaller, and more precisely defined, instruction set. This highlights the need for compilers to translate high level languages into more easily executable lower level languages. 
+Finally an executor is something that executes code written in a given programming language. You will usually only see executors created to execute low level languages given the smaller, and more precisely defined, instruction set. As is the case with the executor I have created. This highlights the need for compilers, so that they can be used to translate high level languages into more easily executable lower level languages, that are much harder for humans to create programs in. 
 
 Looking at these explanations it is clear to see the importance of compilers in the modern world. They allow people to create complicated programs and applications efficiently without having to concern themselves with low level details.
 
@@ -45,6 +43,17 @@ Go is an object oriented programming language created by Google relatively recen
 In many ways Go is similar to C in terms of syntax and that it is also statically typed. There are however some interesting features thrown in, such as how Go handles concurrency and even some newer ideas such as splices, which we will talk about later.
 
 In summary I would say Go (also referred to as golang) is a new language with quite a bit of potential, which can be seen by it's growing popularity. Although it is not revolutionary, it's mixture of simplistic syntax and more exciting features makes it a good language to emulate.
+
+\subsection{Introduction to Concurrency}
+
+Concurrency is the primary feature I was interested in implementing in my compiler. It is a key part of this project and also a fundamental part of modern programming. 
+
+The basic idea behind concurrent programming is you can do many things at one time. If we first define a sequential program as a sequence of operations carried out one at a time. We can then define a concurrent program as a program that contains a set of sequential processes executing in parallel \cite[p.~414]{CompGen1997}.
+
+The importance of concurrent programming can be seen now more than ever with rising popularity of online services and cloud computing. Lets take one of the most popular websites in the world Google.com, with around 40,000 request a second there is a high chance that when you hit that search button, so are thousands of other people at exactly the same time. But instead of queuing every request and doing it sequentially a server will handle the requests concurrently, ensuring that many requests can be handled at the same time, and you don't have to wait for the thousands of people who clicked a few milliseconds ahead of you till you get your results.
+
+There are plenty more examples of the importance of concurrency in modern technology, I'm sure if you think about most pieces of technology you use it would be easy to list numerous process that have to run concurrently. This is why I was interested in implementing concurrency into my compiler, because of it's usefulness and importance in modern programming languages.   
+
 
 \section{Motivation}
 

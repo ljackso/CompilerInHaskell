@@ -1,20 +1,22 @@
+\select@language {english}
 \contentsline {chapter}{\numberline {1}Introduction \& Overview}{2}
 \contentsline {section}{\numberline {1.1}Introduction To Project}{2}
 \contentsline {subsection}{\numberline {1.1.1}Introduction to Compilers \& Executors}{2}
 \contentsline {subsection}{\numberline {1.1.2}Introduction to Goal}{3}
 \contentsline {subsection}{\numberline {1.1.3}Introduction to Go}{4}
+\contentsline {subsection}{\numberline {1.1.4}Introduction to Concurrency}{4}
 \contentsline {section}{\numberline {1.2}Motivation}{4}
-\contentsline {subsection}{\numberline {1.2.1}Why Haskell}{4}
-\contentsline {subsection}{\numberline {1.2.2}Why Create A New Language}{4}
-\contentsline {subsection}{\numberline {1.2.3}Why Base This Language on Go}{5}
-\contentsline {section}{\numberline {1.3}Development Process \& Methodologies Used}{5}
-\contentsline {chapter}{\numberline {2}Designing Goal}{7}
-\contentsline {section}{\numberline {2.1}Picking Features}{7}
-\contentsline {subsection}{\numberline {2.1.1}Syntax}{8}
-\contentsline {subsection}{\numberline {2.1.2}Types}{8}
-\contentsline {subsection}{\numberline {2.1.3}Basic Commands}{8}
-\contentsline {subsection}{\numberline {2.1.4}Functions}{8}
-\contentsline {subsection}{\numberline {2.1.5}Concurrency}{8}
-\contentsline {section}{\numberline {2.2}Differences From Go}{8}
-\contentsline {section}{\numberline {2.3}Possible Uses}{8}
-\contentsline {chapter}{\numberline {3}Parsing}{9}
+\contentsline {subsection}{\numberline {1.2.1}Why Haskell}{5}
+\contentsline {subsection}{\numberline {1.2.2}Why Create A New Language}{5}
+\contentsline {subsection}{\numberline {1.2.3}Why Base This Language on Go}{6}
+\contentsline {section}{\numberline {1.3}Development Process \& Methodologies Used}{6}
+\contentsline {chapter}{\numberline {2}Designing Goal}{8}
+\contentsline {section}{\numberline {2.1}Picking Features}{8}
+\contentsline {subsection}{\numberline {2.1.1}Syntax}{9}
+\contentsline {subsection}{\numberline {2.1.2}Types and Scope}{9}
+\contentsline {subsection}{\numberline {2.1.3}Basic Commands}{10}
+\contentsline {subsection}{\numberline {2.1.4}Functions}{10}
+\contentsline {subsection}{\numberline {2.1.5}Concurrency}{10}
+\contentsline {section}{\numberline {2.2}Differences From Go}{11}
+\contentsline {section}{\numberline {2.3}Possible Uses}{11}
+\contentsline {chapter}{\numberline {3}Parsing}{13}

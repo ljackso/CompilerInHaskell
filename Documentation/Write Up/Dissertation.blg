@@ -4,9 +4,3 @@ A level-1 auxiliary file: DesigningGoal.aux
 A level-1 auxiliary file: Parsing.aux
 The style file: plainnat.bst
 Database file #1: Bibliography.bib
-I was expecting a `,' or a `}'---line 53 of file Bibliography.bib
- :  
- :  Title = {Goal Programming Language Documentation}
-(Error may have been on previous line)
-I'm skipping whatever remains of this entry
-(There was 1 error message)
