@@ -1,12 +1,18 @@
 
 \documentclass{report}
 
+
 \usepackage[utf8]{inputenc}
 \usepackage [english]{babel}
 \usepackage[autostyle, english = american]{csquotes}
 \MakeOuterQuote{"}
+
 \usepackage{listings}
 \lstset{basicstyle=\ttfamily}
+
+\usepackage{forest}
+
+\usepackage{hyperref}
 
 \author{Luke Jackson}
 \title{Creating a Compiler and Executer in Haksell for Goal, a Simple Concurrent Programming Language Based on Google Go.}
@@ -19,6 +25,8 @@
 \include{IntroductionAndOverview}
 \include{DesigningGoal}
 \include{Parsing}
+\include{CodeGeneration}
+\include{Execution}
 
 \bibliographystyle{plainnat}
 \bibliography{Bibliography}

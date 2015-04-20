@@ -1,0 +1,193 @@
+
+\chapter{Code Generation \& Intermediate Representation}
+
+Code generation is where I take the parsed input and then generate code from a low level instruction set that can then be executed. I decided to implement my own low level language and create an executor alongside that. Thus meaning that I would be compiling the parsed input down to code that used an instruction set that I had defined.
+
+A key part of this section is looking at how I designed and implemented an intermediate representation of Goal in the form of a data structure. This intermediate representation was then simpler to compile into my low level instruction set. The importance of a good intermediate representation can be seen in \cite[p.~221]{EngComp2012} where they state;
+
+\begin{displayquote}
+Most passes in the compiler read and manipulate the IR form of code. Thus, decisions about what to represent and how to represent it play a  crucial role in both the cost of compilation and it's effectiveness. 
+\end{displayquote}
+
+In this section I will go into detail about the design of the data structure that you are required to parse down to, and which represents all of the features I implemented in my language. I will also be discussing some of the more interesting features that I implemented and how they were dealt with by the code generator.
+
+Although in this section I will be talking a lot about code generated using the instruction set defined in my executer, I will not be going into detail about the design of the executor or the low level language I created. For more information on this you can go to the next section that does focus more on the design and execution of the low level instruction set.
+
+
+\section{Intermediate Representation}
+
+Having a good intermediate representation of the program being compiled is very important part of creating a compiler. It is important to make sure that you do not misinterpret the program you are compiling and a good way to do this is to create a data structure that clearly represents what your program is doing, whilst ensuring this data structure is easy enough to compile into your target language.
+
+\subsection{Introduction to Intermediate Representations}
+
+An intermediate representation of a program is where you create some data structure of your program that can be more easily interpreted and handled by your compiler. It is also important to ensure your IR\footnotemark[1] is designed in such a way that you capture the meaning of the program you wish to represent, and do not end up misrepresenting your program.
+
+\footnotetext[1]{IR is shorthand for Intermediate Representation}
+
+There are several approaches to generating an IR. These can been seen in \cite[p.~223]{EngComp2012} where they state there are three main approaches to generating an IR; 
+
+\begin{itemize}
+\item Graphical IRs, This uses tree or graph data structures.  
+\item Linear IRS, This will closely resemble pseudo-code. 
+\item Hybrid IRS, A combination of both Linear and Graphical approaches.
+\end{itemize}
+
+I chose to go with a Hybrid IR. A most suitable approach for me because, as stated in \cite[p.~113]{CompDes2005}, Linear IR are often used when compiling for stack base virtual machines, which is the architecture of the virtual machine that I created. But also this approached allowed me to take advantage of how easily Haskell allows you to create recursive data structures, that can be used when generating trees you would find in Graphical IRs.  
+
+This approach provided me with a relatively high level representation of programs, meaning it gave a representation that would closely resemble the pseudo-code of the program you are trying to compile. This makes it nice format to work with as it makes it easier to visualize what is actually occurring during the later stages of code generation. 
+
+It is important to note there are several different approaches I could have used when creating an intermediate representation and the choice to use a high level approach was both a design choice and also to do with ease of implementation. 
+
+To best understand the approach I used to create the data structure for my intermediate representation it is good to follow a simple example of how you take a specific command then translate that into my intermediate representation.
+
+\subsection{Example Creating an Intermediate Representation}
+
+I will now show an example of the process I went through when generating my IR. The example I will use is creating a data structure that best represents an if statement. This is what an if statement looks like in Goal;
+
+\begin{lstlisting}
+	if (x < 1) {
+		return x;
+	};
+\end{lstlisting}
+
+You can see that there are two main parts to this statement. The condition directly after the if command,  $(x > 1)$  and then the code ,in this case $return$ $x;$, inside of the curly brackets. 
+
+What is important to notice is that you could replace the return statement with any other acceptable code, even another If statement. Whereas the expression after the if is limited only to be certain things. In this case we could rewrite a general definition for an if statement to look like this;
+
+\begin{lstlisting}
+	if EXPRESSION {
+		PROGRAM 
+	}
+\end{lstlisting}
+
+This can be described by saying; If some expression is true, then execute the program inside the curly brackets.
+ 
+Now all we need to do is define what  EXPRESSION and PROGRAM can be. Then we can create a data type in Haskell code to represent If statements that looks like this;
+
+\begin{lstlisting}
+	data IfStatement = If Expr Prog 
+\end{lstlisting}
+
+A program is quite easy to define, it's just a one or more instructions written to perform a specific task\footnotemark[2]. Therefore we must define all of the instructions that can be used to make a program in our data type Prog. Looking at our example that needs to include return statements, but I also said we were allowed to have nested if statements. Therefore we can create a recursive data structure that will allow this;
+
+\footnotetext[2]{$wikipedia.org/wiki/Computer_program$}
+
+\begin{lstlisting}
+	data Prog = If Expr Prog | Return Expr
+\end{lstlisting}
+
+
+An expression is slightly harder to define. In the case of If statements we know our expression needs to do something. It needs to give us some condition which we can then decide is true or false. 
+
+We can now create a data type for our expressions. We will need to allow for nested expressions but also allow for different comparison operators such as equals or less than. This can be shown here;
+
+\newpage
+
+\begin{lstlisting}
+	data Expr = ExprComp Op Expr Expr 
+                  	| Val Number 
+                 	| Var Name
+ 
+	data Op	  = GET | LET | NEQ | EQU
+\end{lstlisting}
+
+Although this example gives us quite a strict definition of what an expression needs to be for an If statement later on we will need to come up with a more general definition that is more applicable to other instances of using expressions (such as in arithmetic operations). The language specification for Go describes an expression by saying; "An expression specifies the computation of a value by applying operators and functions to operators". Another way to think of an expression is it is any valid unit of code that resolves to a single value \footnotemark[3].
+
+\footnote[3]{url for quote}
+
+Now that we have our definitions for what Expressions and Programs can be, we can begin to group what instructions belong in which section. With all our expressions being defined in the data type Expr and all our instructions used to make programs in the data type Prog.
+
+Therefore if we are only considering our If statement example from earlier (ignoring how we defined the variable  x) we end up with the following data structure;
+
+\begin{lstlisting}
+	data Prog   = If Expr Prog | Return Expr
+
+	data Expr   = ExprComp Op Expr Expr 
+	               |Val Number 
+	               |Var Name 
+
+	data Op     = GET | LET | NEQ | EQU
+
+	type Name   = Char
+
+	type Number = Int
+\end{lstlisting}
+
+The above data structure now enables you to create high level intermediate representation of the original If statement we looked at, through the use of Haskell data types. 
+
+You can see here how the data structure has a broad scope actually allowing expressions such as $(4<6) != (4 < (5>6))$, which don't really make sense. But I felt it was better to allow for these bizarre expressions, and handle any stricter rules in parsing stages. Rather than create an IR that was too restrictive.
+
+\subsection{Analysis and Expansion of Creating an IR Example}
+
+The key point of the above example is to understand that each part of a languages features can be, and needs to be, strictly defined. I found it important to remember the data structure I am creating  has a purpose other than just being a new representation of Goal. It needs to actually extract the important pieces of information from the code, such that you are left with a series of concise statements that hold all the information necessary for you to start to rebuild the program using a new instruction set.
+
+The example also highlights the process of abstracting out each part of a languages functionality, then choosing the appropriate structure to use to represent them. An important part of this example is showing the use of recursive data structures to generate tree like data types.
+
+For example look at the code;
+
+\begin{lstlisting}
+	if (x > 1){
+		if (x > 5){
+		 	if (x == 6) {
+		 		return 1;
+		 	};	
+		};
+	};
+\end{lstlisting}  
+ 
+It will be represented using data structure from our example by the following Haskell expression;
+
+\begin{lstlisting}
+If (ExprComp GET (Var 'x') (Val 1)) 
+	(If (ExprComp GET (Var 'x') (Val 5))
+		(If (ExprComp EQU (Var 'x') (Val 6))
+			(Return (Val 1)))) 
+\end{lstlisting} 
+
+This can also be visualized in a tree structure with branches to the right being the outcome if the condition is true and branches to the left if the condition is false;
+
+\begin{figure}[h]
+\centering
+\begin{forest}
+for tree={
+  draw,
+  minimum width=3cm, 
+  minimum height=1cm,
+  anchor=north,
+  align=center,
+  child anchor=north
+},
+[{$x > 1$}, align=center
+  [{$break;$}]
+  [{$x > 5$}
+    [{$break;$}]
+    [{$x == 6$}
+  		[$break$]
+  		[$return$ $1;$] 
+  	]
+  ]
+]
+\end{forest}
+\caption{Visual representation of tree structure of nested if statements}
+\label{fig:ifTree} 
+\end{figure}
+
+What figure~\ref{fig:ifTree} shows you is the importance of using recursive data structures when allowing an arbitrary number of nested commands. You will see that as you start to expand your data structure to include multiple function declarations, or even large conditional expressions, building a tree like data structure is a good way to represent any program.
+
+Overall this example helps to introduce all the key concepts behind the creation of the IR I used in my compiler.
+
+\subsection{My Intermediate Representation of Goal}
+
+\subsection{Handling More Complex Features in my IR }
+
+\section{Code Generation}
+
+\subsection{Introduction to Code Generation}
+
+\subsection{Brief Introduction to Target Language Instruction Set}
+
+\subsection{Example Code Generation}
+
+\subsection{Analysis and Expansion of Code Generation Example}
+
+\subsection{Examples of Generating Code For More Complex Features}
