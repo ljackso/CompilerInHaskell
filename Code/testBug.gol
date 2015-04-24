@@ -1,0 +1,8 @@
+
+global j = 4;
+global t = 5;
+
+func main() {
+    l = t+j;
+    Show(l);
+};

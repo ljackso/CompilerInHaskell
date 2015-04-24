@@ -19,32 +19,32 @@
 \BOOKMARK [1][-]{section.2.2}{Differences From Go}{chapter.2}% 19
 \BOOKMARK [1][-]{section.2.3}{Possible Uses}{chapter.2}% 20
 \BOOKMARK [0][-]{chapter.3}{Parsing}{}% 21
-\BOOKMARK [1][-]{section.3.1}{Introduction to Parsing}{chapter.3}% 22
-\BOOKMARK [1][-]{section.3.2}{Introduction to Parser Combinators}{chapter.3}% 23
-\BOOKMARK [1][-]{section.3.3}{Goal Syntax Rules and Justifications}{chapter.3}% 24
-\BOOKMARK [1][-]{section.3.4}{Parser Implementation}{chapter.3}% 25
-\BOOKMARK [2][-]{subsection.3.4.1}{Example of Parser Implementation}{section.3.4}% 26
-\BOOKMARK [2][-]{subsection.3.4.2}{Analysis of Parser Example}{section.3.4}% 27
-\BOOKMARK [1][-]{section.3.5}{Potential for Expansion}{chapter.3}% 28
-\BOOKMARK [0][-]{chapter.4}{Code Generation \046 Intermediate Representation}{}% 29
-\BOOKMARK [1][-]{section.4.1}{Intermediate Representation}{chapter.4}% 30
-\BOOKMARK [2][-]{subsection.4.1.1}{Introduction to Intermediate Representations}{section.4.1}% 31
-\BOOKMARK [2][-]{subsection.4.1.2}{Example Creating an Intermediate Representation}{section.4.1}% 32
-\BOOKMARK [2][-]{subsection.4.1.3}{Analysis and Expansion of Creating an IR Example}{section.4.1}% 33
-\BOOKMARK [2][-]{subsection.4.1.4}{My Intermediate Representation of Goal}{section.4.1}% 34
-\BOOKMARK [2][-]{subsection.4.1.5}{Handling More Complex Features in my IR }{section.4.1}% 35
-\BOOKMARK [1][-]{section.4.2}{Code Generation}{chapter.4}% 36
-\BOOKMARK [2][-]{subsection.4.2.1}{Introduction to Code Generation}{section.4.2}% 37
-\BOOKMARK [2][-]{subsection.4.2.2}{Brief Introduction to Target Language Instruction Set}{section.4.2}% 38
-\BOOKMARK [2][-]{subsection.4.2.3}{Example Code Generation}{section.4.2}% 39
-\BOOKMARK [2][-]{subsection.4.2.4}{Analysis and Expansion of Code Generation Example}{section.4.2}% 40
-\BOOKMARK [2][-]{subsection.4.2.5}{Examples of Generating Code For More Complex Features}{section.4.2}% 41
-\BOOKMARK [0][-]{chapter.5}{Execution using a Stack Based Virtual Machine}{}% 42
-\BOOKMARK [1][-]{section.5.1}{Introduction to Stack Based Virtual Machines}{chapter.5}% 43
-\BOOKMARK [1][-]{section.5.2}{Implementing a Stack Based Virtual Machine}{chapter.5}% 44
-\BOOKMARK [2][-]{subsection.5.2.1}{Explanation of Instruction Set}{section.5.2}% 45
-\BOOKMARK [2][-]{subsection.5.2.2}{Example Code Execution}{section.5.2}% 46
-\BOOKMARK [2][-]{subsection.5.2.3}{Analysis and Expansion of Code Execution Example}{section.5.2}% 47
-\BOOKMARK [2][-]{subsection.5.2.4}{Memory Design and Implementation}{section.5.2}% 48
-\BOOKMARK [2][-]{subsection.5.2.5}{Stack Management}{section.5.2}% 49
-\BOOKMARK [2][-]{subsection.5.2.6}{Implementing Concurrency}{section.5.2}% 50
+\BOOKMARK [1][-]{section.3.1}{Introduction to Using Monadic Parser Combinators}{chapter.3}% 22
+\BOOKMARK [1][-]{section.3.2}{Goal Syntax Rules and Justifications}{chapter.3}% 23
+\BOOKMARK [1][-]{section.3.3}{Parser Implementation}{chapter.3}% 24
+\BOOKMARK [2][-]{subsection.3.3.1}{Example of Parser Implementation}{section.3.3}% 25
+\BOOKMARK [2][-]{subsection.3.3.2}{Analysis of Parser Example}{section.3.3}% 26
+\BOOKMARK [1][-]{section.3.4}{Potential for Expansion}{chapter.3}% 27
+\BOOKMARK [0][-]{chapter.4}{Code Generation \046 Intermediate Representation}{}% 28
+\BOOKMARK [1][-]{section.4.1}{Intermediate Representation}{chapter.4}% 29
+\BOOKMARK [2][-]{subsection.4.1.1}{Introduction to Intermediate Representations}{section.4.1}% 30
+\BOOKMARK [2][-]{subsection.4.1.2}{Example Creating an Intermediate Representation}{section.4.1}% 31
+\BOOKMARK [2][-]{subsection.4.1.3}{Analysis and Expansion of Creating an IR Example}{section.4.1}% 32
+\BOOKMARK [2][-]{subsection.4.1.4}{My Intermediate Representation of Goal}{section.4.1}% 33
+\BOOKMARK [2][-]{subsection.4.1.5}{Handling More Complex Features in my IR }{section.4.1}% 34
+\BOOKMARK [1][-]{section.4.2}{Code Generation}{chapter.4}% 35
+\BOOKMARK [2][-]{subsection.4.2.1}{Introduction to Code Generation}{section.4.2}% 36
+\BOOKMARK [2][-]{subsection.4.2.2}{Brief Introduction to Target Language Instruction Set}{section.4.2}% 37
+\BOOKMARK [2][-]{subsection.4.2.3}{Example Code Generation}{section.4.2}% 38
+\BOOKMARK [2][-]{subsection.4.2.4}{Analysis and Expansion of Code Generation Example}{section.4.2}% 39
+\BOOKMARK [2][-]{subsection.4.2.5}{Examples of Generating Code For More Complex Features}{section.4.2}% 40
+\BOOKMARK [0][-]{chapter.5}{Execution using a Stack Based Virtual Machine}{}% 41
+\BOOKMARK [1][-]{section.5.1}{Introduction to Stack Based Virtual Machines}{chapter.5}% 42
+\BOOKMARK [1][-]{section.5.2}{Implementing a Stack Based Virtual Machine}{chapter.5}% 43
+\BOOKMARK [2][-]{subsection.5.2.1}{Explanation of Instruction Set}{section.5.2}% 44
+\BOOKMARK [2][-]{subsection.5.2.2}{Example Code Execution}{section.5.2}% 45
+\BOOKMARK [2][-]{subsection.5.2.3}{Analysis and Expansion of Code Execution Example}{section.5.2}% 46
+\BOOKMARK [2][-]{subsection.5.2.4}{Memory Design and Implementation}{section.5.2}% 47
+\BOOKMARK [2][-]{subsection.5.2.5}{Stack Management}{section.5.2}% 48
+\BOOKMARK [2][-]{subsection.5.2.6}{Implementing Concurrency}{section.5.2}% 49
+\BOOKMARK [0][-]{chapter.6}{Testing}{}% 50

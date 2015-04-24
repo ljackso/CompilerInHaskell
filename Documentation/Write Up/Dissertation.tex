@@ -15,11 +15,16 @@
 \usepackage{hyperref}
 
 \author{Luke Jackson}
-\title{Creating a Compiler and Executer in Haksell for Goal, a Simple Concurrent Programming Language Based on Google Go.}
+\title{Creating a Concurrent Compiler in Haksell}
 
 \begin{document}
 
 \maketitle
+
+\begin{abstract}
+Creating a compiler and executer in Haksell for Goal, a simple concurrent programming language of my own design based on Google Go. This paper can be treated as a introduction to implementing a compiler in Haskell, but a basic understanding of Haskell and Monads is assumed.
+\end{abstract}
+
 \tableofcontents
 
 \include{IntroductionAndOverview}
@@ -27,6 +32,8 @@
 \include{Parsing}
 \include{CodeGeneration}
 \include{Execution}
+\include{Testing}
+
 
 \bibliographystyle{plainnat}
 \bibliography{Bibliography}

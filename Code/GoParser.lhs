@@ -96,7 +96,7 @@ Evaluates a whole program
 > parseGo                       :: String -> Prog  
 > parseGo fs                    =   if validFile fs then 
 >                                       unsafePerformIO( do go <- readFile fs
->                                                           return (evalProg ( go)))
+>                                                           return (evalProg go))
 >                                   else error "Unvalid file, ust be a .gol file!"  
 
 > validFile                     :: String -> Bool
@@ -109,25 +109,15 @@ Evaluates a whole program
 >                                     []        -> error "invalid input at function level"
 
 > parseProg                     :: Parser Prog
-> parseProg                     = do a <- multipleAssign
+> parseProg                     = do space
+>                                    a <- multipleAssign
+>                                    space
 >                                    m <- parseMain
 >                                    symbol ";"
+>                                    space
 >                                    fs <- parseFuncs
->                                    return (Seqn (a ++ (m:fs)))
->                                  +++ do space
->                                         m3 <- parseMain 
->                                         symbol ";"
->                                         fs1 <- parseFuncs
->                                         return (Seqn (m3:fs1))     
->                                  +++ do space
->                                         m1 <- parseMain
->                                         symbol ";"  
->                                         return m1
->                                  +++ do ma <- multipleAssign
->                                         space
->                                         m2 <- parseMain
->                                         symbol ";"  
->                                         return (Seqn (ma++[m2]))        
+>                                    space
+>                                    return (Seqn (a ++ (m:fs)))      
 
 Parse Multiple Functions
 
@@ -138,6 +128,9 @@ Parse Multiple Functions
 >                                       return (f:fs)
 >                                     +++ do symbol ";" 
 >                                            return [f]   
+>                                  +++ do string ""
+>                                         return []   
+
 
 Changed so main can return an int unlike in Go
 
@@ -153,46 +146,32 @@ Changed so main can return an int unlike in Go
 > parseFunc                     = do string "func"
 >                                    n <- identifier
 >                                    symbol "("
->                                    do ns <- listNames
->                                       symbol ")"
->                                       do string "int" 
->                                          symbol "{"
->                                          p1 <- parseCommands
->                                          symbol "}"
->                                          return (Func (n,INT) ns p1)
->                                        +++ do string "bool" 
->                                               symbol "{"
->                                               p1 <- parseCommands
->                                               symbol "}"
->                                               return (Func (n,INT) ns p1)
->                                        +++ do symbol "{"
->                                               p3 <- parseCommands
->                                               symbol "}"
->                                               return (Func (n,VOID) ns p3)
->                                     +++ do symbol ")"
->                                            do string "int"
->                                               symbol "{"
->                                               p2 <- parseCommands
->                                               symbol "}"
->                                               return (Func (n, INT) [] p2)
->                                             +++ do string "bool"
->                                                    symbol "{"
->                                                    p2 <- parseCommands
->                                                    symbol "}"
->                                                    return (Func (n, INT) [] p2)           
->                                             +++ do symbol "{"
->                                                    p4 <- parseCommands
->                                                    symbol "}"
->                                                    return (Func (n,VOID) [] p4)  
+>                                    ar <- arguments
+>                                    symbol ")"
+>                                    t <- getType 
+>                                    symbol "{"
+>                                    p1 <- parseCommands
+>                                    symbol "}"
+>                                    return (Func (n,t) ar p1)  
 
 
-> listNames                     :: Parser [Name] 
-> listNames                     = do a <- getArgument
+> getType                       :: Parser FType
+> getType                       = do string "int"
+>                                    return (INT)
+>                                  +++ do string "bool"
+>                                         return (INT)
+>                                  +++ do string ""
+>                                         return (VOID)
+
+> arguments                     :: Parser [Name] 
+> arguments                     = do a <- getArgument
 >                                    do symbol ","
->                                       ar <- listNames
+>                                       ar <- arguments
 >                                       return (a:ar)
 >                                     +++ return [a]                                   
-         
+>                                  +++ do string ""
+>                                         return [] 
+ 
 >
 > getArgument                   :: Parser Name
 > getArgument                   = do a <- identifier
@@ -404,8 +383,8 @@ User return' so as not to get mixed up with haskells "return" function
 
 ASSIGNMENT
 
-> evalAssignment                :: String -> Prog 
-> evalAssignment xs             =  case (parse assign xs) of
+> evalAssignment                :: String -> [Prog] 
+> evalAssignment xs             =  case (parse multipleAssign xs) of
 >                                     [(e,[])]  -> e
 >                                     [(_,out)] -> error ("unused input " ++ out)
 >                                     []        -> error "invalid input"
@@ -425,7 +404,8 @@ ASSIGNMENT
 >                                      +++ do symbol "-="
 >                                             e2 <- arthExpr
 >                                             return (Assign n (ExprApp SUB (Var n) e2))
->                                      +++ do c <- compExpr
+>                                      +++ do symbol "="
+>                                             c <- compExpr
 >                                             return (Assign n c)           
 
 
@@ -444,13 +424,18 @@ A Multiple Assignments, deals with a list of MultipleAssignments wich would be g
 
 > multipleAssign                :: Parser [Prog]
 > multipleAssign                = do string "global"
->                                    a <- assign
+>                                    n <- identifier
+>                                    symbol "="
+>                                    e <- compExpr
 >                                    do symbol ";"
 >                                       ma <- multipleAssign                                    
->                                       return (a:ma)
->                                     +++ do symbol ";" 
->                                            return [a]  
+>                                       return ((Assign n e):ma)
+>                                     +++ do symbol";"
+>                                            return [(Assign n e)]  
+>                                  +++ do string ""
+>                                         return []    
 
+   
 -----------------------------------------------------------------------------------------------------
 
 SHOW 

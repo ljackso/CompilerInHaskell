@@ -1,17 +1,35 @@
 
 \chapter{Parsing}
 
-Parsing is a fundamental part of compiling, you can think of it as the front end of the compiler. In simplistic terms it takes raw text and then builds a data structure that represents the program the user has written.     
- 
-\section{Introduction to Parsing}
+Parsing is a fundamental part of compiling, you can think of it as the front end of the compiler. In simplistic terms it takes ina program as raw text and then builds a data structure that represents the program the user has written. In my project the raw text is the code from a .gol file and the data structure is the intermediate representation of Goal. 
 
-\section{Introduction to Parser Combinators}
+Although I will be talking a lot about the intermediate representation I've created to parse my text into, I will not be going into much detail about the design of that data structure. That is covered in more detail in the next chapter. In this section a preexisting understanding of Monads in Haskell is assumed.      
 
-Parser Combinators 
+\section[Introduction to Using Monadic Parser Combinators]{Introduction to Using \\ Monadic Parser Combinators}
+
+The technique I used to parse data in my compiler was to make use of Monadic Parser Combinators. If we think of a parser in Haskell as something that takes in a string and returns a data structure, we can think of parser combinators as high order functions that take in several parsers as its input and returns a new parser as it's output.  
 
 \section{Goal Syntax Rules and Justifications}
 
-As was discussed in 
+As was discussed in the previous structure Goal gets most of its syntax rules from Go. There are however some unique syntax rules I decided to implement in Goal that you will not find in Go. There were two main reasons why syntax rules my differ from Go. 
+
+The first being it was a design choice. For example if you look at variable declaration in Go it can be done one of 2 ways.
+
+\begin{lstlisting}
+	var i int = 42
+	j := 42
+\end{lstlisting}    
+
+Although I could have implemented variable declarations to look like this because I decided because variables can be declared on the fly and because of the simplistic nature of my type system I may as well keep declarations and assignments the same, and as simple as possible. Hence in Goal all you need to write to declare or assign a variable is;
+
+\begin{lstlisting}
+	l = 42;
+\end{lstlisting}
+ 
+There are several examples of these changes in syntax for design choice, such as global variable definitions and the requirement of brackets to hold conditional statements. These small changes where made merely as a way to tidy up Goal and make it have a more complete and consistent syntax. 
+
+The other reason Goal's syntax varies from Go is because of the limitations within the implementation of my parser. For example, in Go you don't need to use semi colons at the end of a command. Where as I decided that in Goal I would make it necessary to include semi colons at the end of every command, including if statements and function declarations. This is because it makes it easier to split up commands based on every time I see a semi colon. The reasons I made some of these choices was not because it was not possible for me to implement different syntax rules, but because the main focus of this project was not on parsing and if a small change to syntax meant a quicker implementation sometimes I felt it necessary. 
+
 
 \section{Parser Implementation}
 

@@ -8,7 +8,7 @@ When creating a compiler you must take in a source language, the code you wish t
 For a project like this there are two approaches you can take when choosing what your target language should be. You can either find a preexisting low level language like ARM code or Java Byte Code. Or you can create your own instruction set and a virtual machine that is capable of executing those instructions. I decided to make my own instruction set and a virtual machine to execute it. 
 
 
-\section{Introduction to Stack Based Virtual Machines}
+\section[Introduction to Stack Based Virtual Machines]{Introduction to \\ Stack Based Virtual Machines}
 
 There are two things too define here before we can start talking about stacked based virtual machines . We need to first define what is a virtual machine, then secondly what is a stack machine. 
 
@@ -294,8 +294,116 @@ This is a very simple approach to partitioning memory and one of the weaker aspe
 
 \subsection{Stack Management}
 
+Manging a stack is a very important part of implementing an efficient and, more importantly, working stack based virtual machine. 
+
 \subsubsection{Handling Function Calls}
 
+Handling function calls is one of the more interesting things to implement in a stack. If we first look at what happens in our executor when we hit the two commands that deal with function calls; either $VCALL$ (for void function calls) or $CALL$, a function called $handleCall$  is called. The purpose of this function is to execute the function call before moving onto the next command. This seems simple enough but there are two complications; functions that take in arguments and functions that return values.
+
+If we first look at handling arguments, one approach could be to change the instruction of $CALL$ to now incorporate arguments is as well like this;
+
+\begin{lstlisting}
+	data Inst     = ...
+	                |CALL Name [Argument]
+	                |VCALL Name [Argument]
+	                ...
+				
+	type Argument = Number
+\end{lstlisting}        
+
+This looks like a good solution at first,  but what if we want to call a function using an expression or a variable as arguments. Calls like $fun(a+5,(4*b)-c);$ would start to get very messy to deal with. 
+
+A better approach would be to use stack frames. A stack frame is a frame of data that is put on top of the stack. In the case of function calls it means putting all the arguments onto a the stack, then ensuring they are popped off in the correct order.   
+%TODO Find better reference than stack overflow %
+
+If we look at what happens if we were to call a function that takes in 2 arguments we can see that both arguments get pushed onto the stack before calling the function, this is shown below.
+
+\begin{lstlisting}
+	fun(12, 30); 	-->  PUSH (Integer 30)
+	                     PUSH (Integer 12)
+        	             CALL "fun"	
+\end{lstlisting}
+
+Now to understand what happens in $handleCall$ we must look at what the function does. In simple terms it calls $funExec'$, a function which behaves almost exactly as our main executor except with some limits to what can be done inside a function (mainly to do with concurrent processes), and then moves onto the next instruction by updating the program counter and calling $exec'$ after updating the stack and memory. 
+
+Lets look at the code to be executed now in $funExec$ if we see that function $fun$ looks like this;
+
+\begin{lstlisting}
+	func fun(a int, b int){
+		...
+	};
+\end{lstlisting}
+
+So the way in which the arguments would be passed is to pass the stack into $funExec'$ then pop of the items in the correct order. This can be show here;
+
+\begin{lstlisting}
+  -main executor;           -function executor;
+  ...
+  PUSH (Integer 30)
+  PUSH (Integer 12)
+  CALL "fun"
+             -- pass stack --> 
+                            FUNC "fun  
+                            POP "a"
+                            POP "b"
+                            ...
+\end{lstlisting}
+  
+Now all your arguments are set up in memory to use within the function. It is important to note that when calling functions rather than just insert the function code into the current executing code I actually cause a new instance of an executor to run. This was a design choice as I felt that this approach gave me more control as to how I wanted to implement recursion and how I wanted functions to behave in general. I also felt it was a cleaner approach that more closely mirrored how I wanted functions to be treated.
+
+Now to deal with functions that return values this is very similar to how we handled arguments just the other way round. If we look at an assignment;
+
+\begin{lstlisting}
+	j = 13;  --> PUSH (Integer 13)
+	             POP "j"	
+\end{lstlisting}
+
+You can see that when dealing with an assignment you are popping the top of the stack. Therefore if our assignment looked like this;
+
+\begin{lstlisting}
+	j = gun();
+\end{lstlisting} 
+
+We must ensure that the value our function $gun()$ returns is left on top of the stack to be popped of our assignment. The instruction $RSTOP$ is used to signify a return value and will break out of $funExec'$. Therefore if we combine both our previous examples we can show how a function which takes in arguments will be called and how the stack is updated and passed around.
+
+Lets look at the function;
+
+\begin{lstlisting}
+	func fun(a int, b int){
+		Return a + b;
+	};
+\end{lstlisting}
+
+Then how it would behave if we use it as part of assignment;
+
+\begin{lstlisting}
+	j = fun(5, 8);
+\end{lstlisting}
+
+Looking at figure~\ref{fig:stackFrame} we can see how this simple command is dealt with by the executor and the function executor functions. 
+
+\begin{figure}[h]]
+\centering
+\begin{lstlisting}
+  -main executor;           -function executor;
+  ...
+  PUSH (Integer 30)
+  PUSH (Integer 12)
+  CALL "fun"
+             -- pass stack --> 
+                            FUNC "fun  
+                            POP "a"
+                            POP "b"
+                            PUSHV "a"
+                            PUSHCV "b"
+                            DO ADD
+                            RSTOP
+             <-- pass stack --
+ POP "j"                               
+\end{lstlisting}
+\caption{Example of how functions are called, including passing arguments and returning a value}
+\label{fig:stackFrame}
+\end{figure}
 \subsubsection{Handling Recursion}
 
 \subsection{Implementing Concurrency}

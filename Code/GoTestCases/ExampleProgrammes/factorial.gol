@@ -1,0 +1,25 @@
+
+func main() {
+    fa = facA(5);
+    fb = facB(5);
+    Show(fa);
+    Show(fb);
+}; 
+
+func facA(n int) int {
+    return facAHelper(n , 1);
+};
+
+func facAHelper(n int, a int) int {
+    if (n == 1){
+        return a;
+    };
+    return facAHelper( (n-1), a * n); 
+};
+
+func facB(n int) int {
+    if (n == 0) {
+        return 1;
+    }; 
+    return n * facB(n-1);
+};

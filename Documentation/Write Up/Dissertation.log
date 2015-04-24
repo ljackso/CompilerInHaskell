@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2015.4.11)  20 APR 2015 20:56
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2015.4.11)  24 APR 2015 16:12
 entering extended mode
 **Dissertation.tex
 
@@ -851,7 +851,9 @@ al.aux")
 ("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\CodeGenerat
 ion.aux")
 ("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Execution.a
-ux"))
+ux")
+("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Testing.aux
+"))
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 20.
 LaTeX Font Info:    ... okay on input line 20.
 LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 20.
@@ -910,7 +912,13 @@ LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <6> on input line 23.
  [1
 
-{C:/ProgramData/MiKTeX/2.9/pdftex/config/pdftex.map}]
+{C:/ProgramData/MiKTeX/2.9/pdftex/config/pdftex.map}]pdfTeX warning (ext4): des
+tination with the same identifier (name{page.1}) has been already used, duplica
+te ignored
+<to be read again> 
+                   \relax 
+l.26 \end{abstract}
+                    [1]
 ("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Dissertatio
 n.toc"
 LaTeX Font Info:    External font `cmex10' loaded for size
@@ -921,7 +929,7 @@ pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has
 been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.34 ...ating an IR Example}{18}{subsection.4.1.3}
+l.34 ...resentation of Goal}{21}{subsection.4.1.4}
                                                    [1
 
 ])
@@ -953,19 +961,19 @@ Chapter 2.
 ("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Parsing.tex
 "
 Chapter 3.
-) [14
+[14
 
 
 
-]
+]) [15]
 ("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\CodeGenerat
 ion.tex"
 Chapter 4.
-[15
+[16
 
 
 
-] [16] [17] [18]
+] [17] [18] [19]
 \forest@temp@box=\box32767 (local)
 \forest@temp@box=\box32766 (local)
 \forest@temp@box=\box32765 (local)
@@ -974,42 +982,49 @@ Chapter 4.
 \forest@temp@box=\box32762 (local)
 \forest@temp@box=\box32761 (local)
 \forest@temp@box=\box32760 (local)
- [19]) [20]
+ [20]) [21]
 ("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Execution.t
 ex"
 Chapter 5.
-
-Overfull \hbox (11.39627pt too wide) in paragraph at lines 11--11
-[]\OT1/cmr/bx/n/14.4 Introduction to Stack Based Vir-tual Ma-chines 
- []
-
-[21
+[22
 
 
 
-] [22]
+] [23]
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[23]
+[24]
 Overfull \hbox (7.79932pt too wide) in paragraph at lines 140--141
 [][][][][][][][][][][][][][][][][][][][][][][][][][] 
  []
 
-[24] [25] [26] [27]
+[25] [26] [27] [28]
 Overfull \hbox (0.86896pt too wide) in paragraph at lines 269--270
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
  []
 
-) [28] [29]
-("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Dissertatio
-n.bbl")
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 34.
- [30
+[29] [30]
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+) [31] [32]
+("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Testing.tex
+"
+Chapter 6.
+) [33
+
 
 
 ]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 34.
+("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Dissertatio
+n.bbl")
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 41.
+ [34
+
+
+]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 41.
 
 ("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Dissertatio
 n.aux"
@@ -1022,17 +1037,19 @@ al.aux")
 ("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\CodeGenerat
 ion.aux")
 ("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Execution.a
-ux"))
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 34.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 34.
+ux")
+("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Testing.aux
+"))
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 41.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 41.
 Package rerunfilecheck Info: File `Dissertation.out' has not changed.
-(rerunfilecheck)             Checksum: F7BE4FC84C5A13178C9B28F14B8BA4E7;3932.
+(rerunfilecheck)             Checksum: CBFC803747E283FCD345FEEBDE0E0272;3919.
  ) 
 Here is how much of TeX's memory you used:
- 22204 strings out of 493921
- 443168 string characters out of 3148889
- 530659 words of memory out of 3000000
- 24863 multiletter control sequences out of 15000+200000
+ 22276 strings out of 493921
+ 444600 string characters out of 3148889
+ 531057 words of memory out of 3000000
+ 24865 multiletter control sequences out of 15000+200000
  9956 words of font info for 36 fonts, out of 3000000 for 9000
  841 hyphenation exceptions out of 8191
  101i,12n,128p,849b,1627s stack positions out of 5000i,500n,10000p,200000b,50000s
@@ -1051,9 +1068,9 @@ ram Files/MikTex/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Program Files/Mi
 kTex/fonts/type1/public/amsfonts/cm/cmtt10.pfb><C:/Program Files/MikTex/fonts/t
 ype1/public/amsfonts/cm/cmtt8.pfb><C:/Program Files/MikTex/fonts/type1/public/a
 msfonts/cm/cmtt9.pfb>
-Output written on Dissertation.pdf (31 pages, 350457 bytes).
+Output written on Dissertation.pdf (36 pages, 369450 bytes).
 PDF statistics:
- 716 PDF objects out of 1000 (max. 8388607)
- 269 named destinations out of 1000 (max. 500000)
+ 808 PDF objects out of 1000 (max. 8388607)
+ 332 named destinations out of 1000 (max. 500000)
  413 words of extra memory for PDF output out of 10000 (max. 10000000)
 

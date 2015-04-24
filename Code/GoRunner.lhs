@@ -212,7 +212,7 @@ in order
 > typeChecker  cs               = checkFuncTypes cs
 
 > checkFuncTypes                :: Code -> Code 
-> checkFuncTypes cs             = concat [ (checkFuncType f) ++ [FEND]| f <- fList] 
+> checkFuncTypes cs             = concat [(checkFuncType f) ++ [FEND]| f <- fList] 
 >                                   where
 >                                       fList = filter (not. null) (splitOn [FEND] cs) 
 
@@ -221,8 +221,9 @@ in order
 >                                       VOID     -> checkIfVoid cs n
 >                                       INT      -> checkIfInt cs n  
 >                                   where
->                                       n = getFuncName (head cs)
 >                                       t = getFuncType (head cs)
+>                                       n = getFuncName (head cs)
+
 
 > checkIfVoid                   :: Code -> Name -> Code
 > checkIfVoid cs n              = if s == [] then cs else error ("Cannot return a value in void function; " ++ n)  
@@ -241,8 +242,7 @@ in order
 
 > getFuncType                   :: Inst -> FType
 > getFuncType (FUNC n)          = snd n
-> getFuncType (MAIN)            = VOID
-> getFuncType i                 = error "Type Checker Error T-02"
+> getFuncType i                 = VOID
  
 
 
@@ -301,10 +301,9 @@ Data Structures needed for Concurrency
 > data GoRoutine                = Go Code Int Stack Mem         -- Go ec pc ls lm
 >                                   deriving (Show, Eq)
 
-Data Structure needed to use functions that return a value, don't worry about passing round Go subroutines 
-as cannot start a go subroutine in a function
+Data Structure you return at the end of a series of code execution.
 
-> type FuncParam                = ((Stack, Mem), [Channel]) 
+> type EndParam                = ((Stack, Mem), ([Channel], (S.Seq GoRoutine, Int))) 
 
 Iniation functions
 
@@ -324,12 +323,11 @@ Almost entirely from AFP at this stage a simple compiler for executing the code 
 This takes a list of machine code instructions and executes them.
 
 > exec                          :: Code -> String
-> exec c                        =   case ex of 
->                                       Just n  -> "Return " ++ (getNumberAsString n) 
->                                       Nothing -> ""
+> exec c                        =   if  s == [] then ""
+>                                   else "Return " ++ (getNumberAsString (head s) )     --- shouldn't happen anymore as main has to be void
 >                                   where
->                                       ex = exec' c c 0 [] instantiateMemory True [] (S.fromList [],0)
-
+>                                       ex  = exec' c  0 [] instantiateMemory True [] (S.fromList [],0)
+>                                       s   = fst (fst ex)    
 
 This is the function that actually executes the code, c is the intial code, ec is what you're executing
 
@@ -345,32 +343,59 @@ cs  = list of channels
 gs  = list of current running go subroutines
 gc  = count of current process 
 
-> exec'                         :: Code -> Code ->  Int -> Stack -> Mem -> Bool -> [Channel] -> (S.Seq GoRoutine, Int) ->  Maybe Number
-> exec' c ec pc s m g cs (gs ,gc)
->                               =   case ec !! pc of 
->                                       PRINT p     -> trace (p) (exec' c ec (pc+1) s m g ncs (ngs, ngc)) 
->                                       SHOW        -> trace (getNumberAsString (head s)) (exec' c ec (pc+1) (pop s) m g ncs (ngs, ngc) ) 
->                                       MAIN        -> exec' c ec (pc+1) s m False ncs (ngs, ngc)
->                                       FUNC n      -> exec' c ec (pc+1) s m g ncs (ngs, ngc)      
->                                       PUSH n      -> exec' c ec (pc+1) (push n s) m g ncs (ngs, ngc)
->                                       PUSHV v     -> exec' c ec (pc+1) (pushv v m s) m g ncs (ngs, ngc)
->                                       POP v       -> exec' c ec (pc+1) (pop s) (assignVariable v (head s) m g) g ncs (ngs, ngc)
->                                       DO o        -> exec' c ec (pc+1) (operation o s) m g ncs (ngs, ngc)
->                                       COMP o      -> exec' c ec (pc+1) (comparison o s) m g ncs (ngs, ngc)
->                                       LABEL l     -> exec' c ec (pc+1) s m g ncs (ngs, ngc)
->                                       JUMP l      -> exec' c ec (jump c l) s m g ncs (ngs, ngc)
->                                       JUMPZ l     -> exec' c ec (jumpz c s l pc) (pop s) m g ncs (ngs, ngc)
->                                       VCALL n     -> (handleCall c ec pc s m n g ncs (ngs, ngc) True)
->                                       CALL n      -> (handleCall c ec pc s m n g ncs (ngs, ngc) False)  
->                                       STOP        -> Nothing
->                                       FEND        -> Nothing
->                                       CHANNEL n   -> exec' c ec (pc+1) s m g (createChannel n cs) (ngs, ngc)
->                                       PUSHC n     -> exec' c ec (pc+1) (pop s) m g (pushChannel n cs (head s)) (ngs, ngc)
->                                       POPC n      -> exec' c ec (pc+1) (push (getHeadChannel n cs) s) m g (popChannel n cs) (ngs, ngc)
->                                       KILL        -> exec' c ec (pc+1) s m g ncs (S.fromList [], 0)
->                                       WAIT        -> if (S.null gs) then exec' c ec (pc+1) s m g ncs (S.fromList [], 0) else exec' c ec pc s m g ncs (ngs, ngc)
->                                       GO n        -> exec' c ec (pc+1) s m g ncs ((ngs S.|> (startSubRoutine c n s)),ngc)    
->                                       RSTOP       -> error "main() cannot return a value"             --Type checker should catch this 
+> exec'                         :: Code ->  Int -> Stack -> Mem -> Bool -> [Channel] -> (S.Seq GoRoutine, Int) ->  EndParam
+> exec' c pc s m g cs (gs ,gc)
+>                               =   case c !! pc of 
+
+Output Calls
+
+>                                       PRINT p     -> trace (p) (exec' c (pc+1) s m g ncs (ngs, ngc)) 
+>                                       SHOW        -> trace (getNumberAsString (head s)) (exec' c (pc+1) (pop s) m g ncs (ngs, ngc) ) 
+
+Function Headers
+
+>                                       MAIN        -> exec' c (pc+1) s m False ncs (ngs, ngc)
+>                                       FUNC n      -> exec' c (pc+1) s m g ncs (ngs, ngc)      
+
+Stack Calls
+
+>                                       PUSH n      -> exec' c (pc+1) (push n s) m g ncs (ngs, ngc)
+>                                       PUSHV v     -> exec' c (pc+1) (pushv v m s) m g ncs (ngs, ngc)
+>                                       POP v       -> exec' c (pc+1) (pop s) (assignVariable v (head s) m g) g ncs (ngs, ngc)
+
+Operations
+
+>                                       DO o        -> exec' c (pc+1) (operation o s) m g ncs (ngs, ngc)
+>                                       COMP o      -> exec' c (pc+1) (comparison o s) m g ncs (ngs, ngc)
+
+Jumps and Labels
+
+>                                       LABEL l     -> exec' c (pc+1) s m g ncs (ngs, ngc)
+>                                       JUMP l      -> exec' c (jump c l) s m g ncs (ngs, ngc)
+>                                       JUMPZ l     -> exec' c (jumpz c s l pc) (pop s) m g ncs (ngs, ngc)
+
+Function Calls
+
+>                                       VCALL n     -> (handleCall c pc s m g n ncs (ngs, ngc) True)
+>                                       CALL n      -> (handleCall c pc s m g n ncs (ngs, ngc) False)  
+
+Returning and function ends
+
+>                                       RSTOP       -> ((s, m),(ncs, (ngs, ngc)))
+>                                       STOP        -> (([], m),(ncs, (ngs, ngc)))
+>                                       FEND        -> (([], m),(ncs, (ngs, ngc)))
+
+Channel Handlers 
+
+>                                       CHANNEL n   -> exec' c (pc+1) s m g (createChannel n cs) (ngs, ngc)
+>                                       PUSHC n     -> exec' c (pc+1) (pop s) m g (pushChannel n cs (head s)) (ngs, ngc)
+>                                       POPC n      -> exec' c (pc+1) (push (getHeadChannel n cs) s) m g (popChannel n cs) (ngs, ngc)
+
+Go Subroutine handlers
+
+>                                       KILL        -> exec' c (pc+1) s m g ncs (S.fromList [], 0)
+>                                       WAIT        -> if (S.null gs) then exec' c (pc+1) s m g ncs (S.fromList [], 0) else exec' c pc s m g ncs (ngs, ngc)
+>                                       GO n        -> exec' c (pc+1) s m g ncs ((ngs S.|> (startSubRoutine c n s)),ngc)    
 >                                   where
 >                                       con     = subRoutsHandler gs gc cs
 >                                       ncs     = snd con
@@ -381,32 +406,43 @@ gc  = count of current process
 Returns the stack and memory, used for function calls to managing stack frames and make sure variables,
 don't get lost. Does the same as exec' but instead returns the stack.          
         
-TODO: Implement a data structure that fully represents the necessary aparamaters of a fucntion return; stack, memory, channels etc
+TODO: Remove 'g' it is so pointless it's practically a sphere        
+        
+> funExec'                      :: Code -> Code -> Int -> Stack -> Mem -> Bool -> [Channel] -> EndParam 
 
+> funExec' c [] pc s m g cs     =   error "non existent function call"
 
-> stackExec'                    :: Code -> Code -> Int -> Stack -> Mem -> Bool -> [Channel] -> FuncParam
+> funExec' c ec pc s m g cs     =   case ec !! pc of 
+>                                       PRINT p     -> trace (p) (funExec' c ec (pc+1) s m g cs)
+>                                       SHOW        -> trace (getNumberAsString (head s)) (funExec' c ec (pc+1) (pop s) m  g cs)
+>                                       
+>                                       FUNC n      -> funExec' c ec (pc+1) s m g cs       
 
-> stackExec' c [] pc s m g cs   =   error "non existent function call"
+>                                       PUSH n      -> funExec' c ec (pc+1) (push n s) m g cs
+>                                       PUSHV v     -> funExec' c ec (pc+1) (pushv v m s) m g cs
+>                                       POP v       -> funExec' c ec (pc+1) (pop s) (assignVariable v (head s) m g) g cs
 
-> stackExec' c ec pc s m g cs   =   case ec !! pc of 
->                                       SHOW        -> trace (getNumberAsString (head s)) (stackExec' c ec (pc+1) (pop s) m  g cs)
->                                       FUNC n      -> stackExec' c ec (pc+1) s m g cs       
->                                       PUSH n      -> stackExec' c ec (pc+1) (push n s) m g cs
->                                       PUSHV v     -> stackExec' c ec (pc+1) (pushv v m s) m g cs
->                                       POP v       -> stackExec' c ec (pc+1) (pop s) (assignVariable v (head s) m g) g cs
->                                       DO o        -> stackExec' c ec (pc+1) (operation o s) m g cs
->                                       COMP o      -> stackExec' c ec (pc+1) (comparison o s) m g cs
->                                       LABEL l     -> stackExec' c ec (pc+1) s m g cs 
->                                       JUMP l      -> stackExec' c ec (jump ec l) s m g cs
->                                       JUMPZ l     -> stackExec' c ec (jumpz ec s l pc) (pop s) m g cs
->                                       VCALL n     -> (handleCallReStack c ec pc s m n g cs True)
->                                       CALL n      -> (handleCallReStack c ec pc s m n g cs False)
->                                       PUSHC n     -> stackExec' c ec (pc+1) (pop s) m g (pushChannel n cs (head s)) 
->                                       POPC n      -> stackExec' c ec (pc+1) (push (getHeadChannel n cs) s) m g (popChannel n cs) 
->                                       RSTOP       -> ((s, m), cs) 
->                                       STOP        -> (([], m), cs)  
->                                       FEND        -> (([], m), cs)
+>                                       DO o        -> funExec' c ec (pc+1) (operation o s) m g cs
+>                                       COMP o      -> funExec' c ec (pc+1) (comparison o s) m g cs
+
+>                                       LABEL l     -> funExec' c ec (pc+1) s m g cs 
+>                                       JUMP l      -> funExec' c ec (jump ec l) s m g cs
+>                                       JUMPZ l     -> funExec' c ec (jumpz ec s l pc) (pop s) m g cs
+
+>                                       VCALL n     -> (funHandleCall c ec pc s m n g cs True)
+>                                       CALL n      -> (funHandleCall c ec pc s m n g cs False)
+
+>                                       PUSHC n     -> funExec' c ec (pc+1) (pop s) m g (pushChannel n cs (head s)) 
+>                                       POPC n      -> funExec' c ec (pc+1) (push (getHeadChannel n cs) s) m g (popChannel n cs) 
+
+>                                       RSTOP       -> ((s, m), (cs, (S.fromList [], 0))) 
+>                                       STOP        -> (([], m), (cs, (S.fromList [], 0)))  
+>                                       FEND        -> (([], m), (cs, (S.fromList [], 0)))
+
 >                                       CHANNEL n   -> error "Cannnot make new channel within a function must be created in main()"
+>                                       KILL        -> error "Cannot call Kill() in a function call"
+>                                       WAIT        -> error "Cannot Wait() inside a function"
+>                                       GO n        -> error "Cannot start concurrent process inside a function"     
 
         
 -----------------------------------------------------------------------------------------------------
@@ -554,31 +590,31 @@ These functions deal with function calls, if returns something put ontop off sta
 
 v = isthe function call void  
 
-> handleCall                    :: Code -> Code -> Int -> Stack -> Mem -> Name -> Bool -> [Channel] -> (S.Seq GoRoutine, Int)  -> Bool -> Maybe Number
-> handleCall c ec pc s m n g cs (gs, gc) v
->                               =   if v then exec' c ec (pc+1) [] fm g fcs (gs, gc) else exec' c ec (pc+1) fs fm g fcs (gs, gc)  
+> handleCall                    :: Code -> Int -> Stack -> Mem -> Bool -> Name -> [Channel] -> (S.Seq GoRoutine, Int)  -> Bool -> EndParam
+> handleCall c pc s m g n cs (gs, gc) v
+>                               =   if v then exec' c (pc+1) [] fm g fcs (gs, gc) else exec' c (pc+1) fs fm g fcs (gs, gc)  
 >                                   where
 >                                       fMem    = (getGlobalMemmory m ++ instantiateMemory)
 >                                       fCode   = getFunction c n
->                                       fRun    = stackExec' c fCode 0 s fMem g cs   
+>                                       fRun    = funExec' c fCode 0 s fMem g cs   
 >                                       fs      = fst (fst fRun)
 >                                       fm      = updateMemory m (snd (fst fRun))
->                                       fcs     = snd fRun
+>                                       fcs     = fst (snd fRun)
                         
 Returns Stack, used for nested and recursive function calls
 
-> handleCallReStack             :: Code -> Code-> Int -> Stack -> Mem -> Name -> Bool -> [Channel] -> Bool -> FuncParam
-> handleCallReStack c ec pc s m n g cs v
->                               = if v then stackExec' c ec (pc+1) [] fm g fcs  else stackExec' c ec (pc+1) fs fm g fcs 
+> funHandleCall                 :: Code -> Code-> Int -> Stack -> Mem -> Name -> Bool -> [Channel] -> Bool -> EndParam
+> funHandleCall c ec pc s m n g cs v
+>                               = if v then funExec' c ec (pc+1) [] fm g fcs  else funExec' c ec (pc+1) fs fm g fcs 
 >                                   where 
 >                                       fMem    = (getGlobalMemmory m ++ instantiateMemory)
 >                                       fCode   = getFunction c n
->                                       fRun    = stackExec' c fCode 0 s fMem g cs
+>                                       fRun    = funExec' c fCode 0 s fMem g cs
 >                                       fs      = fst (fst fRun)
 >                                       fm      = updateMemory m (snd (fst fRun))
->                                       fcs     = snd fRun 
+>                                       fcs     = fst (snd fRun) 
 
-  
+ nj  
 Searches through code and returns a function's code, ct signifies if is currently cutting the code
 
 > getFunction                   :: Code -> Name -> Code 

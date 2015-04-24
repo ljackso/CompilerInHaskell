@@ -1,0 +1,18 @@
+
+
+func main() {
+    var c chan = Make(chan int);
+    var n chan = Make(chan int); 
+    c <- 5;
+    c <- 24;
+    n <- 4;
+    l = 10;
+    Show(l);
+    l += <-c;
+    Show(l);
+    l += <-c;
+    Show(l);
+    l += <-n;
+    Show(l);
+    
+};
