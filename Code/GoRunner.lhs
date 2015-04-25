@@ -14,6 +14,10 @@ My Modules
 > import GoParser
 
 
+Monads
+
+> import Control.Monad.Writer 
+
 COMPILER & EXECUTOR
 
 This is where I focus on code genration and creating a virtual machine to, compile and execute my code.

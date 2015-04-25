@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2015.4.11)  24 APR 2015 16:12
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2015.4.11)  25 APR 2015 15:52
 entering extended mode
 **Dissertation.tex
 
@@ -1004,15 +1004,17 @@ Overfull \hbox (0.86896pt too wide) in paragraph at lines 269--270
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
  []
 
-[29] [30]
+[29] [30] [31] [32]
+Overfull \hbox (146.39905pt too wide) in paragraph at lines 453--454
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][
+][][][]
+ []
 
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-) [31] [32]
+) [33]
 ("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Testing.tex
 "
 Chapter 6.
-) [33
+) [34
 
 
 
@@ -1020,7 +1022,7 @@ Chapter 6.
 ("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Dissertatio
 n.bbl")
 Package atveryend Info: Empty hook `BeforeClearDocument' on input line 41.
- [34
+ [35
 
 
 ]
@@ -1046,13 +1048,13 @@ Package rerunfilecheck Info: File `Dissertation.out' has not changed.
 (rerunfilecheck)             Checksum: CBFC803747E283FCD345FEEBDE0E0272;3919.
  ) 
 Here is how much of TeX's memory you used:
- 22276 strings out of 493921
- 444600 string characters out of 3148889
- 531057 words of memory out of 3000000
- 24865 multiletter control sequences out of 15000+200000
+ 22289 strings out of 493921
+ 444781 string characters out of 3148889
+ 531194 words of memory out of 3000000
+ 24867 multiletter control sequences out of 15000+200000
  9956 words of font info for 36 fonts, out of 3000000 for 9000
  841 hyphenation exceptions out of 8191
- 101i,12n,128p,849b,1627s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 101i,12n,128p,849b,1797s stack positions out of 5000i,500n,10000p,200000b,50000s
 <C:/Program Files/MikTex/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Progra
 m Files/MikTex/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Program Files/MikT
 ex/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Program Files/MikTex/fonts/typ
@@ -1068,9 +1070,9 @@ ram Files/MikTex/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Program Files/Mi
 kTex/fonts/type1/public/amsfonts/cm/cmtt10.pfb><C:/Program Files/MikTex/fonts/t
 ype1/public/amsfonts/cm/cmtt8.pfb><C:/Program Files/MikTex/fonts/type1/public/a
 msfonts/cm/cmtt9.pfb>
-Output written on Dissertation.pdf (36 pages, 369450 bytes).
+Output written on Dissertation.pdf (37 pages, 375529 bytes).
 PDF statistics:
- 808 PDF objects out of 1000 (max. 8388607)
- 332 named destinations out of 1000 (max. 500000)
+ 830 PDF objects out of 1000 (max. 8388607)
+ 343 named destinations out of 1000 (max. 500000)
  413 words of extra memory for PDF output out of 10000 (max. 10000000)
 

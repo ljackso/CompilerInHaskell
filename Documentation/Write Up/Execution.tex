@@ -300,7 +300,7 @@ Manging a stack is a very important part of implementing an efficient and, more 
 
 Handling function calls is one of the more interesting things to implement in a stack. If we first look at what happens in our executor when we hit the two commands that deal with function calls; either $VCALL$ (for void function calls) or $CALL$, a function called $handleCall$  is called. The purpose of this function is to execute the function call before moving onto the next command. This seems simple enough but there are two complications; functions that take in arguments and functions that return values.
 
-If we first look at handling arguments, one approach could be to change the instruction of $CALL$ to now incorporate arguments is as well like this;
+If we first look at handling arguments, one approach could be to change the data type of the function call instructions to now incorporate arguments is as well like this;
 
 \begin{lstlisting}
 	data Inst     = ...
@@ -349,9 +349,11 @@ So the way in which the arguments would be passed is to pass the stack into $fun
                             ...
 \end{lstlisting}
   
-Now all your arguments are set up in memory to use within the function. It is important to note that when calling functions rather than just insert the function code into the current executing code I actually cause a new instance of an executor to run. This was a design choice as I felt that this approach gave me more control as to how I wanted to implement recursion and how I wanted functions to behave in general. I also felt it was a cleaner approach that more closely mirrored how I wanted functions to be treated.
+Now all your arguments are set up in memory to use within the function. It is important to note that when calling functions rather than just insert the function code into the current executing code I actually cause a new instance of an executor to run and passed around the stack and correct memory scopes. 
 
-Now to deal with functions that return values this is very similar to how we handled arguments just the other way round. If we look at an assignment;
+This was a design choice as I felt that this approach gave me more control as to how I wanted to implement recursion and how I wanted functions to behave in general. I also felt it was a cleaner approach that more closely mirrored how I wanted functions to be treated.
+
+Dealing with  functions that return values is very similar to how we handled arguments, just the other way round. If we look at an assignment;
 
 \begin{lstlisting}
 	j = 13;  --> PUSH (Integer 13)
@@ -404,13 +406,59 @@ Looking at figure~\ref{fig:stackFrame} we can see how this simple command is dea
 \caption{Example of how functions are called, including passing arguments and returning a value}
 \label{fig:stackFrame}
 \end{figure}
+
+This examples shows how stack frames are used to handle passing arguments and the returning of values in functions in my virtual machine.
+
 \subsubsection{Handling Recursion}
+
+Another interesting feature to implement in a stack based virtual machine is allowing function recursion. Function recursion is when you allow a function to call itself inside it's function definition. An example of this can be seen below in figure~\ref{fig:facExamp} function that will give you the factorial of the number  
+
+\begin{figure}
+\begin{lstlisting}
+func fac(n int) int {
+    if (n == 0) {
+        return 1;
+    }; 
+    return n * fac(n-1);
+};
+\end{lstlisting}
+\caption{Example of a recursive function $fac$, and example of how it works }
+\label{fig:facExamp}
+\end{figure}
+
+This not only gives an example of how a recursive function can work, but also helps to show what a powerful tool recursion can be in solving different sorts fo problems. 
+
+To implement recursion I simply had to ensure that each stack frame generated for each new function was properly created and passed on. There was no special trick to allowing recursion other than ensuring my initial implementation of calling functions worked as intended then it was simply a question of allowing the function executor to be allowed to handle call function calls which would run a new instance of the function executor at the call step, ensuring the correct stack was passed and returned from $funExec'$. 
 
 \subsection{Implementing Concurrency}
 
 \subsubsection{How Goal Handles Concurrency}
 
+This section is a brief recap of what was explained in section \ref{sec:concDes} where we talked about how Goal was designed to handle concurrency. There are three important features of Goal that needed to be implemented and handled by my compiler and executor;
+
+\begin{itemize}
+\item $go$ keyword, using this command with a void function starts a new instance of that method as a concurrent process, know as a sub routine.
+\item $Kill()$ command, this stops all concurrent processes 
+\item $Wait()$ command, this will cause a program to wait at this point until all sub routines have stopped running.
+\end{itemize}
+
+There are also channels which are used to pass information between subroutines, these are described in greater in section \ref{sec:concDes} and in the Goal documentation.   
+
 \subsubsection{How my Virtual Machine Handles Concurrency}
 
+Handling the creation and running of concurrent processes is definitely one of the more exciting features of my project. To understand how my executor deals with concurrency it is good to look at the type of my main executor function;
 
+%TODO make this look pretty %
+\begin{lstlisting}
+Code ->  Int -> Stack -> Mem -> Bool -> [Channel] -> (Seq GoRoutine, Int) ->  EndParam
+\end{lstlisting}
 
+The bits we are interested in for handling concurrency are the types;
+
+\begin{itemize}
+\item $[Channel]$
+\item $(Seq$ $GoRoutine,$ $Int)$  %This could become ST (Seq GoRoutine) %
+\item $EndParam$
+\end{itemize} 
+
+These are types represent the way in which we pass around subroutines and channels 
