@@ -375,7 +375,7 @@ User return' so as not to get mixed up with haskells "return" function
 
 > return'                       :: Parser Prog
 > return'                       =  do string "return"
->                                     e <- arthExpr
+>                                     e <- compExpr
 >                                     return (Return (Just e))
 
 

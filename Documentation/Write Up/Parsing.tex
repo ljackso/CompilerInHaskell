@@ -20,7 +20,7 @@ The first being it was a design choice. For example if you look at variable decl
 	j := 42
 \end{lstlisting}    
 
-Although I could have implemented variable declarations to look like this because I decided because variables can be declared on the fly and because of the simplistic nature of my type system I may as well keep declarations and assignments the same, and as simple as possible. Hence in Goal all you need to write to declare or assign a variable is;
+Although I could have implemented variable declarations to look like this I decided because variables can be declared on the fly and because of the simplistic nature of my type system I may as well keep declarations and assignments the same, and as simple as possible. Hence in Goal all you need to write to declare or assign a variable is;
 
 \begin{lstlisting}
 	l = 42;
@@ -28,13 +28,135 @@ Although I could have implemented variable declarations to look like this becaus
  
 There are several examples of these changes in syntax for design choice, such as global variable definitions and the requirement of brackets to hold conditional statements. These small changes where made merely as a way to tidy up Goal and make it have a more complete and consistent syntax. 
 
-The other reason Goal's syntax varies from Go is because of the limitations within the implementation of my parser. For example, in Go you don't need to use semi colons at the end of a command. Where as I decided that in Goal I would make it necessary to include semi colons at the end of every command, including if statements and function declarations. This is because it makes it easier to split up commands based on every time I see a semi colon. The reasons I made some of these choices was not because it was not possible for me to implement different syntax rules, but because the main focus of this project was not on parsing and if a small change to syntax meant a quicker implementation sometimes I felt it necessary. 
+The other reason Goal's syntax varies from Go is because of the limitations within the implementation of my parser. 
+
+For example, in Go you don't need to use semi colons at the end of a command. Where as I decided that in Goal I would make it necessary to include semi colons at the end of every command, including if statements and function declarations. This is because it makes it easier to split up commands based on every time I see a semi colon. The reasons I made some of these choices was not because it was not possible for me to implement different syntax rules, but because the main focus of this project was not on parsing and if a small change to syntax meant a quicker implementation sometimes I felt it necessary. 
 
 
 \section{Parser Implementation}
 
+My parser implementation was focused around using monadic parser combinators. As part of this I used a collection of functions provided from the paper. %TODO Cite Graham's paper % 
+These can be seen in my abstract in the Parsing.lhs file. What these functions do is provide a series of simple parsers to use when creating more complicated parser combinators. 
+
+Then it was simply a question of building up parsers to handle more restrictive rules. A good way to understand this is to walk through a simple example of parsing comparative expressions. 
+
+Although this section gives a walk through of how I used parser combinators, it should not be considered a standalone introduction. The interested reader should look at %TODO cite paper % 
+which provides a more in depth introduction and more detailed descriptions about monadic parser combinators.
+
+\newpage
+
 \subsection{Example of Parser Implementation}
+
+If we first start with defining the data structure, also known as the intermediate representation we wish to parse down to, we can then look to define the language which we are parsing;
+
+%TODO check all code works
+\begin{lstlisting}
+data Expr 	= CompExpr Op Expr Expr | Val Number
+	
+data Op		= EQU | NEQ 
+	
+type Number	= Int 
+\end{lstlisting}
+
+This is a pretty simple data structure representing two types of conditional expressions. We now need to define a grammar that is acceptable for our language. A grammar, or formal grammar, is a set of rules by which valid sentences (or in our case commands and expressions) in a language are constructed \footnotemark[1].  In this case when we talk about a language we are not talking about a programming language in the typical sense, instead we define a language as a set of strings made of symbols that our limited by rules that are specific to that language \footnotemark[2]. 
+
+\footnotetext[1]{\url{http://dragonbook.stanford.edu/lecture-notes/Stanford-CS143/06-Formal-Grammars.pdf}}
+\footnotetext[2]{\url{http://en.wikipedia.org/wiki/Formal_language}}
+
+To define our grammar it is good to look at some examples of what is acceptable in our little language, if we say we are only interested at looking at conditionals where you use $==$ to signify equals and $!=$ to signify two values being not equal;
+
+\begin{lstlisting}
+	4 == 7
+	5 != 5
+	42 == 42
+	12 != 34 
+\end{lstlisting}
+
+You may notice that the expressions we are allowing don't have to be true. In this example we are allowing the user to express comparative expressions our parser has no need to deal with what is and isn't allowed computationally as long as our grammar allows it, the expression can be as bizarre as you want. This shows how we have to be careful defining our grammar to only allow what we want. For example if we look at our data structures we actually allow for some nested comparisons.
+
+\newpage
+
+You can see that in our data structure the following expression is valid;
+
+\begin{lstlisting}
+CompOp EQU 
+	(CompOp NEQ 
+		(Val 5) 
+		(CompOP EQU 
+			(Val 4)
+			(Val 7))) 
+	(CompOp NEQ 
+		(Val 3) 
+		(Val 5))
+\end{lstlisting}
+
+Which would look like this;
+
+\begin{lstlisting}
+ (5 != (4 == 7)) == (3 == 5)
+\end{lstlisting}
+
+Now you can argue this makes sense and should be allowed but I feel like in our simple language it's not what we want to include, also we need to consider if we end up including more types of comparisons, such as $>$ or $\geq$. Things will start to get messy quickly. Regardless of the justification for this example we don't want too allow nested comparisons. 
+
+There are two ways to handle this problem. We can either alter our data structure so that it is no longer allowed, or we can create a grammar that does not allow for nested comparisons in our language. It is better to restrict our grammar than our intermediate representation. So we now need to define our grammar. In simple terms we can describe it as;
+
+\begin{lstlisting}
+ <NUMBER1> <COPARISON OPERATION> <NUMBER1>
+\end{lstlisting}   	
+
+Though we need a more formal definition;
+
+%TODO create a context free grammar and discuss it
+
+
+To create a parser to handle this grammar we will need to make use of some parsers provided in Parsing.lhs;
+
+\begin{itemize}
+\item $natural$, will parse natural numbers
+\item $symbol s$ will parse the given symbol s 
+\end{itemize}
+
+Making use of this we can use of Haskell's do notation we can also generate a parser to parse the different conditional symbols $==$ and $!=$. 
+
+\begin{lstlisting}
+	parseOp   :: Parser Op
+	parseOp   = do symbol "=="
+	               return (EQU)
+        	     +++ do symbol "!="
+	                    return (NEQ) 
+\end{lstlisting} 
+
+Using parse combinators means we can combine multiple parsers. Using this approach we can now create code to evaluate conditional expressions allowed in our language;
+
+%TODO check all this code
+\begin{lstlisting}
+
+evalCompExpr    :: String -> Expr
+evalCompExpr xs = case (parse compExpr xs) of
+                    [(e,[])]  -> e
+                    [(_,o)]   -> error ("unused "++ o)
+                    []        -> error "invalid"
+
+parseComp        :: Parser Expr	
+parseComp        = do n1 <- natural
+                      o  <- parseOp 
+                      n2 <- natural
+                      return (CompOp o n1 n2)  
+\end{lstlisting}
+
+This example shows how you build a simple parser using monadic parser combinators and the Haskell script provided %TODO cite grahams paper %
+. It shows the the process of building up a grammar to define your language and also begins to show the process of combing parsers. 
+
 
 \subsection{Analysis of Parser Example}
 
+Looking at this example you can see the process of slowly building up a grammar and the parsers to enforce it.
+
+There are a number of important ideas shown in this example, one of the most important concepts is the idea of making sure your parser is more restrictive than your data structure. There is no need to  
+
 \section{Potential for Expansion}
+
+Parsing is a topic that could easily become the main focus of a project like this. The idea behind using parser combinators was that they had been something I was interested in exploring and the more i used them the more I began to see how they could take up ore of this project. Instead I decided to focus this project in other areas but that does leave a list of areas I would be interested in coming back too. 
+
+One of the main things you could expand within my parser would be to add a scanner and a lexical element. A scanner is
+ 

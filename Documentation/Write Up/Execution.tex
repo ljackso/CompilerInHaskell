@@ -442,14 +442,14 @@ This section is a brief recap of what was explained in section \ref{sec:concDes}
 \item $Wait()$ command, this will cause a program to wait at this point until all sub routines have stopped running.
 \end{itemize}
 
-There are also channels which are used to pass information between subroutines, these are described in greater in section \ref{sec:concDes} and in the Goal documentation.   
+There are also channels which are used to pass information between subroutines, these are described in greater detail in section \ref{sec:concDes} and in the Goal documentation.   
 
 \subsubsection{How my Virtual Machine Handles Concurrency}
 
 Handling the creation and running of concurrent processes is definitely one of the more exciting features of my project. To understand how my executor deals with concurrency it is good to look at the type of my main executor function;
 
 %TODO make this look pretty %
-\begin{lstlisting}
+\begin{lstlisting}[basicstyle=\ttfamily\tiny]
 Code ->  Int -> Stack -> Mem -> Bool -> [Channel] -> (Seq GoRoutine, Int) ->  EndParam
 \end{lstlisting}
 
@@ -461,4 +461,66 @@ The bits we are interested in for handling concurrency are the types;
 \item $EndParam$
 \end{itemize} 
 
-These are types represent the way in which we pass around subroutines and channels 
+These are types represent the way in which I pass around subroutines and channels in my executor. 
+
+If we first talk about how I handle channels we can then discuss subroutines in more detail . Channels are not held in memory but instead are stored independently. There are three instructions that can effect channels;
+
+\begin{itemize}
+\item $CHANNEL n$, which creates a new channel
+\item $PUSHC n$, which takes whats on the top of the stack and pushes into onto the correct channel 
+\item $POPC n$, which pops the correct channel and pushes the popped item onto the stack
+\end{itemize} 
+
+These instructions can not only be executed by the main executor but also be executed within functions. Therefore it is important to look at our type $EndParam$ which our function executor will return;
+
+\begin{lstlisting}
+EndParam  = ((Stack, Mem), ([Channel], (S.Seq GoRoutine, Int))) 
+\end{lstlisting}
+
+You can see that $EndParam$ returns all the data structures used within my virtual machine, most importantly you can see that it returns a list of channels. Showing you can be updating your channels within functions and once that function has been executed it will return the $EndParam$  which will update the channels you have used in your functions.
+
+Thus meaning code such as;
+
+%TODO test this code... %
+\begin{lstlisting}
+	func main() {
+		var c chan = Make(chan int);
+		funA();
+		j = <- c;
+		Show(j);
+	};
+	
+	func funA() {
+		c <- 1;
+		c <- 2;
+		funcB();
+	};
+	
+	func funC() {
+		c <- 3;
+	};
+
+	OUTPUTS : 3
+\end{lstlisting}
+
+Is perfectly valid due to the nature of how I execute functions and the data structure used to store and pass channel data. 
+
+Channels are regulated by a series of functions that are called each time a channel operation is performed. For example there are functions that check that you are not creating a new channel with the same name as a pre-existing channel and functions that check you are not trying to push and pop to a non existent channel.
+
+If we now move on talking about sub routines are created and handled.
+
+When a sub routine is created it's information is represented by the data type $GoRoutine$. This is a data structure that holds everything that a sub routine needs to run as independent process (excluding channel data). This structure is show below;
+
+\begin{lstlisting}
+	data GoRoutine   = Go Code Int Stack Mem  
+\end{lstlisting}   
+
+This gives every subroutine;
+
+\begin{itemize}
+\item Code to execute
+\item A program counter
+\item An independent stack
+\item A local memory
+\end{itemize}
+ 
