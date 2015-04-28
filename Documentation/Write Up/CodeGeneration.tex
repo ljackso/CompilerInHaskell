@@ -93,7 +93,7 @@ We can now create a data type for our expressions. We will need to allow for nes
 
 Although this example gives us quite a strict definition of what an expression needs to be for an If statement later on we will need to come up with a more general definition that is more applicable to other instances of using expressions (such as in arithmetic operations). The language specification for Go describes an expression by saying; "An expression specifies the computation of a value by applying operators and functions to operators". Another way to think of an expression is it is any valid unit of code that resolves to a single value \footnotemark[3].
 
-\footnote[3]{url for quote}
+\footnotetext[3]{url for quote}
 
 Now that we have our definitions for what Expressions and Programs can be, we can begin to group what instructions belong in which section. With all our expressions being defined in the data type Expr and all our instructions used to make programs in the data type Prog.
 
@@ -178,18 +178,84 @@ Overall this example helps to introduce all the key concepts behind the creation
 
 \subsection{My Intermediate Representation of Goal}
 
+Below I show the data structure I created to as an intermediate representation of Goal;
+
+%TODO check is up to date % 
+\begin{lstlisting}
+ data Prog        = CreateChan Name
+                     | PushToChan Name Expr
+                     | Assign Name Expr
+                     | Show Expr
+                     | Print String
+                     | If Expr Prog
+                     | IfElse Expr Prog Prog
+                     | ElseIf Expr Prog [ElseIfCase'] Prog
+                     | While Expr Prog
+                     | Seqn [Prog]
+                     | Empty                                     
+                     | Return (Maybe Expr)                       
+                     | Func FName [Name] Prog                     
+                     | Main Prog                                 
+                     | VoidFuncCall Name [Expr]
+                     | GoCall Name [Expr]                                                                    
+                     | Wait 
+                     | Kill
+
+ data ElseIfCase' = Case Expr Prog                                 
+
+\end{lstlisting}
+
+You can see that for almost every command you can use in Goal it has been broken down the same way that was shown in my example and represented in a psuedocode style whilst allowing the creation of tree like structures through the use of the recursive data structure.
+
+One of the most important elements of my IR is the $Seqn [Prog]$ command. This is one of the key aspects of the IR and what allows for multiple commands within functions and even for allowing multiple functions.
 
 
-
-\subsection{Handling More Complex Features in my IR }
-
+%TODO add sources
 \section{Code Generation}
 
-\subsection{Introduction to Code Generation}
+Code generation is one of the most important aspects of compiling. It is the process of translating an intermediate representation of a program into code, without losing that programs meaning. In my case it meant creating functions that could translating my IR into code made up of the instruction set my executor could handle.  
+
 
 \subsection{Brief Introduction to Target Language Instruction Set}
 
+To understand how code generation works it is good to get a brief understanding of how my instruction set is structured and behaves. This section is just a brief introduction to the concepts that are necessary to understand in order for me to explain the process of generating code, more information on executing the code and the design of the instruction set used in my executor can be found in chapter 5.
+
+My instruction set was designed so that you can translate any intermediate representation, no matter how complicated, into a list of instructions that can then be executed one by one. 
+
+There are two important things to understand about my virtual machine, the platform which executes the code we are generating. First, is that it uses a stack so any operations we wish to perform must do so using a stack. Secondly code execution is controlled by a program counter which starts at 0 and increments by one after every instruction, unless an instruction wants to jump to a another section of code then the program counter will be set based on where the in the code you want to go. 
+
+Don't worry if you are not to familiar with these concepts as they are gone over in more detail in the next chapter.    
+
+ 
 \subsection{Example Code Generation}
+
+I will now show an example of how you would generate code for an instruction from our data set. We will carry on with our earlier example of looking at an if statement now we know what the IR for this instruction is we should look at the code we wish to generate. 
+
+\begin{lstlisting}
+if(x < 1){
+	return x;
+};
+\end{lstlisting}
+Will become;
+
+\begin{lstlisting}
+If (CompExpr LET (Var x) (Val (Integer 1))) (Return (Var x))
+\end{lstlisting}
+	
+Now I will show the code we need to generate;
+
+\begin{lstlisting}
+	PUSV "x"         
+	PUSH (Integer 1) 
+	COMP LET         
+	JUMPZ i           
+	PUSHV "x"
+	RSTOP           
+	LABEL i
+\end{lstlisting}
+
+To better understand this code you may want to refer quickly to chapter 5, but to give a brief understanding the vars
+
 
 \subsection{Analysis and Expansion of Code Generation Example}
 

@@ -104,10 +104,9 @@ There are two ways to handle this problem. We can either alter our data structur
  <NUMBER1> <COPARISON OPERATION> <NUMBER1>
 \end{lstlisting}   	
 
-Though we need a more formal definition;
+Though we need to create a more formal definition. Lets say a sentence in our language has to consist of one natural number followed by either a $==$ or $!=$ then another natural number. We will allow white space between all the characters and by natural numbers we are referring to any whole number. 
 
-%TODO create a context free grammar and discuss it
-
+%TODO possibly insetr more formal defintion
 
 To create a parser to handle this grammar we will need to make use of some parsers provided in Parsing.lhs;
 
@@ -148,15 +147,39 @@ This example shows how you build a simple parser using monadic parser combinator
 . It shows the the process of building up a grammar to define your language and also begins to show the process of combing parsers. 
 
 
-\subsection{Analysis of Parser Example}
+\subsection{Analysis and Expansion of Parser Example}
 
 Looking at this example you can see the process of slowly building up a grammar and the parsers to enforce it.
 
-There are a number of important ideas shown in this example, one of the most important concepts is the idea of making sure your parser is more restrictive than your data structure. There is no need to  
+There are a number of important ideas shown in this example, one of the most important concepts is the idea of making sure your parser is more restrictive than your data structure. There are several aspects of my intermediate representation that allow for features that are restricted in my grammar. The reason this is done is because it makes generating code simpler without really making my parser any more complex.  
+
+Another good thing too take away from this is the idea of abstracting problems out our final parser could have easily looked like this;
+
+\begin{lstlisting}
+parseComp        :: Parser Expr	
+parseComp        = do n1 <- natural
+                      do symbol "==" 
+                         n2 <- natural
+                         return (CompOp EQU n1 n2)
+                       +++ do symbol "!="
+                              n3 <- natural
+                              return (CompOp NEQ n1 n3)
+\end{lstlisting}
+
+But because of the creation of our $parseOp$ function not only were we able to have a much cleaner implementation, also making it  much easier to expand our parser to include more comparison operations.
+
+One concept that is not touched upon in this example is the idea of having a hierarchy of bindings. If we take the idea of operator precedences within mathematical expressions if we want a multiplication to be done before an addition in our language we need to generate an intermediate representation that will show this.
+
+By combining multiple parsers we can create a hierarchy were an addition expression is dealt with before anything else by splitting on the $+$ symbol before anything else. Then nesting other arithmetic expressions within the output of the first parser. Examples of this technique can be seen throughout the implementation of my parser.
+
 
 \section{Potential for Expansion}
 
 Parsing is a topic that could easily become the main focus of a project like this. The idea behind using parser combinators was that they had been something I was interested in exploring and the more i used them the more I began to see how they could take up ore of this project. Instead I decided to focus this project in other areas but that does leave a list of areas I would be interested in coming back too. 
 
-One of the main things you could expand within my parser would be to add a scanner and a lexical element. A scanner is
+One of the main things you could expand within my parser would be to add some lexical analysis before beginning parsing. Lexical analysis is used to identify a valid set of words used in the language \cite[p.~13]{CompDes2005}. It is useful a it means you don not begin actually parsing before being certain that only valid commands exist in each program.
+
+Another big area for expansion would have been spending more time looking into being able to add more types. You will notice looking at my code that my compiler and executor can handle doubles. But unfortunately due to limitations with my parsing I was decided against including it in the final release of Goal because I wanted to focus more time elsewhere. Though if this project was picked up in the future it would be one of the first features to update.    
+
+   
  

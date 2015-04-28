@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2015.4.11)  27 APR 2015 12:59
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2015.4.11)  28 APR 2015 12:13
 entering extended mode
 **Dissertation.tex
 
@@ -929,7 +929,7 @@ pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has
 been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.34 ...resentation of Goal}{24}{subsection.4.1.4}
+l.34 ...resentation of Goal}{25}{subsection.4.1.4}
                                                    [1
 
 ])
@@ -971,15 +971,20 @@ Underfull \hbox (badness 10000) in paragraph at lines 63--63
  / Stanford-[]CS143 /$
  []
 
-[16] [17]) [18]
+[16] [17]
+Overfull \hbox (1.49933pt too wide) in paragraph at lines 166--167
+[][][][][][][][][][][][][][][] 
+ []
+
+[18]) [19]
 ("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\CodeGenerat
 ion.tex"
 Chapter 4.
-[19
+[20
 
 
 
-] [20] [21] [22]
+] [21] [22] [23]
 \forest@temp@box=\box32767 (local)
 \forest@temp@box=\box32766 (local)
 \forest@temp@box=\box32765 (local)
@@ -988,38 +993,48 @@ Chapter 4.
 \forest@temp@box=\box32762 (local)
 \forest@temp@box=\box32761 (local)
 \forest@temp@box=\box32760 (local)
- [23]) [24]
+ [24]
+Overfull \hbox (20.39929pt too wide) in paragraph at lines 192--193
+[][][][][][][][][][][][][][][][][] 
+ []
+
+[25]
+Overfull \hbox (32.99927pt too wide) in paragraph at lines 240--241
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
+ []
+
+[26]) [27]
 ("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Execution.t
 ex"
 Chapter 5.
-[25
+[28
 
 
 
-] [26]
+] [29]
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[27]
+[30]
 Overfull \hbox (7.79932pt too wide) in paragraph at lines 140--141
 [][][][][][][][][][][][][][][][][][][][][][][][][][] 
  []
 
-[28] [29] [30] [31]
+[31] [32] [33] [34]
 Overfull \hbox (0.86896pt too wide) in paragraph at lines 269--270
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
  []
 
-[32] [33] [34] [35] [36]
+[35] [36] [37] [38] [39]
 Overfull \hbox (51.89923pt too wide) in paragraph at lines 477--478
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
  []
 
-[37]) [38]
+[40]) [41]
 ("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Testing.tex
 "
 Chapter 6.
-) [39
+) [42
 
 
 
@@ -1027,7 +1042,7 @@ Chapter 6.
 ("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Dissertatio
 n.bbl")
 Package atveryend Info: Empty hook `BeforeClearDocument' on input line 41.
- [40
+ [43
 
 
 ]
@@ -1050,13 +1065,13 @@ ux")
 Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 41.
 Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 41.
 Package rerunfilecheck Info: File `Dissertation.out' has not changed.
-(rerunfilecheck)             Checksum: CBFC803747E283FCD345FEEBDE0E0272;3919.
+(rerunfilecheck)             Checksum: 1922DBDB29E69F336137DF2E63650FEA;3838.
  ) 
 Here is how much of TeX's memory you used:
- 22362 strings out of 493921
- 445850 string characters out of 3148889
- 531195 words of memory out of 3000000
- 24868 multiletter control sequences out of 15000+200000
+ 22406 strings out of 493921
+ 446502 string characters out of 3148889
+ 531194 words of memory out of 3000000
+ 24867 multiletter control sequences out of 15000+200000
  10124 words of font info for 37 fonts, out of 3000000 for 9000
  841 hyphenation exceptions out of 8191
  101i,12n,128p,849b,1797s stack positions out of 5000i,500n,10000p,200000b,50000s
@@ -1075,9 +1090,9 @@ ram Files/MikTex/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Program Files/Mi
 kTex/fonts/type1/public/amsfonts/cm/cmtt10.pfb><C:/Program Files/MikTex/fonts/t
 ype1/public/amsfonts/cm/cmtt8.pfb><C:/Program Files/MikTex/fonts/type1/public/a
 msfonts/cm/cmtt9.pfb>
-Output written on Dissertation.pdf (42 pages, 399740 bytes).
+Output written on Dissertation.pdf (45 pages, 412860 bytes).
 PDF statistics:
- 934 PDF objects out of 1000 (max. 8388607)
- 415 named destinations out of 1000 (max. 500000)
- 413 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 994 PDF objects out of 1000 (max. 8388607)
+ 460 named destinations out of 1000 (max. 500000)
+ 405 words of extra memory for PDF output out of 10000 (max. 10000000)
 

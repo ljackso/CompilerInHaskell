@@ -24,33 +24,32 @@
 \contentsline {section}{\numberline {3.2}Goal Syntax Rules and Justifications}{14}{section.3.2}
 \contentsline {section}{\numberline {3.3}Parser Implementation}{15}{section.3.3}
 \contentsline {subsection}{\numberline {3.3.1}Example of Parser Implementation}{16}{subsection.3.3.1}
-\contentsline {subsection}{\numberline {3.3.2}Analysis of Parser Example}{18}{subsection.3.3.2}
-\contentsline {section}{\numberline {3.4}Potential for Expansion}{18}{section.3.4}
-\contentsline {chapter}{\numberline {4}Code Generation \& Intermediate Representation}{19}{chapter.4}
-\contentsline {section}{\numberline {4.1}Intermediate Representation}{20}{section.4.1}
-\contentsline {subsection}{\numberline {4.1.1}Introduction to Intermediate Representations}{20}{subsection.4.1.1}
-\contentsline {subsection}{\numberline {4.1.2}Example Creating an Intermediate Representation}{21}{subsection.4.1.2}
-\contentsline {subsection}{\numberline {4.1.3}Analysis and Expansion of Creating an IR Example}{22}{subsection.4.1.3}
-\contentsline {subsection}{\numberline {4.1.4}My Intermediate Representation of Goal}{24}{subsection.4.1.4}
-\contentsline {subsection}{\numberline {4.1.5}Handling More Complex Features in my IR }{24}{subsection.4.1.5}
-\contentsline {section}{\numberline {4.2}Code Generation}{24}{section.4.2}
-\contentsline {subsection}{\numberline {4.2.1}Introduction to Code Generation}{24}{subsection.4.2.1}
-\contentsline {subsection}{\numberline {4.2.2}Brief Introduction to Target Language Instruction Set}{24}{subsection.4.2.2}
-\contentsline {subsection}{\numberline {4.2.3}Example Code Generation}{24}{subsection.4.2.3}
-\contentsline {subsection}{\numberline {4.2.4}Analysis and Expansion of Code Generation Example}{24}{subsection.4.2.4}
-\contentsline {subsection}{\numberline {4.2.5}Examples of Generating Code For More Complex Features}{24}{subsection.4.2.5}
-\contentsline {chapter}{\numberline {5}Execution using a Stack Based Virtual Machine}{25}{chapter.5}
-\contentsline {section}{\numberline {5.1}Introduction to Stack Based Virtual Machines}{25}{section.5.1}
-\contentsline {section}{\numberline {5.2}Implementing a Stack Based Virtual Machine}{26}{section.5.2}
-\contentsline {subsection}{\numberline {5.2.1}Explanation of Instruction Set}{27}{subsection.5.2.1}
-\contentsline {subsection}{\numberline {5.2.2}Example Code Execution}{29}{subsection.5.2.2}
-\contentsline {subsection}{\numberline {5.2.3}Analysis and Expansion of Code Execution Example}{32}{subsection.5.2.3}
-\contentsline {subsection}{\numberline {5.2.4}Memory Design and Implementation}{32}{subsection.5.2.4}
-\contentsline {subsubsection}{Handling Variable Scope}{32}{section*.3}
-\contentsline {subsection}{\numberline {5.2.5}Stack Management}{33}{subsection.5.2.5}
-\contentsline {subsubsection}{Handling Function Calls}{33}{section*.4}
-\contentsline {subsubsection}{Handling Recursion}{35}{section*.5}
-\contentsline {subsection}{\numberline {5.2.6}Implementing Concurrency}{36}{subsection.5.2.6}
-\contentsline {subsubsection}{How Goal Handles Concurrency}{36}{section*.6}
-\contentsline {subsubsection}{How my Virtual Machine Handles Concurrency}{36}{section*.7}
-\contentsline {chapter}{\numberline {6}Testing}{39}{chapter.6}
+\contentsline {subsection}{\numberline {3.3.2}Analysis and Expansion of Parser Example}{18}{subsection.3.3.2}
+\contentsline {section}{\numberline {3.4}Potential for Expansion}{19}{section.3.4}
+\contentsline {chapter}{\numberline {4}Code Generation \& Intermediate Representation}{20}{chapter.4}
+\contentsline {section}{\numberline {4.1}Intermediate Representation}{21}{section.4.1}
+\contentsline {subsection}{\numberline {4.1.1}Introduction to Intermediate Representations}{21}{subsection.4.1.1}
+\contentsline {subsection}{\numberline {4.1.2}Example Creating an Intermediate Representation}{22}{subsection.4.1.2}
+\contentsline {subsection}{\numberline {4.1.3}Analysis and Expansion of Creating an IR Example}{23}{subsection.4.1.3}
+\contentsline {subsection}{\numberline {4.1.4}My Intermediate Representation of Goal}{25}{subsection.4.1.4}
+\contentsline {section}{\numberline {4.2}Code Generation}{26}{section.4.2}
+\contentsline {subsection}{\numberline {4.2.1}Introduction to Code Generation}{26}{subsection.4.2.1}
+\contentsline {subsection}{\numberline {4.2.2}Brief Introduction to Target Language Instruction Set}{26}{subsection.4.2.2}
+\contentsline {subsection}{\numberline {4.2.3}Example Code Generation}{26}{subsection.4.2.3}
+\contentsline {subsection}{\numberline {4.2.4}Analysis and Expansion of Code Generation Example}{27}{subsection.4.2.4}
+\contentsline {subsection}{\numberline {4.2.5}Examples of Generating Code For More Complex Features}{27}{subsection.4.2.5}
+\contentsline {chapter}{\numberline {5}Execution using a Stack Based Virtual Machine}{28}{chapter.5}
+\contentsline {section}{\numberline {5.1}Introduction to Stack Based Virtual Machines}{28}{section.5.1}
+\contentsline {section}{\numberline {5.2}Implementing a Stack Based Virtual Machine}{29}{section.5.2}
+\contentsline {subsection}{\numberline {5.2.1}Explanation of Instruction Set}{30}{subsection.5.2.1}
+\contentsline {subsection}{\numberline {5.2.2}Example Code Execution}{32}{subsection.5.2.2}
+\contentsline {subsection}{\numberline {5.2.3}Analysis and Expansion of Code Execution Example}{35}{subsection.5.2.3}
+\contentsline {subsection}{\numberline {5.2.4}Memory Design and Implementation}{35}{subsection.5.2.4}
+\contentsline {subsubsection}{Handling Variable Scope}{35}{section*.3}
+\contentsline {subsection}{\numberline {5.2.5}Stack Management}{36}{subsection.5.2.5}
+\contentsline {subsubsection}{Handling Function Calls}{36}{section*.4}
+\contentsline {subsubsection}{Handling Recursion}{38}{section*.5}
+\contentsline {subsection}{\numberline {5.2.6}Implementing Concurrency}{39}{subsection.5.2.6}
+\contentsline {subsubsection}{How Goal Handles Concurrency}{39}{section*.6}
+\contentsline {subsubsection}{How my Virtual Machine Handles Concurrency}{39}{section*.7}
+\contentsline {chapter}{\numberline {6}Testing}{42}{chapter.6}
