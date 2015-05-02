@@ -28,13 +28,15 @@ PROGRAM IR
 >                                   | Func FName [Name] Prog                     -- list of names is names of arguments
 >                                   | Main Prog                                 -- gives us the main function to be run
 >                                   | VoidFuncCall Name [Expr]
->                                   | GoCall Name [Expr]                                                                    
+>                                   | GoCall Name [Expr]
+>                                   | WaitOn Name                                                                     
 >                                   | Wait 
 >                                   | Kill
->		                                deriving Show
+>                                   | WaitChan Name 
+>		                                deriving (Eq, Show)
 >
 > data ElseIfCase'              = Case Expr Prog                                --used for switch cases and else if 
->                                   deriving Show
+>                                   deriving (Eq, Show)
 
 EXPRESSION IR
 
@@ -46,7 +48,7 @@ EXPRESSION IR
 >                                   | CondApp CondOp Expr Expr 
 >                                   | FuncCall Name [Expr]
 >                                   | PopFromChan Name
->                                       deriving Show
+>                                       deriving (Show, Eq)
 
 For Arthimetic Operations
 
@@ -383,8 +385,8 @@ User return' so as not to get mixed up with haskells "return" function
 
 ASSIGNMENT
 
-> evalAssignment                :: String -> [Prog] 
-> evalAssignment xs             =  case (parse multipleAssign xs) of
+> evalAssignment                :: String -> Prog 
+> evalAssignment xs             =  case (parse assign xs) of
 >                                     [(e,[])]  -> e
 >                                     [(_,out)] -> error ("unused input " ++ out)
 >                                     []        -> error "invalid input"
@@ -466,11 +468,19 @@ This is a simple print statement that jsut prints out an expression
 
 > parseString                   :: Parser String 
 > parseString                   = do symbol "\""
->                                    s <- identifier
+>                                    s <- parseSentence
 >                                    symbol "\""
 >                                    return s     
 
-
+> parseSentence                 :: Parser String
+> parseSentence                 = do s1 <- identifier
+>                                    do space
+>                                       s2 <- parseSentence
+>                                       return (s1 ++ " " ++ s2)
+>                                     +++ do symbol ":"
+>                                            s3 <- parseSentence
+>                                            return (s1 ++ " : " ++ s3)       
+>                                     +++ do return s1  
 
 -----------------------------------------------------------------------------------------------------
 
@@ -526,8 +536,18 @@ CONCURRENT COMMANDS
 > parseProcessCommand           :: Parser Prog
 > parseProcessCommand           = do string "Wait()"
 >                                    return (Wait)
+>                                  +++ do string "WaitOn("
+>                                         s <-identifier
+>                                         symbol ")"
+>                                         return (WaitOn s)
+>                                  +++ do string "WaitChan("
+>                                         n <- identifier
+>                                         symbol ")"
+>                                         return (WaitChan n)      
 >                                  +++ do string "Kill()"
 >                                         return (Kill) 
+
+
 
 -----------------------------------------------------------------------------------------------------
 

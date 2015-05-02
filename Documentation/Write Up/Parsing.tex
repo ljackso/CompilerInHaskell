@@ -1,7 +1,7 @@
 
 \chapter{Parsing}
 
-Parsing is a fundamental part of compiling, you can think of it as the front end of the compiler. In simplistic terms it takes ina program as raw text and then builds a data structure that represents the program the user has written. In my project the raw text is the code from a .gol file and the data structure is the intermediate representation of Goal. 
+Parsing is a fundamental part of compiling, you can think of it as the front end of the compiler. In simplistic terms it takes in a program as raw text and then builds a data structure that represents the program the user has written. In my project the raw text is the code from a .gol file and the data structure is the intermediate representation of Goal. 
 
 Although I will be talking a lot about the intermediate representation I've created to parse my text into, I will not be going into much detail about the design of that data structure. That is covered in more detail in the next chapter. In this section a preexisting understanding of Monads in Haskell is assumed.      
 
@@ -30,7 +30,27 @@ There are several examples of these changes in syntax for design choice, such as
 
 The other reason Goal's syntax varies from Go is because of the limitations within the implementation of my parser. 
 
-For example, in Go you don't need to use semi colons at the end of a command. Where as I decided that in Goal I would make it necessary to include semi colons at the end of every command, including if statements and function declarations. This is because it makes it easier to split up commands based on every time I see a semi colon. The reasons I made some of these choices was not because it was not possible for me to implement different syntax rules, but because the main focus of this project was not on parsing and if a small change to syntax meant a quicker implementation sometimes I felt it necessary. 
+For example, in Go you don't need to use semi colons at the end of a command. Where as I decided that in Goal I would make it necessary to include semi colons at the end of every command, including if statements and function declarations. For example;
+
+\begin{lstlisting}
+	func main() {
+	    i = 2;
+	    j = 0;
+	    for (i < 100){
+	        i = square(i);
+	        j ++;
+	    };
+	    Show(j);		
+	};
+	
+	func square(n int) int {
+		return n * n;
+	};
+\end{lstlisting}
+
+You can see in this simple program how every command even function definitions and for loops need to finish with a semi colon.
+
+This is because it makes it easier to split up commands based on every time I see a semi colon. The reasons I made some of these choices was not because it was not possible for me to implement different syntax rules, but because the main focus of this project was not on parsing and if a small change to syntax meant a quicker implementation sometimes I felt it necessary. 
 
 
 \section{Parser Implementation}
@@ -96,7 +116,7 @@ Which would look like this;
  (5 != (4 == 7)) == (3 == 5)
 \end{lstlisting}
 
-Now you can argue this makes sense and should be allowed but I feel like in our simple language it's not what we want to include, also we need to consider if we end up including more types of comparisons, such as $>$ or $\geq$. Things will start to get messy quickly. Regardless of the justification for this example we don't want too allow nested comparisons. 
+Now you can argue this makes sense and should be allowed but I feel like in our simple language it's not what we want to include, also we need to consider if we end up including more types of comparisons, such as $>$ or $\geq$. Things will start to get messy quickly. Regardless of the justification for this example we won't allow nested comparisons. 
 
 There are two ways to handle this problem. We can either alter our data structure so that it is no longer allowed, or we can create a grammar that does not allow for nested comparisons in our language. It is better to restrict our grammar than our intermediate representation. So we now need to define our grammar. In simple terms we can describe it as;
 
@@ -104,9 +124,7 @@ There are two ways to handle this problem. We can either alter our data structur
  <NUMBER1> <COPARISON OPERATION> <NUMBER1>
 \end{lstlisting}   	
 
-Though we need to create a more formal definition. Lets say a sentence in our language has to consist of one natural number followed by either a $==$ or $!=$ then another natural number. We will allow white space between all the characters and by natural numbers we are referring to any whole number. 
-
-%TODO possibly insetr more formal defintion
+Though we need to create a more formal definition. Lets say a sentence in our language has to consist of one natural number followed by either a $==$ or $!=$ then another natural number. We will allow white space between the numbers and comparison operators.By natural numbers we are referring to any whole number. 
 
 To create a parser to handle this grammar we will need to make use of some parsers provided in Parsing.lhs;
 

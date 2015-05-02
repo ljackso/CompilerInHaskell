@@ -1,8 +1,23 @@
 
-global j = 4;
-global t = 5;
+func main() { 
+    var c chan = Make(chan int);
+    go pong();
+    go ping(20);
+    WaitOn(ping);
+    Kill();
+};
 
-func main() {
-    l = t+j;
-    Show(l);
+func ping(n int) {
+    for (i = 0; i < n; i++) {
+        c <- 1;
+        Print("ping");
+    };    
+};
+
+func pong() {
+    for (True) {
+        WaitChan(c);
+        l = <- c;
+        Print("pong");
+    };    
 };

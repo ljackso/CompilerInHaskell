@@ -1,0 +1,19 @@
+
+func main() {
+    l = fun(20);
+    
+    if (l == 20){
+        Print("testSeven : success");
+    } else {
+        Print("testSeven : fail");
+    };
+};
+
+func fun(n int) int {
+    l = 0; 
+    for (n > 0) {
+        l++;
+        n--;
+    };
+    return l;
+};

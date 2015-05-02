@@ -1,0 +1,9 @@
+
+func main() {
+    l = 42;
+    if (l == 42){
+        Print("testOne : success");
+    } else {
+        Print("testOne : fail");
+    };
+};

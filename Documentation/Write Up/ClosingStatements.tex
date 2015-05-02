@@ -1,0 +1,36 @@
+
+\chapter{Reflection}
+
+The initial aim of this project was to create a compiler in Haskell for a concurrent programming language. Over time the project has expanded to include creating an executor and even designing my own language to compile. Although there were changes to the process, I still managed to achieve the primary goal of implementing a concurrent compiler.
+
+There were several advanced features in my compiler implementation but on reflection I would say the project can be boiled down to a few interesting aspects;
+
+\begin{itemize}
+\item The design and creation of a new concurrent programing language, Goal.
+\item Parsing using monadic parser combinators.
+\item Allowing function recursion. 
+\item Allowing the running of concurrent processes within my compiler.
+\end{itemize}
+
+There are many aspects of this project that I am proud of, but being able to implement concurrency is obviously the highlight. 
+
+Although this project was a success I would argue there are several areas for expansion or possible improvements, as with most programming languages. Throughout this write up I have touched on several aspects that could be expanded and I feel on reflection three main features would be the first to be added; 
+
+\begin{itemize}
+\item Expanding the type system
+\item Allowing arrays 
+\item Pointers
+\end{itemize}    
+
+Adding types, as was discussed, came down to an issue with parsing and deciding that other features where more important, even though my executor is set up to handle extra numerical types, I decided not to ship something half done.
+
+With pointers and arrays these were two features that interested me but I felt again I was more interested in focusing my efforts elsewhere. Even though these feature could be areas to expand the project I do not feel without these features Goal is any less useful. As there are still work rounds.
+
+In reflection I feel this project was very successful not just in what I initially set out to achieve in creating a concurrent compiler, but also it succeeded in creating a new programing language, Goal, and an executor to run it. 
+
+Importantly I feel although this project is complete it has been created in such a way that if someone was interested in expanding Goal it would only take an understanding of Haskell and Monads and a bit of enthusiasm, to start adding new features. Which is something I'm glad I achieved. 
+
+Overall I am very pleased with the compiler I created. I feel the language I initially created as a tool to explore compiler design and concurrency has, due to the completeness of my compiler implementation, changed from a simple experiment to a complete language with it's own uses. Which is a very good side effect of a what started as a simple exploration into creating compilers in Haskell. 
+
+
+

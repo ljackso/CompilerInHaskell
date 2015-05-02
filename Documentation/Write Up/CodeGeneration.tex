@@ -1,7 +1,7 @@
 
 \chapter{Code Generation \& Intermediate Representation}
 
-Code generation is where I take the parsed input and then generate code from a low level instruction set that can then be executed. I decided to implement my own low level language and create an executor alongside that. Thus meaning that I would be compiling the parsed input down to code that used an instruction set that I had defined.
+Code generation is where I take the parsed input and then generate code from a low level instruction set that can then be run by my virtual machine. I decided to implement my own low level language and create a virtual machine to run code written in that language. Thus meaning that I would be compiling the parsed input down to code that used an instruction set that I had defined.
 
 A key part of this section is looking at how I designed and implemented an intermediate representation of Goal in the form of a data structure. This intermediate representation was then simpler to compile into my low level instruction set. The importance of a good intermediate representation can be seen in \cite[p.~221]{EngComp2012} where they state;
 
@@ -32,7 +32,7 @@ There are several approaches to generating an IR. These can been seen in \cite[p
 \item Hybrid IRS, A combination of both Linear and Graphical approaches.
 \end{itemize}
 
-I chose to go with a Hybrid IR. A most suitable approach for me because, as stated in \cite[p.~113]{CompDes2005}, Linear IR are often used when compiling for stack base virtual machines, which is the architecture of the virtual machine that I created. But also this approached allowed me to take advantage of how easily Haskell allows you to create recursive data structures, that can be used when generating trees you would find in Graphical IRs.  
+I chose to go with a Hybrid IR. A most suitable approach for me because, as stated in \cite[p.~113]{CompDes2005}, Linear IR are often used when compiling for stack base virtual machines, which is the architecture of the virtual machine that I created. Also I wanted to take advantage of how easily Haskell allows you to create recursive data structures, that can be used when generating trees you would find in Graphical IRs. Hence why I decided to use a Hybrid IR.  
 
 This approach provided me with a relatively high level representation of programs, meaning it gave a representation that would closely resemble the pseudo-code of the program you are trying to compile. This makes it nice format to work with as it makes it easier to visualize what is actually occurring during the later stages of code generation. 
 
@@ -245,18 +245,116 @@ If (CompExpr LET (Var x) (Val (Integer 1))) (Return (Var x))
 Now I will show the code we need to generate;
 
 \begin{lstlisting}
-	PUSV "x"         
-	PUSH (Integer 1) 
-	COMP LET         
-	JUMPZ i           
-	PUSHV "x"
-	RSTOP           
-	LABEL i
+	[PUSHV "x",         
+	 PUSH (Integer 1), 
+	 COMP LET,         
+	 JUMPZ i,           
+	 PUSHV "x",
+	 RSTOP,           
+	 LABEL i]
+	
 \end{lstlisting}
 
-To better understand this code you may want to refer quickly to chapter 5, but to give a brief understanding the vars
+To better understand this code you may want to refer quickly to chapter 5, but to give a brief understanding the variable $x$ is compared with $1$ then if this condition is true 1 is placed onto the stack, if not 0 is. Then $JUMPZ$ $i$ checks the top of the stack to see if it finds a 0, if so it will jump too $LABEL$ $i$ if not it moves on to return $x$. 
 
+To generate code we will need to use pattern matching. If we first generate our the type of our compiler function $comp$ we can see more easily exactly what it needs to do. 
 
-\subsection{Analysis and Expansion of Code Generation Example}
+\begin{lstlisting}
+		comp  :: Prog -> Code
+\end{lstlisting} 
 
-\subsection{Examples of Generating Code For More Complex Features}
+Where $Code$ is the type that represents a list of instructions. If we look at our if statement we know that it is split nicely into two parts; the $Expr$ and the $Prog$. Therefore we can use this in our code generator. 
+
+If we first focus on creating a function that handles creating a function which can generate code for our expression.
+
+\begin{lstlisting}
+compE                  :: Expr -> Code
+compE (CompExr o e1 e2)= compE x ++ compE y ++[COMP o]
+compE (Val n)          = [PUSH n]
+compE (Var v)          = [PUSHV v]
+\end{lstlisting}  
+
+This may seem like a bit of a jump but it's pretty simple to see whats going on here. It's good to think of the $Expr$ type as things that leave a result on the stack, and then our $Prog$ type as commands that do things based on whats on top of the stack.
+
+Making $compE$ recursive is also useful in case we want to include more types of expressions, for example it allows us to easily expand this function to handle expressions such as $(5 + 6) == (12 - 1)$. We can make sure that nay restrictions on expressions are dealt with in our parsers. 
+
+Now we need to look at how we can incorporate this function into solving our initial problem, generating code for if and return statements. Lets first try this; 
+
+\begin{lstlisting}
+	compP            :: Prog -> Code 
+	compP (If e p1)  = ifDealer e p1  
+	compP (Return e) = compE e ++ [RSTOP] 
+\end{lstlisting}
+
+Return is pretty simple to understand as it's just placing something on the stack and then using the call $RSTOP$. We now need to define our $ifDealer$ which creates the code for if statements. Remembering that we still want to allow all the features we mentioned in our earlier example.
+
+\begin{lstlisting}
+ifDealer     :: Expr -> Prog -> Code 
+ifDealer e p = 
+	compE e ++ [JUMPZ 1] ++ compP p ++ [LABEL 1]
+\end{lstlisting}
+
+This looks suitable but there are some issues, what if we have nested if statements, we would be using the same the same label everywhere so how would we know where to jump to? We need a way to generate a unique label for each time we want to use the $LABEL$ command.
+
+\begin{figure}[h]
+\centering
+\begin{lstlisting}
+    type State 	   =  Label
+
+    data ST a 	   =  S (State -> (a, State))
+
+    apply          :: ST a -> State -> (a,State)
+    apply (S f) x  =  f x
+
+ instance Monad ST where
+    return x       =  S (\s -> (x,s))
+    st >>= f   	   = S (\s -> let (x,s') = 
+                        apply st s in apply (f x) s')
+
+    fresh          :: ST Label
+    fresh          = S (\s -> (s, s+1))
+
+\end{lstlisting}
+\caption{Definition of the state monad}
+\label{fig:stMonad}
+\end{figure}  
+
+This is where we use the state monad. It can be used to generate a new label whenever we want and helps us make sure that we never have duplicated labels. In figure \ref{fig:stMonad} you can see the definition of the state monad and the funtions $fresh$ which is used every time we want to generate a new label. 
+
+We now need to update our $compP$ and $ifDealer$ functions to make use of the state monad;
+
+\begin{lstlisting}
+compP            :: Prog -> ST Code 
+compP (If e p1)  = ifDealer e p1  
+compP (Return e) = return (compE e ++ [RSTOP])
+	
+ifDealer     :: Expr -> Prog -> Code 
+ifDealer e p = 
+	do i  <- fresh
+	   pc <- compP p
+	   return (compE e ++[JUMPZ i]++ pc ++[LABEL i])
+\end{lstlisting}
+
+This now will allow us to generate code for an arbitrary number of nested if statements. Though we now have the issue of that we now return $ST$ $Code$, when we need to be passing $Code$ to our virtual machine. 
+
+Therefore we need to create another function to get rid of this for us. Which still has the type $Prog$ $->$ $Code$ that we want. We can do this by making use of the $apply$ function seen in figure \ref{fig:stMonad}.
+
+\begin{lstlisting}
+	comp    :: Prog -> Code
+	comp p  =  fst (apply (compP p) (0))
+\end{lstlisting}    
+
+Now we can generate code in a format that can be run by our virtual machine.
+
+\subsection[Analysis and Expansion of Code Generation Example]{Analysis and Expansion of \\ Code Generation Example}
+
+The example is very useful in showing one of the most important features of my code generation section, the use of the state monad to ensure that the creation of each label is unique and allows for looping and conditional expressions in the language I am compiling.
+
+It also shows the importance of using pattern matching and recursive functions to be able to efficiently generate the correct output and also allow for an arbitrary number of nested expressions with the code being compiled. It also helps to highlight why Haskell is such a useful language to use in compilers more specifically in projects where code generation is the major focus.
+
+%TODO Go into more detail about writer monad and monad transformers
+The example can also be expanded to include another Monad. The Writer Monad, which can be used to tidy up outputting the code. The inclusion of this Monad also requires the use of a Monad of transformer.
+
+Overall this example highlights very nicely exactly how my code generator works. In very similar fashion to the designing of my IR I wanted to make sure I could handle all commands exactly as needed through the use of pattern matching. Then, use recursion, to allow for some arbitrary number of nested commands. Finally I used monads to ensure the creation of unique labels and tidy up my implementation.
+  
+%TODO Possibly ask about including a section on more interesting features

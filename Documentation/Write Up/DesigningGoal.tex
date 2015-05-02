@@ -14,14 +14,6 @@ As much as Goal was created simply as a tool for creating an interesting compile
  
 A good summary of my approach to creating Goal is that I filled it with features I wanted to explore, then added extra functionality to try and make the language as easy to use, complete and useful as possible.
  
-\subsection{Syntax}
-
-A language's syntax can be said to describe the form that commands and expressions in a language must take \cite[p.~72]{CompGen1997}. In the case of programming languages it defines how you must write your code so that it can perform the computations you wish.
-
-The syntax for Goal is pretty simple and almost identical to that of Go, with some minor differences. I decided to follow Go's syntax rules not only for simplicity but also so it was easy to see where Goal got it's functionality from. I felt it would make sense to give it syntax rules close to the language it was emulating.
- 
-A key part of Goal's syntax is that each command must end with a semi-colon, including if statements, functions and for loops. A more detailed outline and examples of valid Goal syntax can be seen in the accompanying documentation for Goal with examples of syntactically correct Goal \cite{GoalDoc}. 
-
 \subsection{Types and Scope}
 
 A type system defines what type of variables are allowed to be used in a language. A variables type can be defined by saying \cite[p.~164]{EngComp2012};
@@ -77,6 +69,41 @@ For concurrency I wanted to use the same simple technique that allowed you to ru
 This code would start both the processes as independent subroutines and would execute them in parallel. I also added some useful library functions that I felt would be helpful for creating concurrent programs. These are not found in Go but are important to the way Goal works. The two most important ones are $Wait()$, which will halt a program until all subroutines have finished executing, and $Kill()$ which will immediately stop all running subroutines. There are a few other library functions I have included and again more information can be found in Goal's Documentation.  
 
 I also needed to implement a way to pass information between subroutines, although you could use global variables it is safer to have a more controlled method. This is why I implemented channels. These are also present in Go. You can declare a channel anywhere and it has global scope. They behave like stacks so you can push a value onto a channel in one subroutine then pop it out in another subroutine. Channels have a first in first out system. I have implemented channels almost exactly the same as how they are implemented in Go. 
+
+\subsection{Syntax}
+
+A language's syntax can be said to describe the form that commands and expressions in a language must take \cite[p.~72]{CompGen1997}. In the case of programming languages it defines how you must write your code so that it can perform the computations you wish.
+
+The syntax for Goal is pretty simple and almost identical to that of Go, with some minor differences. I decided to follow Go's syntax rules not only for simplicity but also so it was easy to see where Goal got it's functionality from. I felt it would make sense to give it syntax rules close to the language it was emulating.
+
+\begin{figure}[h]
+\centering
+While Loops;
+\begin{lstlisting}
+	for (x < 8) {
+		x += 2;
+	};
+\end{lstlisting}
+
+If Statements;
+\begin{lstlisting}
+	if (x == 13) {
+		x --;
+	} else if (x == 14){
+		x ++;
+	} else if (x == 13){
+		x -= 2;
+	} else {
+		x += 2;
+	};
+\end{lstlisting}
+
+\caption{Examples of Goal Syntax}
+\label{fig:egGoalSyntax} 
+\end{figure}
+ 
+A key part of Goal's syntax is that each command must end with a semi-colon, including if statements, functions and for loops. A more detailed outline and examples of valid Goal syntax can be seen in the accompanying documentation for Goal with examples of syntactically correct Goal \cite{GoalDoc}. 
+
 
 \section{Differences From Go}
 

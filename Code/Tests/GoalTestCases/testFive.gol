@@ -1,0 +1,10 @@
+
+global luke = 5; 
+
+func main() {
+    if (luke == 5) {
+        Print("testFive : success");
+    } else {
+        Print("testFive : fail");
+    };
+};

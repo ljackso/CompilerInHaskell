@@ -1,0 +1,24 @@
+
+func main() {
+    var c chan = Make(chan int);
+    
+    go pong();
+    go ping();
+    WaitOn(ping);
+};
+
+func ping(){
+    for(i = 0; i < 20; i++){
+        c <- i;
+        Print("ping");
+    };
+};
+
+func pong(){
+    for(True){
+        WaitChan(c);
+        l = <-c;
+        Show(l);
+        Print("pong");
+    };
+};

@@ -1,6 +1,6 @@
 \BOOKMARK [0][-]{chapter.1}{Introduction \046 Overview}{}% 1
 \BOOKMARK [1][-]{section.1.1}{Introduction To Project}{chapter.1}% 2
-\BOOKMARK [2][-]{subsection.1.1.1}{Introduction to Compilers \046 Executors}{section.1.1}% 3
+\BOOKMARK [2][-]{subsection.1.1.1}{Introduction to Compilers}{section.1.1}% 3
 \BOOKMARK [2][-]{subsection.1.1.2}{Introduction to Goal}{section.1.1}% 4
 \BOOKMARK [2][-]{subsection.1.1.3}{Introduction to Go}{section.1.1}% 5
 \BOOKMARK [2][-]{subsection.1.1.4}{Introduction to Concurrency}{section.1.1}% 6
@@ -11,11 +11,11 @@
 \BOOKMARK [1][-]{section.1.3}{Development Process }{chapter.1}% 11
 \BOOKMARK [0][-]{chapter.2}{Designing Goal}{}% 12
 \BOOKMARK [1][-]{section.2.1}{Picking Features}{chapter.2}% 13
-\BOOKMARK [2][-]{subsection.2.1.1}{Syntax}{section.2.1}% 14
-\BOOKMARK [2][-]{subsection.2.1.2}{Types and Scope}{section.2.1}% 15
-\BOOKMARK [2][-]{subsection.2.1.3}{Basic Commands}{section.2.1}% 16
-\BOOKMARK [2][-]{subsection.2.1.4}{Functions}{section.2.1}% 17
-\BOOKMARK [2][-]{subsection.2.1.5}{Concurrency}{section.2.1}% 18
+\BOOKMARK [2][-]{subsection.2.1.1}{Types and Scope}{section.2.1}% 14
+\BOOKMARK [2][-]{subsection.2.1.2}{Basic Commands}{section.2.1}% 15
+\BOOKMARK [2][-]{subsection.2.1.3}{Functions}{section.2.1}% 16
+\BOOKMARK [2][-]{subsection.2.1.4}{Concurrency}{section.2.1}% 17
+\BOOKMARK [2][-]{subsection.2.1.5}{Syntax}{section.2.1}% 18
 \BOOKMARK [1][-]{section.2.2}{Differences From Go}{chapter.2}% 19
 \BOOKMARK [1][-]{section.2.3}{Possible Uses}{chapter.2}% 20
 \BOOKMARK [0][-]{chapter.3}{Parsing}{}% 21
@@ -32,18 +32,17 @@
 \BOOKMARK [2][-]{subsection.4.1.3}{Analysis and Expansion of Creating an IR Example}{section.4.1}% 32
 \BOOKMARK [2][-]{subsection.4.1.4}{My Intermediate Representation of Goal}{section.4.1}% 33
 \BOOKMARK [1][-]{section.4.2}{Code Generation}{chapter.4}% 34
-\BOOKMARK [2][-]{subsection.4.2.1}{Introduction to Code Generation}{section.4.2}% 35
-\BOOKMARK [2][-]{subsection.4.2.2}{Brief Introduction to Target Language Instruction Set}{section.4.2}% 36
-\BOOKMARK [2][-]{subsection.4.2.3}{Example Code Generation}{section.4.2}% 37
-\BOOKMARK [2][-]{subsection.4.2.4}{Analysis and Expansion of Code Generation Example}{section.4.2}% 38
-\BOOKMARK [2][-]{subsection.4.2.5}{Examples of Generating Code For More Complex Features}{section.4.2}% 39
-\BOOKMARK [0][-]{chapter.5}{Execution using a Stack Based Virtual Machine}{}% 40
-\BOOKMARK [1][-]{section.5.1}{Introduction to Stack Based Virtual Machines}{chapter.5}% 41
-\BOOKMARK [1][-]{section.5.2}{Implementing a Stack Based Virtual Machine}{chapter.5}% 42
-\BOOKMARK [2][-]{subsection.5.2.1}{Explanation of Instruction Set}{section.5.2}% 43
-\BOOKMARK [2][-]{subsection.5.2.2}{Example Code Execution}{section.5.2}% 44
-\BOOKMARK [2][-]{subsection.5.2.3}{Analysis and Expansion of Code Execution Example}{section.5.2}% 45
-\BOOKMARK [2][-]{subsection.5.2.4}{Memory Design and Implementation}{section.5.2}% 46
-\BOOKMARK [2][-]{subsection.5.2.5}{Stack Management}{section.5.2}% 47
-\BOOKMARK [2][-]{subsection.5.2.6}{Implementing Concurrency}{section.5.2}% 48
-\BOOKMARK [0][-]{chapter.6}{Testing}{}% 49
+\BOOKMARK [2][-]{subsection.4.2.1}{Brief Introduction to Target Language Instruction Set}{section.4.2}% 35
+\BOOKMARK [2][-]{subsection.4.2.2}{Example Code Generation}{section.4.2}% 36
+\BOOKMARK [2][-]{subsection.4.2.3}{Analysis and Expansion of Code Generation Example}{section.4.2}% 37
+\BOOKMARK [0][-]{chapter.5}{Code Execution using a Stack Based Virtual Machine}{}% 38
+\BOOKMARK [1][-]{section.5.1}{Introduction to Stack Based Virtual Machines}{chapter.5}% 39
+\BOOKMARK [1][-]{section.5.2}{Implementing a Stack Based Virtual Machine}{chapter.5}% 40
+\BOOKMARK [2][-]{subsection.5.2.1}{Explanation of Instruction Set}{section.5.2}% 41
+\BOOKMARK [2][-]{subsection.5.2.2}{Example Virtual Machine}{section.5.2}% 42
+\BOOKMARK [1][-]{section.5.3}{Handling More Advanced Features}{chapter.5}% 43
+\BOOKMARK [2][-]{subsection.5.3.1}{Memory Design and Implementation}{section.5.3}% 44
+\BOOKMARK [2][-]{subsection.5.3.2}{Stack Management}{section.5.3}% 45
+\BOOKMARK [2][-]{subsection.5.3.3}{Implementing Concurrency}{section.5.3}% 46
+\BOOKMARK [0][-]{chapter.6}{Testing}{}% 47
+\BOOKMARK [0][-]{chapter.7}{Reflection}{}% 48

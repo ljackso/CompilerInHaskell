@@ -1,13 +1,18 @@
 
+
 func main() {
+    facRunner();
+};
+
+func facRunner() {
     fa = facA(5);
     fb = facB(5);
     Show(fa);
     Show(fb);
-}; 
+};
 
 func facA(n int) int {
-    return facAHelper(n , 1);
+    return facAHelper(n, 1);
 };
 
 func facAHelper(n int, a int) int {

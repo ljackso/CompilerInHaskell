@@ -1,8 +1,0 @@
-
-func main() {
-    x = 0;
-    for (x < 5){
-        x++;
-    };
-    Show(x);
-};

@@ -8,6 +8,7 @@ Standard Modules
 > import Data.List
 > import Data.List.Split
 > import qualified Data.Sequence as S
+> import qualified Data.Foldable as F
 
 My Modules
 
@@ -86,7 +87,9 @@ Actually compiles to machine code
 > comp' (CreateChan n)          = return ([CHANNEL n])
 > comp' (PushToChan n e)        = return (expression e ++ [PUSHC n])
 > comp' (Wait)                  = return [WAIT]
+> comp' (WaitOn n)              = return [WAITS n]
 > comp' (Kill)                  = return [KILL]
+> comp' (WaitChan n)            = return [WAITC n] 
 > comp' (GoCall n es)           = (goCallDealer n es)
 > comp' (VoidFuncCall n es)     = (voidCallDealer n es)
 
@@ -186,11 +189,12 @@ Deals with function call puts whatever it is ontop of the stack if there is a re
 > callDealer n []               = [CALL n] 
 > callDealer n (es)             = multExpression es ++ [CALL n] 
 
-Deals with setting up the Main function and all the code to be run
+Deals with setting up the Main function and all the code to be run. You need to start and end by creating and 
+then calling a random variable name to stop Haskells lazy evaluation scheme missing out void functions. 
 
 > mainDealer                    :: Prog -> ST Code
 > mainDealer p1                 =   do  p1Code  <- comp' p1 
->                                       return ([MAIN] ++ p1Code ++ [FEND]) 
+>                                       return ([PUSH (Integer 0)] ++ [POP "hsglennert"] ++ [MAIN] ++ p1Code ++ [PUSHV "hsglennert"] ++ [TRICK] ++ [FEND]) 
 
 Deal with creating a new go subroutine
 
@@ -290,9 +294,12 @@ as to focus n high level interpritation, look to improve this later.
 >                                   | PUSHC Name                --Takes element from top of stack and pushes to channel
 >                                   | POPC Name                 --Pops element from a channel and puts ontop of the stack
 >                                   | CHANNEL Name              --Creates new channel
+>                                   | WAITC Name
+>                                   | WAITS Name 
 >                                   | WAIT
 >                                   | KILL
 >                                   | GO Name
+>                                   | TRICK 
 >		                                deriving (Show, Eq)
 > 
 > type Label 		            =  Int
@@ -351,6 +358,10 @@ gc  = count of current process
 > exec' c pc s m g cs (gs ,gc)
 >                               =   case c !! pc of 
 
+Used To Trick Haskells Lazy Evaluations
+
+>                                       TRICK       -> trace ("D" ++ getNumberAsString (head s) ++ "NE") (exec' c (pc+1) (pop s) m g ncs (ngs, ngc))
+
 Output Calls
 
 >                                       PRINT p     -> trace (p) (exec' c (pc+1) s m g ncs (ngs, ngc)) 
@@ -397,6 +408,8 @@ Channel Handlers
 
 Go Subroutine handlers
 
+>                                       WAITS n     -> if (subIsRunning n ngs) then exec' c pc s m g ncs (ngs, ngc) else exec' c (pc+1) s m g ncs (ngs, ngc)
+>                                       WAITC n     -> if (isChanNonEmpty n ncs)  then exec' c (pc+1) s m g ncs (ngs, ngc) else exec' c pc s m g ncs (ngs, ngc)
 >                                       KILL        -> exec' c (pc+1) s m g ncs (S.fromList [], 0)
 >                                       WAIT        -> if (S.null gs) then exec' c (pc+1) s m g ncs (S.fromList [], 0) else exec' c pc s m g ncs (ngs, ngc)
 >                                       GO n        -> exec' c (pc+1) s m g ncs ((ngs S.|> (startSubRoutine c n s)),ngc)    
@@ -471,6 +484,7 @@ push variable onto top of the stack
 pop an integer from the stack and places it into memory under that variable name
 
 > pop                           :: Stack -> Stack
+> pop []                        = error "Execution Error: Attempted to pop empty stack"
 > pop s                         = tail s
 
 
@@ -596,7 +610,7 @@ v = isthe function call void
 
 > handleCall                    :: Code -> Int -> Stack -> Mem -> Bool -> Name -> [Channel] -> (S.Seq GoRoutine, Int)  -> Bool -> EndParam
 > handleCall c pc s m g n cs (gs, gc) v
->                               =   if v then exec' c (pc+1) [] fm g fcs (gs, gc) else exec' c (pc+1) fs fm g fcs (gs, gc)  
+>                               =   if v then exec' c (pc+1) s fm g fcs (gs, gc) else exec' c (pc+1) fs fm g fcs (gs, gc)  
 >                                   where
 >                                       fMem    = (getGlobalMemmory m ++ instantiateMemory)
 >                                       fCode   = getFunction c n
@@ -665,8 +679,8 @@ TODO: This needs to be fixed as trace is not a good way to do this
 > printNumber n                 = putStrLn (getNumberAsString n)
 
 > getNumberAsString             :: Number -> String
-> getNumberAsString (Integer n) = "Int " ++ (show n) 
-> getNumberAsString (Double n)  = "Double " ++ (show n) 
+> getNumberAsString (Integer n) = "" ++ (show n) 
+> getNumberAsString (Double n)  = "" ++ (show n) 
 
 --------------------------------------------------------------------------------
 
@@ -704,7 +718,7 @@ How I handle poping of a channel
 Gets the head of a channel, if channel is empty it will return 0.
 
 > getHeadChannel                :: Name -> [Channel] -> Number 
-> getHeadChannel n cs           = if (s == []) then (Integer 0) else (head s)
+> getHeadChannel n cs           = if (s == []) then (error ("Error: Attempting to pop empty channel : " ++ n)) else (head s)
 >                                   where
 >                                       c   = getChannel n cs
 >                                       s   = snd c          
@@ -715,6 +729,11 @@ Handling pushing to a channel
 > pushChannel n cs v            = [(n,v:(snd pc))] ++ [c | c <- cs, fst c /= n]
 >                                   where
 >                                       pc = getChannel n cs
+
+Checks if a channel is empty 
+
+> isChanNonEmpty                :: Name -> [Channel] -> Bool
+> isChanNonEmpty n cs           = not ((snd (getChannel n cs)) == []) 
 
 
 ------------------------------------------------------------------------------------
@@ -729,16 +748,11 @@ Sets up a new Go sub routine.
 >                                       code    = getFunction cs n 
 
 
-
-
 Handles running of concurrent processes, will handle one instruction at a time
 
 gs = list of GoRoutines Running
 gc = current counter for which process is running, meaning order of gs must be maintained
 cs = list of channels
-
-TODO: Implement memory and handling changes in global memory
-TODO: Allow function calls
 
 
 > subRoutsHandler               :: S.Seq GoRoutine -> Int -> [Channel] -> ((S.Seq GoRoutine,Int) , [Channel])  
@@ -776,8 +790,6 @@ Replace a sub routine
 
 Remove a sub routine 
 
-> testGo1                       = Go [SHOW] 0 [] [] 
-
 > removeGo                      :: S.Seq GoRoutine -> Int -> S.Seq GoRoutine
 > removeGo gs i                 = (S.take i gs) S.>< (S.drop (i+1) gs) 
 
@@ -795,25 +807,45 @@ m   = local memory, handle global variables later.
 > subRoutHandler                :: GoRoutine -> Int -> [Channel] -> ((GoRoutine, Int), [Channel])
 > subRoutHandler (Go ec pc s m)  gc cs 
 >                               = case ec !! pc of 
+>                                       PRINT p     -> trace (p) (((Go ec (pc+1) (pop s) m), gc), cs)
 >                                       SHOW        -> trace (getNumberAsString (head s)) (((Go ec (pc+1) (pop s) m), gc), cs) 
+
 >                                       FUNC n      -> subRoutHandler (Go ec (pc+1) s m)  gc cs    
+
 >                                       PUSH n      -> (((Go ec (pc+1) (push n s) m), gc), cs)
 >                                       PUSHV v     -> (((Go ec (pc+1) (pushv v m s) m), gc), cs)
 >                                       POP v       -> (((Go ec (pc+1) (pop s) (assignVariable v (head s) m False)), gc), cs)
+
 >                                       DO o        -> (((Go ec (pc+1) (operation o s) m), gc), cs)
 >                                       COMP o      -> (((Go ec (pc+1) (comparison o s) m), gc), cs)
+
 >                                       LABEL l     -> subRoutHandler (Go ec (pc+1) s m)  gc cs                                                   --jump over and do an extra command
 >                                       JUMP l      -> (((Go ec (jump ec l) s m), (gc + 1)), cs)
 >                                       JUMPZ l     -> (((Go ec (jumpz ec s l pc) (pop s) m), (gc + 1)), cs)
+
 >                                       STOP        -> (((Go [] 0 s m),(gc)), cs)
 >                                       FEND        -> (((Go [] 0 s m),(gc)), cs)
+
 >                                       PUSHC n     -> (((Go ec (pc+1) (pop s) m), gc), (pushChannel n cs (head s)))
 >                                       POPC n      -> (((Go ec (pc+1) (push (getHeadChannel n cs) s) m), gc), (popChannel n cs))
+>                                       WAITC n     -> if (isChanNonEmpty n cs)  then (((Go ec (pc+1) s m), gc), cs) else (((Go ec pc s m), (gc+1)), cs)
+
 >                                       CHANNEL n   -> error "Cannot create channel in subroutine, must create outside of concurrent process"
 >                                       RSTOP       -> error "Subroutines must be void, cannot return value" 
 >                                       CALL n      -> error "Cannot call function within a subroutine"
 
 
+Checks to see if a subroutine is running
+
+> subIsRunning                  :: Name -> S.Seq GoRoutine -> Bool
+> subIsRunning n gs             = elem True [isSubName n lg | lg <- lgs]
+>                                   where 
+>                                       lgs     = F.toList gs
+
+> isSubName                     :: Name -> GoRoutine -> Bool
+> isSubName n (Go e p s m)      = if fn == "" then (error "Error; Could not find subroutine name") else fn == n 
+>                                   where 
+>                                       fn = getFuncName (head e) 
 
 ------------------------------------------------------------------------------------
 

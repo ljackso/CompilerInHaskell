@@ -1,0 +1,8 @@
+
+func main() {
+    if (4 != 3) {
+        Print("testFour : success"); 
+    } else {
+        Print("testFour : fail");
+    };
+};

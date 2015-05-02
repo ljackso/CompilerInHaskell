@@ -1,0 +1,14 @@
+
+func main () {
+    if (4 - 6) {
+        Print("testThree : fail");
+    };
+    
+    if (5) {
+        Print("testThree :  success");
+    };
+   
+    if (0) {
+        Print("testThree : fail");
+    }; 
+}; 

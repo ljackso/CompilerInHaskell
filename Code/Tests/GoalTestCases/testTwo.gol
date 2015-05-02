@@ -1,0 +1,12 @@
+
+func main() {
+    if (1 == 0){
+        Print("testTwo : fail");
+    } else if (1 == 1) {
+        Print("testTwo : success"); 
+    } else if (2 == 2) {
+        Print("testTwo : fail");
+    } else {
+        Print("testTwo : fail");
+    };
+};
