@@ -2,29 +2,28 @@
 
 func main() {
 	var c chan = Make(chan int);
-    for (var i int = 0; i < 20; i++){
-        go count(20);
+    count = 20;
+    loops = 20;
+    
+    for (i = 0; i < loops; i++){
+        go count(count);
     };
     Wait();
-    var j int = getCount();
-	Show(j);
+    
+    outputCount(count, 20);
 };
 
 func count(t int) {
     for (t > 0){
-        c <- 1;
+        c <- t;
         t--;
-        Show(t);
-    };
-    
+    };    
 };
 
-func getCount() int {
-	var l int = 1;
-    var j int = 0;
-	for (l == 1) {
-        l = <-c;
-		j += l;
-	};
-    return j;
+func outputCount(c int, l int) {
+
+    for(j = c*l; j > 0; j--) {
+        l = <- c;
+        Show(l);
+    };
 };

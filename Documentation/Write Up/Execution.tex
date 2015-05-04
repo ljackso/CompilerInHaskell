@@ -450,7 +450,7 @@ Handling the creation and running of concurrent processes is definitely one of t
 
 %TODO make this look pretty %
 \begin{lstlisting}[basicstyle=\ttfamily\tiny]
-Code ->  Int -> Stack -> Mem -> Bool -> [Channel] -> (Seq GoRoutine, Int) ->  EndParam
+exec' :: Code ->  Int -> Stack -> Mem -> Bool -> [Channel] -> (Seq GoRoutine, Int) ->  EndParam
 \end{lstlisting}
 
 The bits we are interested in for handling concurrency are the types;
@@ -501,13 +501,14 @@ Thus meaning code such as;
 	};
 
 	OUTPUTS : 3
+	          D0NE
 \end{lstlisting}
 
 Is perfectly valid due to the nature of how I execute functions and the data structure used to store and pass channel data. 
 
 Channels are regulated by a series of functions that are called each time a channel operation is performed. For example there are functions that check that you are not creating a new channel with the same name as a pre-existing channel and functions that check you are not trying to push and pop to a non existent channel.
 
-If we will now start talking about how sub routines are created and handled.
+We will now start talking about how sub routines are created and handled.
 
 When a sub routine is created it's information is represented by the data type $GoRoutine$. This is a data structure that holds everything that a sub routine needs to run as independent process (excluding channel data). This structure is show below;
 
@@ -525,9 +526,11 @@ This gives every subroutine;
 \end{itemize}
  
 
-To handle multiple subroutines they are handled by the type $(Seq$ $GoRoutine,$ $Int)$. The $Seq$ monad is used to handle a list of items it is just safer to use to maintain the order of items when removing and adding items. 
+To handle multiple subroutines they are handled by the type $(Seq$ $GoRoutine,$ $Int)$. The $Seq$ monad is used to handle a list of items, I felt it was safer to use in order to maintain the order of items. 
 
-Now we know what format our subroutines will be passed round our executor we now need a way of executing them concurrently. Here it is important that to realize we are not creating truly concurrent processes in the sense that they run at exactly the same time. Instead what we are doing is interweaving the execution of processes to create the illusion of them executing in parallel. To do this at each step of our executor we call the function $subRoutsHandler$. This will execute one step of on of our subroutines. 
+Now we know what format our subroutines will be passed round our executor we now need a way of executing them concurrently. Here it is important that to realize we are not creating truly concurrent processes in the sense that they run at exactly the same time. Instead what we are doing is interweaving the execution of processes to create the illusion of them executing in parallel. 
+
+To do this at each step of our executor we call the function $subRoutsHandler$. This will execute ten commands of on of our subroutines for every one command executed by out main executor. 
 
 You may have noticed that our subroutines are passed around in a tuple with an integer. This integer is used to keep track of which process is currently being executed. 
 
@@ -553,6 +556,6 @@ You can see here how $subRoutsHandler$ will be called and how the different valu
 
 This code also show how $KILL$ simply removes all running subroutines and $WAIT$ stops until there are no more processes left to run, as every time a subroutine is finished running it is removed from the list.
 
-To summarize a sequence of subroutines are handled by a separate executor at each step in my executor, this separate executor executes one or two commands before returning the updated information of the subroutines. The current subroutine being executed is kept track of using a counter. 
+To summarize a sequence of subroutines are handled by a separate executor at each step in my executor, this separate executor executes several commands before returning the updated information of the subroutines. The current subroutine being executed is kept track of using a counter. 
 
 

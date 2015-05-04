@@ -1,4 +1,4 @@
-\begin{thebibliography}{5}
+\begin{thebibliography}{7}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -19,6 +19,14 @@ Santanu Chattapoadhyay.
 Kieth~D. Cooper and Linda Torczan.
 \newblock \emph{Engineering a Compiler}.
 \newblock Morgan Kaufmann, 2nd edition, 2012.
+
+\bibitem[Hutton and Meijer(1996)]{Hutton96}
+Graham Hutton and Erik Meijer.
+\newblock Monadic parser combinators, 1996.
+
+\bibitem[Hutton and Meijer(1998)]{Hutton98}
+Graham Hutton and Erik Meijer.
+\newblock Functional pearls monadic parsing in haskell, 1998.
 
 \bibitem[Jackson(2015)]{GoalDoc}
 Luke Jackson.

@@ -7,7 +7,53 @@ Although I will be talking a lot about the intermediate representation I've crea
 
 \section[Introduction to Using Monadic Parser Combinators]{Introduction to Using \\ Monadic Parser Combinators}
 
-The technique I used to parse data in my compiler was to make use of Monadic Parser Combinators. If we think of a parser in Haskell as something that takes in a string and returns a data structure, we can think of parser combinators as high order functions that take in several parsers as its input and returns a new parser as it's output.  
+The technique I used to parse data in my compiler was to make use of Monadic Parser Combinators. If we think of a parser in Haskell as something that takes in a string and returns a data structure, we can think of parser combinators as high order functions that take in several parsers as its input and returns a new parser as it's output. 
+
+A lot of the comments in the section makes use of two papers on monadic parser combinators both \cite{Hutton96} and \cite{Hutton98} also making use of a library of parsers provided in the later. 
+
+We can first look at the type of the parsers provided;
+
+\begin{lstlisting}
+	newtype Parser a = Parser (String -> [(a,String)])
+\end{lstlisting}  
+
+You can see that our parser takes in a string returning a list of results. We can see that our parser will have the type $Parser Prog$ as we need our parser to output the type $Prog$ which is the type of my intermediate representation and the type which my code generator takes in. 
+
+The best way to understand how parser combinators work is too look at a few examples that you will find in Parsing.lhs provide by \cite{Hutton98}.
+
+If we first look at the $item$ parser. Which just consumes the first character of a string, and fails if the string is null. 
+
+\newpage
+
+\begin{lstlisting}
+item   :: Parser Char
+item   =  P (\inp -> case inp of
+                       []     -> []
+                       (x:xs) -> [(x,xs)])
+\end{lstlisting}
+
+We can see that on it's own this parser isn't particularly useful, but with the use of parser combinators we can put it to some use. Now say we want to make use of this parser to parse digits. We need to first look at how we allow for conditional parsing, compared to $item$ which will parse anything. 
+
+If we look at $sat$ we can see how it makes use of $item$ to allow for parsing on some condition;
+
+\begin{lstlisting}
+sat    :: (Char -> Bool) -> Parser Char
+sat p  =  do x <- item
+             if p x then return x else failure
+\end{lstlisting}
+
+You may also notice the use of $failure$ which has type  $Parser$ $a$ and is a parser that will always fail regardless of input. 
+
+We can now make use of $sat$ to create a parser to parse digits;
+
+\begin{lstlisting}
+	digit  :: Parser Char
+	digit  =  sat isDigit
+\end{lstlisting}
+
+This highlights how parser combinators work, by combing several parsers we are able to begin to create something useful .Using the same technique we could easily create parsers for specific characters or to only parser upper or lower case characters.
+
+This is an incredibly brief introduction into a very interesting topic and it is recommend that the interested reader refer to either of papers referenced earlier to learn more about creating monadic parser combinators.
 
 \section{Goal Syntax Rules and Justifications}
 

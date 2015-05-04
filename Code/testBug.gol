@@ -4,7 +4,6 @@ func main() {
     go pong();
     go ping(20);
     WaitOn(ping);
-    Kill();
 };
 
 func ping(n int) {

@@ -1,4 +1,171 @@
 
 \chapter{Testing}
 
-Testing is not only a very important part of a project like this, but also poses some interesting challenges for us. 
+Testing is not only a very important part of a project like this, but also poses some interesting challenges for us.
+
+\section{Using Test Driven Development}
+
+In my introduction I explained that the way I approached implementing this project was to use test driven development. To recap, this is a development methodology where you write your tests first then write code to ensure your tests pass.
+
+This process was very constructive in the first stages of my development, but became a bit frustrating as the project developed. Specifically when I started making changes to existing features in my intermediate representation. This was because a lot of my initial tests were wrote testing my back-end of my compiler, ensuring correct code generation and that programs ran correctly on my virtual machine. Therefor a lot of initial test programs where constructed using my IR. 
+
+
+\begin{figure}[h]
+\centering
+\begin{lstlisting}
+ifTest_2     :: Prog     
+ifTest_2   = If (Val (Integer 0)) 
+                (Assign "Luke" (Val (Integer 21)))
+
+whileTest_3  :: Prog      
+whileTest_3  = 
+    Seqn [(Assign "l" (Val (Integer 5))), 
+          (Assign "j" (Val (Integer 0))), 
+          (While (Var "l") 
+                 (Seqn [
+                       (Assign "j" (ExprApp ADD (Var "j") 
+                                   (Val (Integer 1)))),
+                       (Assign "l" (ExprApp SUB (Var "l") 
+                                   (Val (Integer 1))))
+                       ])
+           )]
+\end{lstlisting}
+\caption{Examples of the sort of tests programs I would run to check the back end of my compiler.}
+\label{fig:egEarlyTests} 
+\end{figure}  
+
+The problem this caused was if I made any changes to the structure of my IR it could make many of my old tests redundant. The same problem could be seen when I moved on to making a parser. Where any changes in my languages syntax forced me to go back and update all previous tests.
+
+To handle this problem that using TDD in an iterative process causes, I would when updating tests ensure that every test I created was still necessary. For example there was no point worrying about maintaining the $ifTest_2$ in figure \ref{fig:egEarlyTests} if my parser was now working and I was able to just write a program to test in Goal. 
+
+This meant that over time my tests changed from Haskell data structures, to simply writing an example program in Goal that I wanted my compiler to handle. Eventually this left me testing code by having numerous Goal source files my compiler had to run. Which led to the creation of my test suite.   
+
+\section{Test Suite}
+
+For this project I felt the best way to test my compiler was to actually write code that I wanted to run on it, and see if it could. There are several ways I could do this. Either by creating one large Goal program containing all the features I wished to test, or I could create a number of separate programs each one checking several key features.
+
+I decided to go with the latter approach, creating a number of test programs which had standardized output that was easy to understand. These tests ranged from simple programs checking the behavior of conditional expressions to more complex programs checking features such as recursion.
+
+The important part for each program was that it outputted a single line of text that told you if the program run successfully. This was in the format "testName : success/fail".   
+
+\begin{figure}[h]
+\centering
+\begin{lstlisting}
+	func main() {
+	    l = fun(20);
+	    
+	    if (l == 20){
+	        Print("testSeven : success");
+	    } else {
+	        Print("testSeven : fail");
+	    };
+	};
+	
+	func fun(n int) int {
+	    l = 0; 
+	    for (n > 0) {
+	        l++;
+	        n--;
+	    };
+	    return l;
+	};
+\end{lstlisting}	
+\caption{Examples of a test program you would find in my test suite}
+\label{fig:egTestProg} 
+\end{figure}   
+
+I then created a folder that held all of these tests so that I was able to write a Haskell program that could run all my tests so I could immediately see if any changes I had made to my code ended up causing problems with my previous tests.
+
+This explains how ended up creating and running a test suite to run on my compiler. I would then check by using the standardized output of my test, to see if any tests had failed.
+
+
+\section{Quickcheck}
+
+Another method I used to test my compiler was Quickcheck. Quickcheck is a Haskell library used for random testing of program properties\footnotemark[1]. It is relatively simple to use and is very helpful in testing functions that are required to have certain properties.
+
+\footnotetext[1]{\url{https://hackage.haskell.org/package/QuickCheck}}
+
+They way it works is you define some property you want to be true then use Quickcheck to check that property 100 times with random input. For example I needed to create a function that would add 2 integers, therefore I could check the following property;
+
+\begin{lstlisting}
+propAdd l j  = 
+      ((addNumbers (Integer l) (Integer j))==Integer (l+j))
+\end{lstlisting} 
+
+Then I would have to make the call;
+
+\begin{lstlisting}
+	quickCheck propAdd
+\end{lstlisting}
+ 
+Which will give me the output;
+
+\begin{lstlisting}
+	"+++ OK, passed 100 tests" 
+\end{lstlisting}
+
+I used Quickcheck primarily to tests functions used in my virtual machine. I found it particularly useful when testing stack operations.  
+
+There were some problems with using Quickcheck though, specifically in checking more complicated functions. For example I would only use Quickcheck to test functions with limited input and output. I would not use Quickcheck to test my entire virtual machine but I would use it to test specific functions used within my virtual machine.
+
+This was because I felt that it was better to use a test suite to test the main aspects of my compiler then use Quickcheck as a supplement to help me test specific functions.  
+
+\section{Bugs} 
+
+As with any large scale project testing through up some interesting bugs within my code. Rather than outline every bug I discovered I will go over two of the more interesting problems I came across and how I solved them.
+
+Specifically I will talk about two bugs that caused me problems that I felt although I was able to provide solutions for, I maybe could have tackled better.
+
+
+\subsection{Haskell's Lazy Evaluation}
+
+Lazy evaluation is where you only evaluate expressions if you need to. It is the most common method used for executing Haskell and caused me some problems. It means that sometimes you can not be 100\% certain of how you program will be executed.
+
+The way I discovered the bug was when I was testing void function calls. I had the problem that the following code;
+
+\begin{lstlisting}
+	func main() {
+		fun();
+	};
+\end{lstlisting}
+
+Would do nothing regardless of the definition of $fun()$. This got me confused but Final I found out that by making the small change;
+
+\begin{lstlisting}
+	global j = 0;
+	
+	func main() {
+		fun();
+		Show(j);
+	};
+\end{lstlisting}
+
+Would cause my program to behave as I wanted. This lead me to thinking there was a problem with how Haskell was evaluating my virtual machine code. The issue seemed to disappear if there was some interaction with the stack and some forced output.
+
+The good thing about having my compiler broken up into three main sections means you can run each part individually until you find the problem. Hence why I was able to quickly realize the problem was in my virtual machine.   
+
+Unfortunately I found this problem quite late on in my project, which lead me to increase the size a scope of my test suite. Therefore I was not able to come up with the sort of elegant solution I would have liked to. 
+
+Instead I had to solve this problem by forcing my virtual machine to perform a stack operation and give some output as the last thing it does. This can be seen by the creation and use of the $TRICK$ instruction which forces the virtual machine to perform something even if most of the work is going to be done by the function executor. 
+
+\subsection{Output}
+
+Another problem I had was getting my virtual machine to provide output. Ther are two commands that need to be dealt with in this respect;
+
+\begin{itemize}
+\item $SHOW$, Which will take the item on top o the stack, pop it and output it.
+\item $PRINT s$, This is the only command which can handle strings, it will simply output the string s.
+\end{itemize}
+
+The problem I had initially was the function I created to generate output was not working. I tried to make use of the $unsafePerformIO$ function to handle generating output without changing my virtual machines type declarations but unfortunately it was to no avail. 
+
+\newpage
+
+The solution I came up with was to make use of the Haskell $trace$ function this can be seen below;
+
+\begin{lstlisting}
+SHOW -> trace (getNumberAsString (head s)) 
+              (exec' c (pc+1) (pop s) m g ncs (ngs, ngc) ) 
+\end{lstlisting}  
+
+Although this does solve the problem of providing output for my virtual machine it is something I would have liked to revisit. This is due to the unsafe nature the $trace$ function is only meant to be used in debugging rather than for production code.

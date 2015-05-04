@@ -29,6 +29,18 @@ Finally a virtual machine is something that emulates the a compute, in our case 
 
 Looking at these explanations it is clear to see the importance of compilers in the modern world. They allow people to create complicated programs and applications efficiently without having to concern themselves with low level details.
 
+\subsection{Introduction to My Project Structure}
+
+There are three main parts to my compiler; parsing, compiling and the virtual machine. To best understand the structure of my compiler it is good to look at the definition of the function $run$ which is called to run Goal code.
+
+\begin{lstlisting}
+ 	run f  = exec (typeChecker (comp (parseGo f)))
+\end{lstlisting}
+
+Where $f$ is the .gol file we want to run. You can see that we first call the parser which passes its result to the code generator ($comp$), which passes its result to a simple type checker before the function $exec$ will run the compiled code. 
+
+This shows how my compiler is structured and this dissertation will walk through the creation of the parser, code generator and virtual machine and how they interact with each other.
+
 \subsection{Introduction to Goal}
 
 Goal is the language I have created my compiler for. It is a language I have created specifically for this project as a means of exploring compilers. It draws heavy inspiration from Go and uses the same basic syntax where possible. The main features of Goal are the ability to perform function recursion and to create and run concurrent programs.
@@ -66,6 +78,7 @@ Goal is the language I have created my compiler for. It is a language I have cre
 
 The idea for Goal came when i was picking features from Go I was interested in compiling then decided it would be a nice idea to bring them together to create a more complete language. In my opinion during the course of this project Goal has evolved from a means to explore compilers and language design into a simple standalone language with it's own uses. I will discuss more about the design and functionality of Goal in chapter 2.
 
+It is recommended to make use of the Goal Documentation when starting to write new programs in Goal. The provided documentation gives example syntax of every command you can use and provides examples of how to use them and how they are expected to behave.
 
 \subsection{Introduction to Go}
 
@@ -74,6 +87,7 @@ Go is an object oriented programming language created by Google relatively recen
 In many ways Go is similar to C in terms of syntax and that it is also statically typed. There are however some interesting features thrown in, such as how Go handles concurrency.
 
 In summary I would say Go (also referred to as golang) is a new language with quite a bit of potential, which can be seen by it's growing popularity. Although it is not revolutionary, it's mixture of simplistic syntax and more exciting features makes it a good language to emulate.
+
 
 \subsection{Introduction to Concurrency}
 
@@ -84,7 +98,6 @@ The basic idea behind concurrent programming is you can do many things at one ti
 The importance of concurrent programming can be seen now more than ever with rising popularity of online services and cloud computing. Lets take one of the most popular websites in the world Google.com, with around 40,000 request a second there is a high chance that when you hit that search button, so are thousands of other people at exactly the same time. But instead of queuing every request and doing it sequentially a server will handle the requests concurrently, ensuring that many requests can be handled at the same time, and you don't have to wait for the thousands of people who clicked a few milliseconds ahead of you till you get your results.
 
 There are plenty more examples of the importance of concurrency in modern technology, I'm sure if you think about most pieces of technology you use it would be easy to list numerous process that have to run concurrently. This is why I was interested in implementing concurrency into my compiler, because of it's usefulness and importance in modern programming languages.   
-
 
 \section{Motivation}
 

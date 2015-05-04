@@ -24,20 +24,20 @@ The type (of a variable) specifies a set of properties held in common by all val
 
 Go has a very broad type system and static typing. Static typing is where any type errors are checked during compiling as opposed to dynamic typing where type errors are checked at run time. By saying Go has a broad type system I'm saying it allows for a lot of different types.
 
-In Goal I decided not to focus on allowing lots of different types and instead only allow 3 main types; Integers,  Booleans and Strings. This was mainly so I could spend more time working on other features and not worrying about creating an extensive type checking system, whilst still having enough types to be able to create some interesting programs. 
+In Goal I decided not to focus on allowing lots of different types and instead only allow 2 types; Integers and Booleans. This was mainly so I could spend more time working on other features and not worrying about creating an extensive type checking system, whilst still having enough types to be able to create some interesting programs.
 
 This also lead to allowing very basic variable declarations and assignments. You do not need to declare a type when initially declaring a variable and variables can be created on the fly. For example if you were to write;
 
 \begin{lstlisting}
 	i = 4;
 	i = True;
-	i = "hello";
 \end{lstlisting}
 
-There would be no compiler or run time errors in this code and your variable $i$ would have the value "hello" as each new assignment writes over the old value. This is the biggest difference Goal and Go, it is actually much closer to how a language like Python handles variable declarations and puts more emphasis on the user keeping track of their variables.
+There would be no compiler or run time errors in this code and your variable $i$ would have the value True as each new assignment writes over the old value. More specifically because booleans are treated as integers i will have the value 1.  This is the biggest difference Goal and Go, it is actually much closer to how a language like Python handles variable declarations and puts more emphasis on the user keeping track of their variables.
+
+It must be noted strings can be used and outputted using the $Print()$ command but you cannot save strings as a variable only use it to print out specific phrases. The command $Show()$ can be used to output numbers and variables and any other numerical expression. 
 
 A variable's scope defines where it can be accessed from. In Goal I decided to keep this very simple by only allowing variables to have two different scopes; global or local. A global variable is defined by using the keyword global before the definition and once declared can be accessed anywhere in your code. A local variable is just declared as shown above with no key word and can only be accessed with in the function you declared it in. More information about how variable scope works in Goal can be found in the accompanying documentation.     
-
 
 \subsection{Basic Commands}
 
@@ -57,6 +57,28 @@ All of these almost exactly follow the same syntax rules and have the same funct
 
 Functions are treated very similarly in Goal as they are in Go. The main difference is that you can only have functions that either return Booleans or Integers, or your functions can be void. Function recursion is allowed as are nested function calls.
 
+\begin{figure}
+\begin{lstlisting}
+	func main() {
+	    facRunner();
+	};
+	
+	func facRunner() {
+	    fa = fac(5);
+	    Show(fa);
+	};
+	
+	func fac(n int) int {
+	    if (n == 0) {
+	        return 1;
+	    }; 
+	    return n * facB(n-1);
+	};
+\end{lstlisting}
+\caption{Example of a program using function recursion and showing how to define different types of functions}
+\label{fig:egGoalFunction} 
+\end{figure}
+
 \subsection{Concurrency}
 \label{sec:concDes}
 
@@ -66,9 +88,16 @@ For concurrency I wanted to use the same simple technique that allowed you to ru
 	go funA();
 	go funB();	
 \end{lstlisting}
+
 This code would start both the processes as independent subroutines and would execute them in parallel. I also added some useful library functions that I felt would be helpful for creating concurrent programs. These are not found in Go but are important to the way Goal works. The two most important ones are $Wait()$, which will halt a program until all subroutines have finished executing, and $Kill()$ which will immediately stop all running subroutines. There are a few other library functions I have included and again more information can be found in Goal's Documentation.  
 
-I also needed to implement a way to pass information between subroutines, although you could use global variables it is safer to have a more controlled method. This is why I implemented channels. These are also present in Go. You can declare a channel anywhere and it has global scope. They behave like stacks so you can push a value onto a channel in one subroutine then pop it out in another subroutine. Channels have a first in first out system. I have implemented channels almost exactly the same as how they are implemented in Go. 
+I also needed to implement a way to pass information between subroutines, although you could use global variables it is safer to have a more controlled method. This is why I implemented channels. These are also present in Go. You can declare a channel anywhere and it has global scope. The way to declare a new channel is shown below.
+
+\begin{lstlisting}
+	var c chan = Make(chan int);	
+\end{lstlisting}
+
+They behave like stacks so you can push a value onto a channel in one subroutine then pop it out in another subroutine. Channels have a first in first out system. I have implemented channels almost exactly the same as how they are implemented in Go. 
 
 \subsection{Syntax}
 
@@ -96,6 +125,12 @@ If Statements;
 	} else {
 		x += 2;
 	};
+\end{lstlisting}
+
+Output commands
+\begin{lstlisting}
+	Show(NUMBER);
+	Print("STRING");
 \end{lstlisting}
 
 \caption{Examples of Goal Syntax}

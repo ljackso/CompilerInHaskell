@@ -632,7 +632,6 @@ Returns Stack, used for nested and recursive function calls
 >                                       fm      = updateMemory m (snd (fst fRun))
 >                                       fcs     = fst (snd fRun) 
 
- nj  
 Searches through code and returns a function's code, ct signifies if is currently cutting the code
 
 > getFunction                   :: Code -> Name -> Code 
@@ -762,12 +761,25 @@ cs = list of channels
 >                                       else ((ngs, ngc), ncs) 
 >                                   where
 >                                       ugc     = (getIndex gs gc)
->                                       i       = subRoutHandler (S.index gs ugc) ugc cs
+>                                       i       =  subRoutHandler (S.index gs ugc) ugc cs
 >                                       ng      = (fst (fst i))
 >                                       ngs     = (replaceGo gs ng gc)
 >                                       rgs     = (removeGo gs gc)           -- removes current process 
 >                                       ncs     = snd i
 >                                       ngc     = snd (fst i)
+
+
+A function that can be used to run subRoutHandler a set amount of time. Decided against using it as 
+I prefered context switch on events rather than on a set value 
+
+> subRunner                     :: GoRoutine -> Int -> [Channel] -> Int -> ((GoRoutine, Int), [Channel])
+> subRunner g gc cs 0           = ((g, (gc+1)), cs)
+> subRunner g gc cs x           = if hasEnded ng then ((ng,(ngc+1)), ncs) else subRunner ng ngc ncs (x-1)
+>                                   where 
+>                                       sr      = subRoutHandler g gc cs
+>                                       ng      = fst (fst sr)
+>                                       ncs     = snd sr
+>                                       ngc     = snd (fst sr)
 
 
 Tells us if a routine is over
@@ -819,20 +831,20 @@ m   = local memory, handle global variables later.
 >                                       DO o        -> (((Go ec (pc+1) (operation o s) m), gc), cs)
 >                                       COMP o      -> (((Go ec (pc+1) (comparison o s) m), gc), cs)
 
->                                       LABEL l     -> subRoutHandler (Go ec (pc+1) s m)  gc cs                                                   --jump over and do an extra command
->                                       JUMP l      -> (((Go ec (jump ec l) s m), (gc + 1)), cs)
->                                       JUMPZ l     -> (((Go ec (jumpz ec s l pc) (pop s) m), (gc + 1)), cs)
+>                                       LABEL l     -> subRoutHandler (Go ec (pc+1) s m) gc cs                                                   
+>                                       JUMP l      -> (((Go ec (jump ec l) s m), (gc+1)), cs)
+>                                       JUMPZ l     -> (((Go ec (jumpz ec s l pc) (pop s) m), (gc+1)), cs)
 
 >                                       STOP        -> (((Go [] 0 s m),(gc)), cs)
 >                                       FEND        -> (((Go [] 0 s m),(gc)), cs)
 
 >                                       PUSHC n     -> (((Go ec (pc+1) (pop s) m), gc), (pushChannel n cs (head s)))
 >                                       POPC n      -> (((Go ec (pc+1) (push (getHeadChannel n cs) s) m), gc), (popChannel n cs))
->                                       WAITC n     -> if (isChanNonEmpty n cs)  then (((Go ec (pc+1) s m), gc), cs) else (((Go ec pc s m), (gc+1)), cs)
+>                                       WAITC n     -> if (isChanNonEmpty n cs)  then (((Go ec (pc+1) s m), gc), cs) else (((Go ec pc s m), (gc +1)), cs)
 
 >                                       CHANNEL n   -> error "Cannot create channel in subroutine, must create outside of concurrent process"
 >                                       RSTOP       -> error "Subroutines must be void, cannot return value" 
->                                       CALL n      -> error "Cannot call function within a subroutine"
+>                                       CALL n      -> error "Cannot have a function call within a subroutine"
 
 
 Checks to see if a subroutine is running
@@ -846,6 +858,7 @@ Checks to see if a subroutine is running
 > isSubName n (Go e p s m)      = if fn == "" then (error "Error; Could not find subroutine name") else fn == n 
 >                                   where 
 >                                       fn = getFuncName (head e) 
+
 
 ------------------------------------------------------------------------------------
 
