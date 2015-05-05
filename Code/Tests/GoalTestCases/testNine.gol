@@ -1,0 +1,21 @@
+
+func main() {
+	var c chan = Make(chan int);
+	funA();
+	j = <- c;
+	if (j == 3){
+        Print("testNine : success");
+    } else {
+        Print("testNine : fail");
+    };
+};
+	
+func funA() {
+	c <- 1;
+	c <- 2;
+	funB();
+};
+	
+func funB() {
+	c <- 3;
+};

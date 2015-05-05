@@ -1,6 +1,6 @@
 
 func main() {
-    l = ack(3,3);
+    l = ack(4,3);
     Show(l);
     Print("it worked");
 };

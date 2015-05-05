@@ -5,7 +5,7 @@
 
 For my final year project I have created a compiler in Haskell for a simple programming language of my own design, which I based on Google's relatively new language Go. I called this language Goal, and it is a simplified version of Go but contains all of the features I was interested in implementing in my compiler, most importantly allowing concurrent programming.
 
-The main focus of this project was to implement a parser, compiler and virtual machine for a modern concurrent programming language, not on designing a completely new language. Though I will briefly discuss the reasons behind creating Goal, it is important to understand the focus of this project is on compiler implementation not programming language design.
+The main focus of this project was to implement a parser, compiler and virtual machine for a modern concurrent programming language, not on designing a completely new language. Though I will briefly discuss the reasons behind creating Goal, it is important to understand the focus of this project is on compiler implementation using Haskell. Not on programming language design.
 
 This document is split into five main sections; Designing Goal, Parsing, Code Generation \& Intermediate Representations, Code Execution and Testing. In each of these sections I will go into more detail about how I approached each of these problems. 
 
@@ -13,7 +13,7 @@ These next few pages will give a brief introduction to compilers and programming
 
 \subsection{Introduction to Compilers}
 
-To understand what a compiler is, you need to first understand what a program is and, more importantly, what a programming language is. Programs have become a fundamental part of human existence. From performing simple calculations to creating applications that allow me to create documents such as this, they exist in every aspect of our life. The simplest definition of what a program is, is to think of a program as a recipe.  
+To understand what a compiler is, you need to first understand what a program is and, more importantly, what a programming language is. Programs have become a fundamental part of human existence. From performing simple calculations to creating applications that allow me to create documents such as this, they exist in every aspect of our life. For the simplest definition of what a program is, think of a program as a recipe.  
 
 You have a list of resources that you need, followed by a series of instructions telling you what to do with these resources. Then, to run your program, you grab all the resources you need and follow the instructions.
 
@@ -23,11 +23,13 @@ Programs that run on computers have to be represented in someway that both human
 Programming Languages are notations for describing computations to people and machines … But, before a program (in this format) can be run it first must be translated into a form which can be executed by a computer.
 \end{displayquote}
 
-So this brings us nicely to being able to define what a compiler is, a compiler is something that takes programs written in one programming language and translates it into another programming language. Often taking a program written in a high level language, that humans write code in, and translating them into lower level languages that computers can more easily understand and then execute.
+So this brings us nicely to being able to define what a compiler is. A compiler is something that takes programs written in one programming language and translates it into another programming language. Often taking a program written in a high level language, that humans write code in, and translating them into lower level languages that computers can more easily understand and then run.
 
-Finally a virtual machine is something that emulates the a compute, in our case it is able to run code written in a given programming language. You will usually only see machines try to execute low level languages given the smaller, and more precisely defined, instruction set. As is the case with the virtual machine I have created. This highlights the need for compilers, so that they can be used to translate high level languages into more easily executable lower level languages, that are much harder for humans to create programs in. 
+This highlights the need for compilers, so that they can be used to translate high level languages into more easily executable lower level languages, that are much harder for humans to create programs in.
 
-Looking at these explanations it is clear to see the importance of compilers in the modern world. They allow people to create complicated programs and applications efficiently without having to concern themselves with low level details.
+Finally a virtual machine is  a program that emulates a computer. In our case it is emulating a machine that is able to run code that has been compiled down to a low level instruction set. You will usually only see machines try to execute low level languages given the smaller, and more precisely defined, instruction set. As is the case with the virtual machine I have created. The benefit of creating a virtual machine to run your code is it allows you to run your code on any machine which can run your virtual machine. 
+
+Looking at these explanations it is clear to see the importance of compilers and virtual machines in the modern world. They allow people to create complicated programs and applications efficiently without having to concern themselves with low level details.
 
 \subsection{Introduction to My Project Structure}
 
@@ -37,9 +39,11 @@ There are three main parts to my compiler; parsing, compiling and the virtual ma
  	run f  = exec (typeChecker (comp (parseGo f)))
 \end{lstlisting}
 
-Where $f$ is the .gol file we want to run. You can see that we first call the parser which passes its result to the code generator ($comp$), which passes its result to a simple type checker before the function $exec$ will run the compiled code. 
+Where $f$ is the location of the .gol file we want to run. You can see that we first call the parser which passes its result to the code generator ($comp$), which passes its result to a simple type checker before the function $exec$ will run the compiled code. 
 
 This shows how my compiler is structured and this dissertation will walk through the creation of the parser, code generator and virtual machine and how they interact with each other.
+
+To run a program on my compiler you simply need to open and run the Haskell script GoRunner.lhs, then simply type the command $run$ followed by a sting containing the location of your .gol file. Then your code will be compiled and run. 
 
 \subsection{Introduction to Goal}
 
@@ -76,7 +80,7 @@ Goal is the language I have created my compiler for. It is a language I have cre
 \label{fig:goalExample} 
 \end{figure}
 
-The idea for Goal came when i was picking features from Go I was interested in compiling then decided it would be a nice idea to bring them together to create a more complete language. In my opinion during the course of this project Goal has evolved from a means to explore compilers and language design into a simple standalone language with it's own uses. I will discuss more about the design and functionality of Goal in chapter 2.
+The idea for Goal came when i was picking features from Go I was interested in compiling then decided it would be a nice idea to bring them together to create a more complete language. In my opinion during the course of this project Goal has evolved from a means to explore compilers and language design into a simple standalone language with it's own uses. I will discuss more about the design and functionality of Goal in Chapter 2.
 
 It is recommended to make use of the Goal Documentation when starting to write new programs in Goal. The provided documentation gives example syntax of every command you can use and provides examples of how to use them and how they are expected to behave.
 

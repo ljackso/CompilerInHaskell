@@ -1,7 +1,7 @@
 
 \chapter{Testing}
 
-Testing is not only a very important part of a project like this, but also poses some interesting challenges for us.
+Testing is not only a very important part of a project like this, but also poses some interesting challenges to tackle. In this chapter I will highlight how I went about doing my testing and also include information on some interesting bugs that I found and fixed during my testing.
 
 \section{Using Test Driven Development}
 
@@ -168,4 +168,4 @@ SHOW -> trace (getNumberAsString (head s))
               (exec' c (pc+1) (pop s) m g ncs (ngs, ngc) ) 
 \end{lstlisting}  
 
-Although this does solve the problem of providing output for my virtual machine it is something I would have liked to revisit. This is due to the unsafe nature the $trace$ function is only meant to be used in debugging rather than for production code.
+Although this does solve the problem of providing output for my virtual machine it is something I would have liked to revisit. 

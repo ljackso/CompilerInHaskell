@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2015.4.11)  4 MAY 2015 18:24
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2015.4.11)  5 MAY 2015 17:25
 entering extended mode
 **Dissertation.tex
 
@@ -1011,15 +1011,15 @@ an be found in [[],
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[4] [5] [6]
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 139.
+[4] [5] [6] [7]
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 143.
 
  ("C:\Program Files\MikTex\tex\latex\base\omscmr.fd"
 File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 139.
- [7]) [8]
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 143.
+) [8]
 ("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\DesigningGo
 al.tex"
 Chapter 2.
@@ -1058,7 +1058,11 @@ can been seen in [[],
 \forest@temp@box=\box32762 (local)
 \forest@temp@box=\box32761 (local)
 \forest@temp@box=\box32760 (local)
- [25] [26] [27] [28]) [29]
+ [25] [26]
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[27] [28]) [29]
 ("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Execution.t
 ex"
 Chapter 5.
@@ -1066,7 +1070,12 @@ Chapter 5.
 
 
 
-] [31]
+]
+Overfull \hbox (12.0142pt too wide) in paragraph at lines 52--53
+[][][][][][][][][][][][][][][][][][][][][][][][][][] 
+ []
+
+[31]
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
@@ -1074,18 +1083,14 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[33] [34] [35] [36] [37] [38]
-
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-[39] [40] [41] [42]) [43]
+[33] [34] [35] [36] [37] [38] [39] [40] [41] [42] [43]) [44]
 ("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Testing.tex
 "
 Chapter 6.
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[44
+[45
 
 
 
@@ -1093,19 +1098,19 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[45] [46] [47]) [48]
+[46] [47] [48]) [49]
 ("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\ClosingStat
 ements.tex"
 Chapter 7.
-[49
+[50
 
 
 
-]) [50]
+]) [51]
 ("C:\Dev_Dissertation\Dissertation-Stuff-One\Documentation\Write Up\Dissertatio
 n.bbl")
 Package atveryend Info: Empty hook `BeforeClearDocument' on input line 42.
- [51
+ [52
 
 
 ]
@@ -1130,34 +1135,33 @@ ements.aux"))
 Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 42.
 Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 42.
 Package rerunfilecheck Info: File `Dissertation.out' has not changed.
-(rerunfilecheck)             Checksum: 0F6615E8EB7186C39F1B0CA1D4ED62A2;4259.
+(rerunfilecheck)             Checksum: ECFCC194CA8AA613147E69C2EEF435ED;4349.
  ) 
 Here is how much of TeX's memory you used:
- 23099 strings out of 493921
- 457203 string characters out of 3148889
- 561558 words of memory out of 3000000
- 25315 multiletter control sequences out of 15000+200000
- 10124 words of font info for 37 fonts, out of 3000000 for 9000
+ 23142 strings out of 493921
+ 457855 string characters out of 3148889
+ 561619 words of memory out of 3000000
+ 25316 multiletter control sequences out of 15000+200000
+ 9956 words of font info for 36 fonts, out of 3000000 for 9000
  841 hyphenation exceptions out of 8191
- 101i,12n,128p,849b,1801s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 101i,12n,128p,849b,1797s stack positions out of 5000i,500n,10000p,200000b,50000s
 <C:/Program Files/MikTex/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Progra
 m Files/MikTex/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Program Files/MikT
 ex/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Program Files/MikTex/fonts/typ
-e1/public/amsfonts/cm/cmmi6.pfb><C:/Program Files/MikTex/fonts/type1/public/ams
-fonts/cm/cmmi8.pfb><C:/Program Files/MikTex/fonts/type1/public/amsfonts/cm/cmr1
-0.pfb><C:/Program Files/MikTex/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Pro
-gram Files/MikTex/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Program Files/Mi
-kTex/fonts/type1/public/amsfonts/cm/cmr6.pfb><C:/Program Files/MikTex/fonts/typ
-e1/public/amsfonts/cm/cmr7.pfb><C:/Program Files/MikTex/fonts/type1/public/amsf
-onts/cm/cmr8.pfb><C:/Program Files/MikTex/fonts/type1/public/amsfonts/cm/cmsy10
-.pfb><C:/Program Files/MikTex/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Prog
-ram Files/MikTex/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Program Files/Mi
-kTex/fonts/type1/public/amsfonts/cm/cmtt10.pfb><C:/Program Files/MikTex/fonts/t
-ype1/public/amsfonts/cm/cmtt8.pfb><C:/Program Files/MikTex/fonts/type1/public/a
-msfonts/cm/cmtt9.pfb>
-Output written on Dissertation.pdf (53 pages, 476642 bytes).
+e1/public/amsfonts/cm/cmmi7.pfb><C:/Program Files/MikTex/fonts/type1/public/ams
+fonts/cm/cmr10.pfb><C:/Program Files/MikTex/fonts/type1/public/amsfonts/cm/cmr1
+2.pfb><C:/Program Files/MikTex/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Pro
+gram Files/MikTex/fonts/type1/public/amsfonts/cm/cmr6.pfb><C:/Program Files/Mik
+Tex/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Program Files/MikTex/fonts/type
+1/public/amsfonts/cm/cmr8.pfb><C:/Program Files/MikTex/fonts/type1/public/amsfo
+nts/cm/cmsy10.pfb><C:/Program Files/MikTex/fonts/type1/public/amsfonts/cm/cmsy7
+.pfb><C:/Program Files/MikTex/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Pro
+gram Files/MikTex/fonts/type1/public/amsfonts/cm/cmtt10.pfb><C:/Program Files/M
+ikTex/fonts/type1/public/amsfonts/cm/cmtt8.pfb><C:/Program Files/MikTex/fonts/t
+ype1/public/amsfonts/cm/cmtt9.pfb>
+Output written on Dissertation.pdf (54 pages, 475357 bytes).
 PDF statistics:
- 1329 PDF objects out of 1440 (max. 8388607)
- 686 named destinations out of 1000 (max. 500000)
- 469 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 1386 PDF objects out of 1440 (max. 8388607)
+ 728 named destinations out of 1000 (max. 500000)
+ 477 words of extra memory for PDF output out of 10000 (max. 10000000)
 

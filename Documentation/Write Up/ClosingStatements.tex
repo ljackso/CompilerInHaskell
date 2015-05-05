@@ -30,18 +30,14 @@ There were several advanced features in my compiler implementation but on reflec
 
 There are many aspects of this project that I am proud of, but being able to implement concurrency is obviously the highlight. 
 
-Although this project was a success I would argue there are several areas for expansion or possible improvements, as with most programming languages. Throughout this write up I have touched on several aspects that could be expanded and I feel on reflection three main features would be the first to be added; 
+Although this project was a success I would argue there are several areas for expansion or possible improvements, as with most programming languages. Throughout this write up I have touched on several aspects that could be expanded and I feel there are four main features that would be the first to be added:
 
-\begin{itemize}
-\item Expanding the type system
-\item Allowing arrays 
-\item Pointers
-\end{itemize}    
+Firstly I would have liked to make use of the writer monad and monad transformers during code generation. This was something that I planned on doing but sadly ran into problems with towards the end of my project with so decide to exclude. Ultimately this is something that does not effect the quality of my project but rather the cleanness of my code. To implement this change I would have had to create a writer monad transformer that took the state monad as it's argument, but sadly this was not something I included.   
 
-Adding types, as was discussed, came down to an issue with parsing and deciding that other features where more important, even though my executor is set up to handle extra numerical types, I decided not to ship something half done.
+In terms of improving Goal I would have like to expand the type system. To do this I would have to implement a number of new features to my code. Updating my parser to handle floats and strings, and also updating the implementation of my type checker to ensure correct return values. Even with the inclusion of more types I would have liked to keep the dynamic typing in place as it is a feature I find useful in programming languages.
 
-With pointers and arrays these were two features that interested me but I felt again I was more interested in focusing my efforts elsewhere. Even though these feature could be areas to expand the project I do not feel without these features Goal is any less useful. As there are still work rounds.
-
+I would have also liked to include arrays in my project. This is one of the major absences from Goal and something that could have made it a much more powerful language. Another good inclusion would have been allowing the use of pointers. Both of these additions would have required small changes to parsing and probably a restructuring of how my virtual machine handles memory. Specifically with pointers I would have to vastly improve the way memory was passed around my virtual machine.   
+   
 In reflection I feel this project was very successful not just in what I initially set out to achieve in creating a concurrent compiler, but also it succeeded in creating a new programing language, Goal, and an executor to run it. 
 
 Importantly I feel although this project is complete it has been created in such a way that if someone was interested in expanding Goal it would only take an understanding of Haskell and Monads and a bit of enthusiasm, to start adding new features. Which is something I'm glad I achieved. 

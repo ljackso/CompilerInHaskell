@@ -17,7 +17,7 @@ We can first look at the type of the parsers provided;
 	newtype Parser a = Parser (String -> [(a,String)])
 \end{lstlisting}  
 
-You can see that our parser takes in a string returning a list of results. We can see that our parser will have the type $Parser Prog$ as we need our parser to output the type $Prog$ which is the type of my intermediate representation and the type which my code generator takes in. 
+You can see that our parser takes in a string returning a list of results. We can see that our parser will have the type $Parser$ $Prog$ as we need our parser to output the type $Prog$ which is the type of my intermediate representation and the type which my code generator takes in. 
 
 The best way to understand how parser combinators work is too look at a few examples that you will find in Parsing.lhs provide by \cite{Hutton98}.
 
@@ -32,7 +32,7 @@ item   =  P (\inp -> case inp of
                        (x:xs) -> [(x,xs)])
 \end{lstlisting}
 
-We can see that on it's own this parser isn't particularly useful, but with the use of parser combinators we can put it to some use. Now say we want to make use of this parser to parse digits. We need to first look at how we allow for conditional parsing, compared to $item$ which will parse anything. 
+We can see that on it's own this parser isn't particularly useful, but with the use of parser combinators we can put it to some use. Now say we want to make use of this parser to parse digits. We need to first look at how we allow for conditional parsing, compared to $item$ which will parse anything as long as it is not an empty string. 
 
 If we look at $sat$ we can see how it makes use of $item$ to allow for parsing on some condition;
 
@@ -51,7 +51,7 @@ We can now make use of $sat$ to create a parser to parse digits;
 	digit  =  sat isDigit
 \end{lstlisting}
 
-This highlights how parser combinators work, by combing several parsers we are able to begin to create something useful .Using the same technique we could easily create parsers for specific characters or to only parser upper or lower case characters.
+This highlights how parser combinators work, by combing several parsers we are able to begin to create something useful. Using the same technique we could easily create parsers for specific characters or to only parser upper or lower case characters.
 
 This is an incredibly brief introduction into a very interesting topic and it is recommend that the interested reader refer to either of papers referenced earlier to learn more about creating monadic parser combinators.
 
@@ -101,13 +101,11 @@ This is because it makes it easier to split up commands based on every time I se
 
 \section{Parser Implementation}
 
-My parser implementation was focused around using monadic parser combinators. As part of this I used a collection of functions provided from the paper. %TODO Cite Graham's paper % 
-These can be seen in my abstract in the Parsing.lhs file. What these functions do is provide a series of simple parsers to use when creating more complicated parser combinators. 
+My parser implementation was focused around using monadic parser combinators. As part of this I used a collection of functions provided from the \cite{Hutton98}.These can be seen in my abstract in the Parsing.lhs file. What these functions do is provide a series of simple parsers to use when creating more complicated parser combinators. 
 
 Then it was simply a question of building up parsers to handle more restrictive rules. A good way to understand this is to walk through a simple example of parsing comparative expressions. 
 
-Although this section gives a walk through of how I used parser combinators, it should not be considered a standalone introduction. The interested reader should look at %TODO cite paper % 
-which provides a more in depth introduction and more detailed descriptions about monadic parser combinators.
+Although this section gives a walk through of how I used parser combinators, it should not be considered a standalone introduction. 
 
 \newpage
 
@@ -167,7 +165,7 @@ Now you can argue this makes sense and should be allowed but I feel like in our 
 There are two ways to handle this problem. We can either alter our data structure so that it is no longer allowed, or we can create a grammar that does not allow for nested comparisons in our language. It is better to restrict our grammar than our intermediate representation. So we now need to define our grammar. In simple terms we can describe it as;
 
 \begin{lstlisting}
- <NUMBER1> <COPARISON OPERATION> <NUMBER1>
+ <NUMBER1> <COPARISON OPERATION> <NUMBER2>
 \end{lstlisting}   	
 
 Though we need to create a more formal definition. Lets say a sentence in our language has to consist of one natural number followed by either a $==$ or $!=$ then another natural number. We will allow white space between the numbers and comparison operators.By natural numbers we are referring to any whole number. 
@@ -188,6 +186,8 @@ Making use of this we can use of Haskell's do notation we can also generate a pa
         	     +++ do symbol "!="
 	                    return (NEQ) 
 \end{lstlisting} 
+
+\newpage
 
 Using parse combinators means we can combine multiple parsers. Using this approach we can now create code to evaluate conditional expressions allowed in our language;
 
@@ -217,7 +217,7 @@ Looking at this example you can see the process of slowly building up a grammar 
 
 There are a number of important ideas shown in this example, one of the most important concepts is the idea of making sure your parser is more restrictive than your data structure. There are several aspects of my intermediate representation that allow for features that are restricted in my grammar. The reason this is done is because it makes generating code simpler without really making my parser any more complex.  
 
-Another good thing too take away from this is the idea of abstracting problems out our final parser could have easily looked like this;
+Another good thing too take away from this is the idea of abstracting problems out, because our final parser could have easily have looked like this;
 
 \begin{lstlisting}
 parseComp        :: Parser Expr	
@@ -230,20 +230,18 @@ parseComp        = do n1 <- natural
                               return (CompOp NEQ n1 n3)
 \end{lstlisting}
 
-But because of the creation of our $parseOp$ function not only were we able to have a much cleaner implementation, also making it  much easier to expand our parser to include more comparison operations.
+But because of the creation of our $parseOp$ function not only were we able to have a much cleaner implementation, we also made it  much easier to expand our parser to include more comparison operations.
 
-One concept that is not touched upon in this example is the idea of having a hierarchy of bindings. If we take the idea of operator precedences within mathematical expressions if we want a multiplication to be done before an addition in our language we need to generate an intermediate representation that will show this.
+One concept that is not touched upon in this example is the idea of having a hierarchy of bindings. If we take the idea of operator precedences within mathematical expressions. If we want a multiplication to be done before an addition in our language we need to generate an intermediate representation that will show this.
 
-By combining multiple parsers we can create a hierarchy were an addition expression is dealt with before anything else by splitting on the $+$ symbol before anything else. Then nesting other arithmetic expressions within the output of the first parser. Examples of this technique can be seen throughout the implementation of my parser.
+By combining multiple parsers we can create a hierarchy were an addition expression is dealt with before anything else by splitting on the $+$ symbol first. Then nesting other arithmetic expressions within the output of the first parser. Examples of this technique can be seen throughout the implementation of my parser.
 
 
 \section{Potential for Expansion}
 
-Parsing is a topic that could easily become the main focus of a project like this. The idea behind using parser combinators was that they had been something I was interested in exploring and the more i used them the more I began to see how they could take up ore of this project. Instead I decided to focus this project in other areas but that does leave a list of areas I would be interested in coming back too. 
+Parsing is a topic that could easily become the main focus of a project like this. The idea behind using parser combinators was that they had been something I was interested in exploring and the more I used them the more I began to see how they could take up more of this project. Instead I decided to focus this project in other areas but that does leave a list of areas I would be interested in coming back too. 
 
-One of the main things you could expand within my parser would be to add some lexical analysis before beginning parsing. Lexical analysis is used to identify a valid set of words used in the language \cite[p.~13]{CompDes2005}. It is useful a it means you don not begin actually parsing before being certain that only valid commands exist in each program.
+One of the main things you could expand within my parser would be to add some lexical analysis before beginning parsing. lexical analysis is used to identify a valid set of words used in the language \cite[p.~13]{CompDes2005}. It is useful as it means you do not begin actually parsing before being certain that only valid commands exist in each program.
 
-Another big area for expansion would have been spending more time looking into being able to add more types. You will notice looking at my code that my compiler and executor can handle doubles. But unfortunately due to limitations with my parsing I was decided against including it in the final release of Goal because I wanted to focus more time elsewhere. Though if this project was picked up in the future it would be one of the first features to update.    
-
-   
+Another big area for expansion would have been spending more time looking into being able to add more types. You will notice looking at my code that my compiler and executor can handle doubles. But unfortunately due to limitations with my parsing I decided against including it in the final release of Goal because I wanted to focus more time elsewhere.   
  

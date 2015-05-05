@@ -33,11 +33,11 @@ This also lead to allowing very basic variable declarations and assignments. You
 	i = True;
 \end{lstlisting}
 
-There would be no compiler or run time errors in this code and your variable $i$ would have the value True as each new assignment writes over the old value. More specifically because booleans are treated as integers i will have the value 1.  This is the biggest difference Goal and Go, it is actually much closer to how a language like Python handles variable declarations and puts more emphasis on the user keeping track of their variables.
+There would be no compiler or run time errors in this code and your variable $i$ would have the value True as each new assignment writes over the old value. More specifically because booleans are treated as integers $i$ will have the value 1.  This is the biggest difference Goal and Go, it is actually much closer to how a language like Python handles variable declarations and puts more emphasis on the user keeping track of their variables.
 
-It must be noted strings can be used and outputted using the $Print()$ command but you cannot save strings as a variable only use it to print out specific phrases. The command $Show()$ can be used to output numbers and variables and any other numerical expression. 
+It must be noted strings can be used and outputted using the $Print()$ command but you cannot save strings as a variable only use them to print out specific phrases. The command $Show()$ can be used to output numbers and variables and any other numerical expression. 
 
-A variable's scope defines where it can be accessed from. In Goal I decided to keep this very simple by only allowing variables to have two different scopes; global or local. A global variable is defined by using the keyword global before the definition and once declared can be accessed anywhere in your code. A local variable is just declared as shown above with no key word and can only be accessed with in the function you declared it in. More information about how variable scope works in Goal can be found in the accompanying documentation.     
+A variable's scope defines where it can be accessed from. In Goal I decided to keep this very simple by only allowing variables to have two different scopes; global or local. A global variable is defined by using the keyword $global$ before the assignment and once declared can be accessed anywhere in your code. A local variable is just declared as shown above with no key word and can only be accessed with in the function you declared it in. More information about how variable scope works in Goal can be found in the accompanying documentation.     
 
 \subsection{Basic Commands}
 
@@ -89,7 +89,13 @@ For concurrency I wanted to use the same simple technique that allowed you to ru
 	go funB();	
 \end{lstlisting}
 
-This code would start both the processes as independent subroutines and would execute them in parallel. I also added some useful library functions that I felt would be helpful for creating concurrent programs. These are not found in Go but are important to the way Goal works. The two most important ones are $Wait()$, which will halt a program until all subroutines have finished executing, and $Kill()$ which will immediately stop all running subroutines. There are a few other library functions I have included and again more information can be found in Goal's Documentation.  
+This code would start both the processes as independent subroutines and would execute them in parallel. I also added some useful library functions that I felt would be helpful for creating concurrent programs:
+
+\begin{itemize}
+\item $Kill()$, Immediately stops all running concurrent processes.
+\item $Wait()$, Waits at this point till all concurrent process are done running.
+\item $WaitOn(FUN_NAME)$, Waits until all running instances of a certain process have stopped running.
+\end{itemize} 
 
 I also needed to implement a way to pass information between subroutines, although you could use global variables it is safer to have a more controlled method. This is why I implemented channels. These are also present in Go. You can declare a channel anywhere and it has global scope. The way to declare a new channel is shown below.
 
@@ -97,7 +103,13 @@ I also needed to implement a way to pass information between subroutines, althou
 	var c chan = Make(chan int);	
 \end{lstlisting}
 
-They behave like stacks so you can push a value onto a channel in one subroutine then pop it out in another subroutine. Channels have a first in first out system. I have implemented channels almost exactly the same as how they are implemented in Go. 
+They behave like stacks so you can push a value onto a channel in one subroutine then pop it out in another subroutine. Channels have a first in first out system. With the creation of channels needed to come a way to ensure that deadlock could be avoided. Therefore I created $WaitChan()$.
+
+\begin{lstlisting}
+	WaitChan(c);
+\end{lstlisting}
+
+This command can be used within a concurrent process 
 
 \subsection{Syntax}
 
@@ -144,15 +156,13 @@ A key part of Goal's syntax is that each command must end with a semi-colon, inc
 
 Although the language I have created is based on Go there are quite a few noticeable differences. The biggest difference is that Go is statically typed and Goal I have made dynamically typed, although there is a very basic type checker in place at compile time. This mainly means that if you convert your Go code to Goal you need to take care that you don't overwrite any variables.
 
-Other noticeable differences come from the output functions being part of Goals standard library where as in Go you eed to import a package to output to a console.
+Other noticeable differences come from the output functions being part of Goals standard library where as in Go you need to import a package to output to a console.
 
 Obviously the scope of Goal is much smaller as it has a much more limited type system and does not allow for multiple classes or files. Though it is noticeably similar and does contain many of the key features that Go contains 
 
 \section{Possible Uses}
 
 Towards the end of this project I began to reflect on Goal as a standalone language and not just as something for me and felt it could have some uses of it's own.
-
-Where Go is most popular at the moment is for a 
 
 Although I don't think Goal has a future competing with Go as tool for implementing large scale servers. I do feel that given Goal's simplistic syntax and easily understandable ,and usable, features it could have some use as a tool for teaching programming. More specifically helping people to understand how concurrent programs work, and giving them the tools to create their own exciting concurrent programs.
 

@@ -9,9 +9,9 @@ A key part of this section is looking at how I designed and implemented an inter
 Most passes in the compiler read and manipulate the IR form of code. Thus, decisions about what to represent and how to represent it play a  crucial role in both the cost of compilation and it's effectiveness. 
 \end{displayquote}
 
-In this section I will go into detail about the design of the data structure that you are required to parse down to, and which represents all of the features I implemented in my language. I will also be discussing some of the more interesting features that I implemented and how they were dealt with by the code generator.
+In this section I will go into detail about the design of the data structure that you are required to parse down to, and which represents all of the features I implemented in my language. 
 
-Although in this section I will be talking a lot about code generated using the instruction set defined in my executer, I will not be going into detail about the design of the executor or the low level language I created. For more information on this you can go to the next section that does focus more on the design and execution of the low level instruction set.
+Although in this section I will be talking a lot about code generated using the instruction set defined in my executer, I will not be going into detail about the design of the executor or the low level language I created. For more information on this you can go to the next chapter that does focus more on the design and execution of the low level instruction set.
 
 
 \section{Intermediate Representation}
@@ -32,7 +32,7 @@ There are several approaches to generating an IR. These can been seen in \cite[p
 \item Hybrid IRS, A combination of both Linear and Graphical approaches.
 \end{itemize}
 
-I chose to go with a Hybrid IR. A most suitable approach for me because, as stated in \cite[p.~113]{CompDes2005}, Linear IR are often used when compiling for stack base virtual machines, which is the architecture of the virtual machine that I created. Also I wanted to take advantage of how easily Haskell allows you to create recursive data structures, that can be used when generating trees you would find in Graphical IRs. Hence why I decided to use a Hybrid IR.  
+I chose to go with a Hybrid IR. A most suitable approach for me because, as stated in \cite[p.~113]{CompDes2005}, Linear IR are often used when compiling for stack based virtual machines, which is the architecture of the virtual machine that I created. Also I wanted to take advantage of how easily Haskell allows you to create recursive data structures, that can be used when generating trees you would find in Graphical IRs. Hence why I decided to use a Hybrid IR, taking advantage of the positive aspects from both approaches .  
 
 This approach provided me with a relatively high level representation of programs, meaning it gave a representation that would closely resemble the pseudo-code of the program you are trying to compile. This makes it nice format to work with as it makes it easier to visualize what is actually occurring during the later stages of code generation. 
 
@@ -50,7 +50,7 @@ I will now show an example of the process I went through when generating my IR. 
 	};
 \end{lstlisting}
 
-You can see that there are two main parts to this statement. The condition directly after the if command,  $(x > 1)$  and then the code ,in this case $return$ $x;$, inside of the curly brackets. 
+You can see that there are two main parts to this statement. The condition directly after the if command,  $(x < 1)$  and then the code ,in this case $return$ $x;$, inside of the curly brackets. 
 
 What is important to notice is that you could replace the return statement with any other acceptable code, even another If statement. Whereas the expression after the if is limited only to be certain things. In this case we could rewrite a general definition for an if statement to look like this;
 
@@ -70,7 +70,7 @@ Now all we need to do is define what  EXPRESSION and PROGRAM can be. Then we can
 
 A program is quite easy to define, it's just a one or more instructions written to perform a specific task\footnotemark[2]. Therefore we must define all of the instructions that can be used to make a program in our data type Prog. Looking at our example that needs to include return statements, but I also said we were allowed to have nested if statements. Therefore we can create a recursive data structure that will allow this;
 
-\footnotetext[2]{$wikipedia.org/wiki/Computer_program$}
+\footnotetext[2]{\url{wikipedia.org/wiki/Computer_program}}
 
 \begin{lstlisting}
 	data Prog = If Expr Prog | Return Expr
@@ -81,8 +81,6 @@ An expression is slightly harder to define. In the case of If statements we know
 
 We can now create a data type for our expressions. We will need to allow for nested expressions but also allow for different comparison operators such as equals or less than. This can be shown here;
 
-\newpage
-
 \begin{lstlisting}
 	data Expr = ExprComp Op Expr Expr 
                   	| Val Number 
@@ -91,13 +89,14 @@ We can now create a data type for our expressions. We will need to allow for nes
 	data Op	  = GET | LET | NEQ | EQU
 \end{lstlisting}
 
-Although this example gives us quite a strict definition of what an expression needs to be for an If statement later on we will need to come up with a more general definition that is more applicable to other instances of using expressions (such as in arithmetic operations). The language specification for Go describes an expression by saying; "An expression specifies the computation of a value by applying operators and functions to operators". Another way to think of an expression is it is any valid unit of code that resolves to a single value \footnotemark[3].
+Although this example gives us quite a strict definition of what an expression needs to be for an If statement later on we will need to come up with a more general definition that is more applicable to other instances of using expressions (such as in arithmetic operations). The language specification for Go describes an expression by saying; "An expression specifies the computation of a value by applying operators and functions to operators". Another way to think of an expression is it is any valid unit of code that resolves to a single value.
 
-\footnotetext[3]{url for quote}
 
 Now that we have our definitions for what Expressions and Programs can be, we can begin to group what instructions belong in which section. With all our expressions being defined in the data type Expr and all our instructions used to make programs in the data type Prog.
 
 Therefore if we are only considering our If statement example from earlier (ignoring how we defined the variable  x) we end up with the following data structure;
+
+\newpage
 
 \begin{lstlisting}
 	data Prog   = If Expr Prog | Return Expr
@@ -113,7 +112,11 @@ Therefore if we are only considering our If statement example from earlier (igno
 	type Number = Int
 \end{lstlisting}
 
-The above data structure now enables you to create high level intermediate representation of the original If statement we looked at, through the use of Haskell data types. 
+The above data structure now enables you to create high level intermediate representation of the original If statement we looked at, through the use of Haskell data types. Meaning our initial example can be represented by the following expression;
+
+\begin{lstlisting}
+   If (ExprComp LET (Var 'x') (Val 1)) (Return (Var 'x'))
+\end{lstlisting} 
 
 You can see here how the data structure has a broad scope actually allowing expressions such as $(4<6) != (4 < (5>6))$, which don't really make sense. But I felt it was better to allow for these bizarre expressions, and handle any stricter rules in parsing stages. Rather than create an IR that was too restrictive.
 
@@ -222,7 +225,7 @@ To understand how code generation works it is good to get a brief understanding 
 
 My instruction set was designed so that you can translate any intermediate representation, no matter how complicated, into a list of instructions that can then be executed one by one. 
 
-There are two important things to understand about my virtual machine, the platform which executes the code we are generating. First, is that it uses a stack so any operations we wish to perform must do so using a stack. Secondly code execution is controlled by a program counter which starts at 0 and increments by one after every instruction, unless an instruction wants to jump to a another section of code then the program counter will be set based on where the in the code you want to go. 
+There are two important things to understand about my virtual machine, the platform which executes the code we are generating. First, is that it uses a stack, so any operations we wish to perform must do so using a stack. Secondly code execution is controlled by a program counter which starts at 0 and increments by one after every instruction, unless an instruction wants to jump to a another section of code then the program counter will be set based on where in the code you want to go. 
 
 Don't worry if you are not to familiar with these concepts as they are gone over in more detail in the next chapter.    
 
@@ -257,7 +260,7 @@ Now I will show the code we need to generate;
 
 To better understand this code you may want to refer quickly to chapter 5, but to give a brief understanding the variable $x$ is compared with $1$ then if this condition is true 1 is placed onto the stack, if not 0 is. Then $JUMPZ$ $i$ checks the top of the stack to see if it finds a 0, if so it will jump too $LABEL$ $i$ if not it moves on to return $x$. 
 
-To generate code we will need to use pattern matching. If we first generate our the type of our compiler function $comp$ we can see more easily exactly what it needs to do. 
+To generate code we will need to use pattern matching. If we first generate the type of our compiler function $comp$ we can see more easily exactly what it needs to do. 
 
 \begin{lstlisting}
 		comp  :: Prog -> Code
@@ -265,7 +268,7 @@ To generate code we will need to use pattern matching. If we first generate our 
 
 Where $Code$ is the type that represents a list of instructions. If we look at our if statement we know that it is split nicely into two parts; the $Expr$ and the $Prog$. Therefore we can use this in our code generator. 
 
-If we first focus on creating a function that handles creating a function which can generate code for our expression.
+If we first focus on creating a function which can generate code for our expression.
 
 \begin{lstlisting}
 compE                  :: Expr -> Code
@@ -276,7 +279,7 @@ compE (Var v)          = [PUSHV v]
 
 This may seem like a bit of a jump but it's pretty simple to see whats going on here. It's good to think of the $Expr$ type as things that leave a result on the stack, and then our $Prog$ type as commands that do things based on whats on top of the stack.
 
-Making $compE$ recursive is also useful in case we want to include more types of expressions, for example it allows us to easily expand this function to handle expressions such as $(5 + 6) == (12 - 1)$. We can make sure that nay restrictions on expressions are dealt with in our parsers. 
+Making $compE$ recursive is also useful in case we want to include more types of expressions, for example it allows us to easily expand this function to handle expressions such as $(5 + 6) == (12 - 1)$. We can make sure that any restrictions on expressions are dealt with in our parser. 
 
 Now we need to look at how we can incorporate this function into solving our initial problem, generating code for if and return statements. Lets first try this; 
 
@@ -294,7 +297,7 @@ ifDealer e p =
 	compE e ++ [JUMPZ 1] ++ compP p ++ [LABEL 1]
 \end{lstlisting}
 
-This looks suitable but there are some issues, what if we have nested if statements, we would be using the same the same label everywhere so how would we know where to jump to? We need a way to generate a unique label for each time we want to use the $LABEL$ command.
+This looks suitable but there are some issues, what if we have nested if statements, we would be using the same label everywhere so how would we know where to jump to? We need a way to generate a unique label for each time we want to use the $LABEL$ command.
 
 \begin{figure}[h]
 \centering
@@ -319,7 +322,7 @@ This looks suitable but there are some issues, what if we have nested if stateme
 \label{fig:stMonad}
 \end{figure}  
 
-This is where we use the state monad. It can be used to generate a new label whenever we want and helps us make sure that we never have duplicated labels. In figure \ref{fig:stMonad} you can see the definition of the state monad and the funtions $fresh$ which is used every time we want to generate a new label. 
+This is where we use the state monad. It can be used to generate a new label whenever we want and helps us make sure that we never have duplicated labels. In figure \ref{fig:stMonad} you can see the definition of the state monad and the function $fresh$ which is used every time we want to generate a new label. 
 
 We now need to update our $compP$ and $ifDealer$ functions to make use of the state monad;
 
@@ -352,9 +355,8 @@ The example is very useful in showing one of the most important features of my c
 
 It also shows the importance of using pattern matching and recursive functions to be able to efficiently generate the correct output and also allow for an arbitrary number of nested expressions with the code being compiled. It also helps to highlight why Haskell is such a useful language to use in compilers more specifically in projects where code generation is the major focus.
 
-%TODO Go into more detail about writer monad and monad transformers
-The example can also be expanded to include another Monad. The Writer Monad, which can be used to tidy up outputting the code. The inclusion of this Monad also requires the use of a Monad of transformer.
-
 Overall this example highlights very nicely exactly how my code generator works. In very similar fashion to the designing of my IR I wanted to make sure I could handle all commands exactly as needed through the use of pattern matching. Then, use recursion, to allow for some arbitrary number of nested commands. Finally I used monads to ensure the creation of unique labels and tidy up my implementation.
-  
-%TODO Possibly ask about including a section on more interesting features
+
+There is one improvement that could be made to my implementation of my code generator. Including a writer monad and making use of monad transformers to still include the state monad would tidy up my implementation. Getting rid of messy long list concatenations.  
+
+

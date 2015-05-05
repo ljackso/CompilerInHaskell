@@ -840,7 +840,7 @@ m   = local memory, handle global variables later.
 
 >                                       PUSHC n     -> (((Go ec (pc+1) (pop s) m), gc), (pushChannel n cs (head s)))
 >                                       POPC n      -> (((Go ec (pc+1) (push (getHeadChannel n cs) s) m), gc), (popChannel n cs))
->                                       WAITC n     -> if (isChanNonEmpty n cs)  then (((Go ec (pc+1) s m), gc), cs) else (((Go ec pc s m), (gc +1)), cs)
+>                                       WAITC n     -> if (isChanNonEmpty n cs)  then subRoutHandler (Go ec (pc+1) s m) gc cs else (((Go ec pc s m), (gc +1)), cs)
 
 >                                       CHANNEL n   -> error "Cannot create channel in subroutine, must create outside of concurrent process"
 >                                       RSTOP       -> error "Subroutines must be void, cannot return value" 

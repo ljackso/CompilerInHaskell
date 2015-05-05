@@ -27,13 +27,12 @@ A stack machine is a machine or (virtual machine) that uses a pushdown stack ins
 \item Pop, which removes the last element put on to the stack.
 \end{itemize} 
 
-%Maybe chnage this analagy%
+
 You can think of a stack like a PEZ sweet dispenser. The first bit of candy you put in goes straight to the bottom of your dispenser and if you put more in they get pilled in on top. This is the same way you push objects onto a stack. Then when you wish to eat your candy, the last piece you put in comes back out first. This is the equivalent of popping the stack where the last object you pushed onto the stack comes out first. This is called a last in first out system.    
 
 \footnotetext[3]{\url{http://en.wikipedia.org/wiki/Stack_machine}}
 
-Therefore a stack machine is quite simply a machine that uses a stack instead of allocated registers to handle expressions. If you look at %figure~\ref{fig:stackExample}% 
-it shows you how the expression $2 - 1$ would be evaluated using a stack in a stack machine.
+Therefore a stack machine is quite simply a machine that uses a stack instead of allocated registers to handle expressions. 
 
 Now we understand what a stack machine is and what a virtual machine is it becomes quite easy to understand what a stack based virtual machine is. Quite simply it is a virtual machine that uses a stack architecture, effectively you can think of the virtual machine I created as a simple stack machine emulator. 
 
@@ -49,7 +48,9 @@ The way the executor I crated works is it takes in code written from a simple in
 Which simply starts a call to the recursive function;
 
 \begin{lstlisting}
-	exec' 	::exec' type goes here 
+	exec' 	:: Code ->  Int -> Stack -> Mem -> 
+	           Bool -> [Channel] -> (S.Seq GoRoutine, Int) ->  
+	           EndParam
 \end{lstlisting}
 
 \newpage
@@ -125,6 +126,8 @@ Or more accurately in Haskell, since Code has the type $[Inst]$, it would look l
 \end{lstlisting}
 
 This uses two of the most important instructions. $PUSH$ Takes a number as an argument and pushes it onto the stack, $POP$ takes a name as an argument and removes the head of the stack saving it in memory, overwriting any existing variables with the same name in the same scope in memory. You can use $PUSHV$ which takes a name as argument to push a variable from memory onto the stack. 
+
+\newpage
 
 In code generation one of the few features of the instruction set I went into in any detail was the idea behind the $LABEL$ and $JUMP$ instructions. So you may remember that compiled code for the expression;
 
@@ -256,7 +259,6 @@ We will also need to define a function $do$ that will take take in the stack and
                ns   = (pop (pop s)) 
 \end{lstlisting}
 
-\newpage
 
 Now that we have these functions we can easily create a recursive function to handle a long list of instructions. 
 
@@ -384,7 +386,7 @@ Then how it would behave if we use it as part of assignment;
 
 Looking at figure~\ref{fig:stackFrame} we can see how this simple command is dealt with by the executor and the function executor functions. 
 
-\begin{figure}[h]]
+\begin{figure}[h]
 \centering
 \begin{lstlisting}
   -main executor;           -function executor;
@@ -422,11 +424,11 @@ Another interesting feature to implement in a stack based virtual machine is all
 	    return n * fac(n-1);
 	};
 \end{lstlisting}
-\caption{Example of a recursive function $fac$, and example of how it works }
+\caption{Example of a recursive function $fac$ in Goal}
 \label{fig:facExamp}
 \end{figure}
 
-This not only gives an example of how a recursive function can work, but also helps to show what a powerful tool recursion can be in solving different sorts fo problems. 
+This not only gives an example of how a recursive function can work, but also helps to show what a powerful tool recursion can be in solving different sorts of problems. 
 
 To implement recursion I simply had to ensure that each stack frame generated for each new function was properly created and passed on. There was no special trick to allowing recursion other than ensuring my initial implementation of calling functions worked as intended then it was simply a question of allowing the function executor to be allowed to handle call function calls which would run a new instance of the function executor at the call step, ensuring the correct stack was passed and returned from $funExec'$. 
 
@@ -439,7 +441,7 @@ This section is a brief recap of what was explained in section \ref{sec:concDes}
 \begin{itemize}
 \item $go$ keyword, using this command with a void function starts a new instance of that method as a concurrent process, know as a sub routine.
 \item $Kill()$ command, this stops all concurrent processes 
-\item $Wait()$ command, this will cause a program to wait at this point until all sub routines have stopped running.
+\item Wait commands $Wait()$, $WaitOn()$ and $WaitChan()$, this will cause a program to wait at this point until all either certain sub routines have finished running or a channel is non empty.
 \end{itemize}
 
 There are also channels which are used to pass information between subroutines, these are described in greater detail in section \ref{sec:concDes} and in the Goal documentation.   
@@ -448,9 +450,9 @@ There are also channels which are used to pass information between subroutines, 
 
 Handling the creation and running of concurrent processes is definitely one of the more exciting features of my project. To understand how my executor deals with concurrency it is good to look at the type of my main executor function;
 
-%TODO make this look pretty %
-\begin{lstlisting}[basicstyle=\ttfamily\tiny]
-exec' :: Code ->  Int -> Stack -> Mem -> Bool -> [Channel] -> (Seq GoRoutine, Int) ->  EndParam
+\begin{lstlisting}
+exec' :: Code ->  Int -> Stack -> Mem -> Bool -> 
+         [Channel] -> (Seq GoRoutine, Int) ->  EndParam
 \end{lstlisting}
 
 The bits we are interested in for handling concurrency are the types;
@@ -461,14 +463,14 @@ The bits we are interested in for handling concurrency are the types;
 \item $EndParam$
 \end{itemize} 
 
-These are types represent the way in which I pass around subroutines and channels in my executor. 
+These types represent the way in which I pass around subroutines and channels in my executor. 
 
 If we first talk about how I handle channels we can then discuss subroutines in more detail . Channels are not held in memory but instead are stored independently. There are three instructions that can effect channels;
 
 \begin{itemize}
-\item $CHANNEL n$, which creates a new channel
-\item $PUSHC n$, which takes whats on the top of the stack and pushes into onto the correct channel 
-\item $POPC n$, which pops the correct channel and pushes the popped item onto the stack
+\item $CHANNEL$ $n$, which creates a new channel
+\item $PUSHC$ $n$, which takes whats on the top of the stack and pushes into onto the correct channel 
+\item $POPC$ $n$, which pops the correct channel and pushes the popped item onto the stack
 \end{itemize} 
 
 These instructions can not only be executed by the main executor but also be executed within functions. Therefore it is important to look at our type $EndParam$ which our function executor will return;
@@ -481,7 +483,6 @@ You can see that $EndParam$ returns all the data structures used within my virtu
 
 Thus meaning code such as;
 
-%TODO test this code... %
 \begin{lstlisting}
 	func main() {
 		var c chan = Make(chan int);
@@ -493,10 +494,10 @@ Thus meaning code such as;
 	func funA() {
 		c <- 1;
 		c <- 2;
-		funcB();
+		funB();
 	};
 	
-	func funC() {
+	func funB() {
 		c <- 3;
 	};
 
@@ -530,7 +531,7 @@ To handle multiple subroutines they are handled by the type $(Seq$ $GoRoutine,$ 
 
 Now we know what format our subroutines will be passed round our executor we now need a way of executing them concurrently. Here it is important that to realize we are not creating truly concurrent processes in the sense that they run at exactly the same time. Instead what we are doing is interweaving the execution of processes to create the illusion of them executing in parallel. 
 
-To do this at each step of our executor we call the function $subRoutsHandler$. This will execute ten commands of on of our subroutines for every one command executed by out main executor. 
+To do this at each step of our executor we call the function $subRoutsHandler$. This will execute one command of on of our subroutines for every one command executed by out main executor. 
 
 You may have noticed that our subroutines are passed around in a tuple with an integer. This integer is used to keep track of which process is currently being executed. 
 
@@ -556,6 +557,72 @@ You can see here how $subRoutsHandler$ will be called and how the different valu
 
 This code also show how $KILL$ simply removes all running subroutines and $WAIT$ stops until there are no more processes left to run, as every time a subroutine is finished running it is removed from the list.
 
+There are a few limitations in my implementation of concurrency. Specifically you are  not allowed to call functions in a concurrent process and you are not allowed to use global variables within a concurrent process.
+
 To summarize a sequence of subroutines are handled by a separate executor at each step in my executor, this separate executor executes several commands before returning the updated information of the subroutines. The current subroutine being executed is kept track of using a counter. 
 
 
+\subsection{Justifying How I handle Concurrency}
+
+There are a few areas to build on with respect too how I handle concurrency. Primarily what causes a context switch and how frequently that happens. 
+
+Currently in my virtual machine a context switch occurs every time a subroutine hits a $JUMP$, $JUMPZ$ or is waiting on a channel. There are several reasons for this but my primary reasons were trying to implement as fair a scheduler as possible and to make it easy for the user to understand how there concurrent programs will behave with each over. If we look at the code generated from our example program at the very beginning in figure \ref{fig:goalExample} specifically looking at the $ping()$ function. This can be seen in figure \ref{fig:pingCode}.
+
+\begin{figure}[h]
+\centering
+\begin{lstlisting}
+		FUNC ("ping", VOID)
+		POP "n"
+		PUSH (Integer 0)
+		POP "i"
+		LABEL 0
+		PUSHV "i"
+		PUSHV "n"
+		COMP LET
+		JUMPZ 1
+		PUSH (Integer 1)
+		PUSHC "c"
+		PRINT "ping"
+		PUSHV "i"
+		PUSH (Integer 1)
+		DO ADD
+		POP "i"
+		JUMP0
+		LABEL 1
+		FEND
+\end{lstlisting}
+\caption{Generated code for function $ping()$ seen in section one}
+\label{fig:pingCode}
+\end{figure}
+
+
+What this shows is that once a program starts looping there are often a very limited number of steps between jump commands and therefore a limited number of steps between context switches. Of course looking at one example does not prove that this is the fairest way to implement context switches, but it does help to highlight the points I was making.
+
+Firstly it is clear to see exactly where your context switches will happen in your code, it also helps to highlight how, if you run multiple instances of the same process, you will always switch in the same location. It also shows the frequency of the jump command in must functions. Any function that contains a loop will have at least 2 jump commands on which to allow context switches. Then for every if statement involved at least one more jump command will have to be added. This means that any concurrent process with multiple loops or conditions will have several places for a context switch to happen.
+
+Also allowing for a context switch every time a process is waiting on an empty channel helps us to stop deadlock, meaning you are not stuck in one process waiting for things to happen. You instead immediately move onto another process which will hopefully free up the process that is waiting. After a process is done waiting for a channel it will always execute the next command straight away, to ensure it immediately makes use of the available channel.  It is important to note that deadlock will not occur only if the concurrent program is written well. For example the following code;
+
+\newpage
+
+\begin{lstlisting}
+	WaitChan(c);
+	if(a > b){
+		j = <-c;
+		l += j
+	};
+\end{lstlisting}     
+
+Is dangerous because the use of the if statement will cause a context switch immediately after you have waited on a channel. Which may empty the channel you had waited on thus causing a deadlock. Instead you can write;
+
+\begin{lstlisting}
+	WaitChan(c);
+	j = <-c;
+	if(a > b){	
+		l += j
+	};
+\end{lstlisting}
+
+This highlights the emphasis placed on the user to write good concurrent programs. 
+
+Overall the design choices I have made in implementing concurrency have made it easy to understand how scheduling and context switches occur within concurrent processes. It sets up anyone writing Goal with the tools needed to write good concurrent programs and puts emphasis on the user understanding the set up of the scheduler to ensure their programs run correctly.  
+ 
