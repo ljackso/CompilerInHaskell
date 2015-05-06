@@ -1,5 +1,9 @@
 
 Used to run all the .gol test cases I have created
+My Modules 
+
+> import GoalCompiler
+> import GoalParser
 
 Other Modules
 
@@ -8,10 +12,7 @@ Other Modules
 > import System.Directory
 > import System.IO.Unsafe
 
-My Modules 
 
-> import GoParser  
-> import GoRunner
 
 
 Used to run all test cases 

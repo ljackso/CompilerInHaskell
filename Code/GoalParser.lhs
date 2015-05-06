@@ -3,7 +3,7 @@ PARSING
 
 Uses the Parsing library from Hutton (2008) which focuses on using Monadic Parser Combinators
 
-> module GoParser where
+> module GoalParser where
 
 > import Parsing
 > import System.IO.Unsafe

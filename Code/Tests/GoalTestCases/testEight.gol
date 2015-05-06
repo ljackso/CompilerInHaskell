@@ -1,7 +1,7 @@
 
 func main() {
     l = testLessThan(20);
-    if (l==21) {
+    if (l==20) {
         Print("testEight : success");
     } else {
         Print("testEight : fail");
