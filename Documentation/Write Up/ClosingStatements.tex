@@ -3,21 +3,19 @@
 
 \section{Conclusion}
 
-In conclusion during the course of writing this dissertation I achieved what I set out to do. I created a compiler that can handle a concurrent programming language. On top of that I also manged to create my own programing language and a virtual machine to run it. 
+During the course of writing this dissertation I achieved what I set out to do. I created a compiler that can handle a concurrent programming language. On top of that I also manged to create my own programing language and a virtual machine to run it. 
 
-With regards to the language I created I feel that it accurately portrays it's inspiration from Go whilst at the same time having a lot of individuality. I feel the way I designed Goal to handle concurrency not only makes it easy to use but useful for the creation of concurrent programs. I also think that Goal can ended up having some practical uses, especially as a tool for teaching concurrency due to its easy to understand syntax and how simple it is to implement concurrent programs.
+With regards to the language I created I feel that it accurately portrays it's inspiration from Go whilst at the same time having a lot of individuality. I feel the way I designed Goal to handle concurrency not only makes it easy to use but useful for the creation of concurrent programs. I also think that Goal ended up having some practical uses, especially as a tool for teaching concurrency, due to its easy to understand syntax and how simple it is to implement concurrent programs.
 
-In terms of the dissertation write up I felt that overall this project can be used for people in the future who are interested in implementing there own compiler in Haskell. This document strives to serve as a tool people can use in  the future to learn more about implementing compilers and virtual machines in Haskell.
+This project was never setting out to be ground breaking, but alongside implementing a compiler I wanted to create something that could be used to aid people working on similar projects. Primarily by writing a document that provided an insight into how to go about beginning to implement the different aspects of a compiler and virtual machine in Haskell, and to highlight some of the different approaches available to someone tackling this sort of problem.
 
-This project was never setting out to be ground breaking, but I aimed to create something that could be used to help people in the future. Primarily by writing a document that provided people with an insight into how to go about creating the different aspects of a compiler and virtual machine in Haskell, and to highlight some off the different approaches available to someone tackling this sort of problem in the future.
+This project started as a means for me to learn more about compilers, language design and Haskell. In the end I felt not only did I learn about these topics but also created something that could help others to learn about the same things I ended up learning about. 
 
-This project started as a means for me to learn more about compilers, language design and Haskell. In the end I felt not only did learn about these topics but also created something that could help others to learn about the same things I ended up learning about. 
+I hope that Goal goes on to find some uses either as a teaching tool or as a future project for someone to expand on. I also hope that this document helps other people in answering the same questions I had at the start of this project. 
 
-I hope that Goal goes on to find some use in the future either as a teaching tool or as a future project for someone to expand on. I also hope that this document helps other  people answer the sort of questions I had at the start of this project. 
+\newpage
 
 \section{Reflection}
-
-The initial aim of this project was to create a compiler in Haskell for a concurrent programming language. Over time the project has expanded to include creating an executor and even designing my own language to compile. Although there were changes to the process, I still managed to achieve the primary goal of implementing a concurrent compiler.
 
 There were several advanced features in my compiler implementation but on reflection I would say the project can be boiled down to a few interesting aspects;
 
@@ -28,18 +26,18 @@ There were several advanced features in my compiler implementation but on reflec
 \item Allowing the running of concurrent processes within my compiler.
 \end{itemize}
 
-There are many aspects of this project that I am proud of, but being able to implement concurrency is obviously the highlight. 
+There are many aspects of this project that I am proud of, but being able to allow implementing concurrent programs is obviously the highlight. 
 
-Although this project was a success I would argue there are several areas for expansion or possible improvements, as with most programming languages. Throughout this write up I have touched on several aspects that could be expanded and I feel there are four main features that would be the first to be added:
+I was also pleased with how throughout this project I was able to take a very Haskell based and functional approach to solving problems that making a compiler throws up. This can be seen throughout my project, from using a monad transformer in my code generator to implementing parser combinators in my parser. Along with taking advantage of simpler features such as pattern matching and list comprehension. I feel that I have given many examples of how best to use Haskell features when approaching a number of different problems. 
 
-Firstly I would have liked to make use of the writer monad and monad transformers during code generation. This was something that I planned on doing but sadly ran into problems with towards the end of my project with so decide to exclude. Ultimately this is something that does not effect the quality of my project but rather the cleanness of my code. To implement this change I would have had to create a writer monad transformer that took the state monad as it's argument, but sadly this was not something I included.   
+Although this project was a success I would argue there are several areas for expansion or possible improvements, as with most programming languages. Throughout this write up I have touched on several aspects that could be expanded and I feel there are several features that would be the first to be added:
 
 In terms of improving Goal I would have like to expand the type system. To do this I would have to implement a number of new features to my code. Updating my parser to handle floats and strings, and also updating the implementation of my type checker to ensure correct return values from functions. Even with the inclusion of more types I would have liked to keep the dynamic typing in place as it is a feature I find useful in programming languages.
 
-I would have also liked to include arrays in my project. This is one of the major absences from Goal and something that could have made it a much more powerful language. Another good inclusion would have been allowing the use of pointers. Both of these additions would have required small changes to parsing and probably a restructuring of how my virtual machine handles memory. Specifically with pointers I would have to vastly improve the way memory was passed around my virtual machine.   
-   
-In reflection I feel this project was very successful not just in what I initially set out to achieve in creating a concurrent compiler, but also it succeeded in creating a new programing language, Goal, and an executor to run it. 
+I would have also liked to include arrays in my project. This is one of the major absences from Goal and something that could have made it a much more powerful language. Another good inclusion would have been allowing the use of pointers. Both of these additions would have required small changes to parsing and probably a restructuring of how my virtual machine handles memory. Specifically with pointers I would have to vastly improve the way memory was passed around my virtual machine stopping the dropping of local memory every time you enter a new function.   
+
+Even though there are several areas it is possible to expand in my compiler I'm still convinced that I created a very complete project. 
 
 Importantly I feel although this project is complete it has been created in such a way that if someone was interested in expanding Goal it would only take an understanding of Haskell and Monads and a bit of enthusiasm, to start adding new features. Which is something I'm glad I achieved. 
 
-Overall I am very pleased with the compiler I created. I feel the language I initially created as a tool to explore compiler design and concurrency has, due to the completeness of my compiler implementation, changed from a simple experiment to a complete language with it's own uses. Which is a very good side effect of a what started as a simple exploration into creating compilers in Haskell. 
+Overall I am very pleased with the compiler I created. I feel Goal, that I initially created as a tool to explore compiler design and concurrency has, due to the completeness of my compiler implementation, changed from a simple experiment to a complete language with it's own uses. Which is a very good side effect of a what started as a simple exploration into creating compilers in Haskell. 

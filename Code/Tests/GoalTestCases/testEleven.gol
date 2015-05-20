@@ -1,0 +1,13 @@
+
+global f = (1 == 0);
+global t = (1 == 1);
+
+func main() {
+    if (f) {
+        Print("testEleven : fail");
+    };
+    
+    if (t) {
+        Print("testEleven : success");
+    };
+};

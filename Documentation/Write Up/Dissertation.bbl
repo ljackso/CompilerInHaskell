@@ -1,4 +1,4 @@
-\begin{thebibliography}{7}
+\begin{thebibliography}{8}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -10,6 +10,11 @@ AV. Aho, MS. Lam, R.~Sethi, and JD. Ullman.
 \newblock \emph{Compilers; Principles, Techniques \& Tools}.
 \newblock Pearson, 2nd edition, 2007.
 
+\bibitem[Bennet(1990)]{IntroComp1990}
+J.~P. Bennet.
+\newblock \emph{Introduction to Copmpiling Techniques}.
+\newblock McGraw Hill, 1st edition, 1990.
+
 \bibitem[Chattapoadhyay(2005)]{CompDes2005}
 Santanu Chattapoadhyay.
 \newblock \emph{Compiler Design}.
@@ -20,17 +25,18 @@ Kieth~D. Cooper and Linda Torczan.
 \newblock \emph{Engineering a Compiler}.
 \newblock Morgan Kaufmann, 2nd edition, 2012.
 
+\bibitem[Cormen et~al.(2009)Cormen, Leiserson, Rivest, and Stein]{IntroAlgo}
+Thomas~H. Cormen, Charles~E. Leiserson, Ronald~L. Rivest, and Clifford Stein.
+\newblock \emph{Introduction to Algorithms}.
+\newblock The MIT Press, 3rd edition, 2009.
+
 \bibitem[Hutton and Meijer(1996)]{Hutton96}
 Graham Hutton and Erik Meijer.
 \newblock Monadic parser combinators, 1996.
 
 \bibitem[Hutton and Meijer(1998)]{Hutton98}
 Graham Hutton and Erik Meijer.
-\newblock Functional pearls monadic parsing in haskell, 1998.
-
-\bibitem[Jackson(2015)]{GoalDoc}
-Luke Jackson.
-\newblock Goal programming language documentation, 2015.
+\newblock Functional pearls; monadic parsing in haskell, 1998.
 
 \bibitem[Terry(1997)]{CompGen1997}
 P.~D. Terry.

@@ -43,7 +43,7 @@ Where $f$ is the location of the .gol file we want to run. You can see that we f
 
 This shows how my compiler is structured and this dissertation will walk through the creation of the parser, code generator and virtual machine and how they interact with each other.
 
-To run a program on my compiler you simply need to open and run the Haskell script GoRunner.lhs, then simply type the command $run$ followed by a sting containing the location of your .gol file. Then your code will be compiled and run. 
+To run a program on my compiler you simply need to open and run the Haskell script GoalCompiler.lhs, then simply type the command $run$ followed by a sting containing the location of your .gol file. Then your code will be compiled and run. 
 
 \subsection{Introduction to Goal}
 
@@ -51,12 +51,12 @@ Goal is the language I have created my compiler for. It is a language I have cre
 
 \begin{figure}[h]
 \begin{lstlisting}
-	global i = 20;
+	global j = 20;
 	
 	func main() { 
 	    var c chan = Make(chan int);
 	    go pong();
-	    go ping(i);
+	    go ping(j);
 	    WaitOn(ping);
 	    Kill();
 	};
@@ -80,9 +80,9 @@ Goal is the language I have created my compiler for. It is a language I have cre
 \label{fig:goalExample} 
 \end{figure}
 
-The idea for Goal came when i was picking features from Go I was interested in compiling then decided it would be a nice idea to bring them together to create a more complete language. In my opinion during the course of this project Goal has evolved from a means to explore compilers and language design into a simple standalone language with it's own uses. I will discuss more about the design and functionality of Goal in Chapter 2.
+The idea for Goal came when I was picking features from Go I was interested in compiling then decided it would be a nice idea to bring them together to create a more complete language. In my opinion during the course of this project Goal has evolved from a means to explore compilers and language design into a simple standalone language with it's own uses. I will discuss more about the design and functionality of Goal in Chapter 2.
 
-It is recommended to make use of the Goal Documentation when starting to write new programs in Goal. The provided documentation gives example syntax of every command you can use and provides examples of how to use them and how they are expected to behave.
+It is recommended to make use of the Goal Documentation found in the appendix when starting to write new programs in Goal. The provided documentation gives example syntax of every command you can use and provides examples of how to use them and explanations on how they are expected to behave.
 
 \subsection{Introduction to Go}
 

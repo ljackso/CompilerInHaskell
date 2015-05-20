@@ -1,0 +1,21 @@
+
+func main() {
+    j = 0;
+    if(j) {
+        Print("testTen : fail");
+    } else {
+        j++;
+        if(j) {
+            j++;
+            if(j == 2) {
+                j--;
+                if (j ==2){
+                    Print("testTen : fail");
+                };
+                Print("testTen : success");               
+            } else {
+                Print("testTen : fail");
+            };
+        };
+    };
+};

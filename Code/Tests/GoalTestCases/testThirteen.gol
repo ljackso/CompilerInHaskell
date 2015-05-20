@@ -1,0 +1,20 @@
+
+func main() {
+
+    if (True && True) {
+        Print("testThirteen : success");
+    };
+    
+    if (False && False) {
+        Print("testThirteen : fail");
+    };
+    
+    if (True && False){
+        Print("testThirteen : fail");
+    };
+    
+    if (False && True){
+        Print("testThirteen : fail");
+    }; 
+
+};

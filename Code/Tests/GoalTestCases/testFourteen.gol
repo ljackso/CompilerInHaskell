@@ -1,0 +1,19 @@
+
+global t = True;
+global f = False; 
+
+func main() {
+   
+    if ( t && (5 > 2)) {
+        Print("testFourteen : success");
+    };
+    
+    if (6 == 8 || False){
+        Print("testFourteen : fail");
+    };
+    
+    if ((10 + 8 > 20)  && 10 !=  3){
+        Print("testFourteen : fail");
+    }; 
+
+};

@@ -19,8 +19,8 @@ A virtual machine can be described as a self contained operating environment tha
 
 A good example of a virtual machine is if you have ever played a retro games console emulators on your phone or computers. Those are examples of fully functional virtual machines running old programs independently of the machine they are running on. 
 
-A stack machine is a machine or (virtual machine) that uses a pushdown stack instead of set registers to evaluate different expressions\footnotemark[3]. A pushdown stack is a data structure with two main operations;
-%TODO reference intro to algo here % 
+A stack machine is a machine or (virtual machine) that uses a pushdown stack instead of set registers to evaluate different expressions\footnotemark[3]. A pushdown stack is a data structure with two main operations \cite[p.~232]{IntroAlgo};
+
 
 \begin{itemize}
 \item Push, which puts something onto the stack.
@@ -49,8 +49,8 @@ Which simply starts a call to the recursive function;
 
 \begin{lstlisting}
 	exec' 	:: Code ->  Int -> Stack -> Mem -> 
-	           Bool -> [Channel] -> (S.Seq GoRoutine, Int) ->  
-	           EndParam
+	           Bool -> [Channel] -> (S.Seq GoRoutine, Int) 
+	           -> EndParam
 \end{lstlisting}
 
 \newpage
@@ -316,7 +316,6 @@ If we first look at handling arguments, one approach could be to change the data
 This looks like a good solution at first,  but what if we want to call a function using an expression or a variable as arguments. Calls like $fun(a+5,(4*b)-c);$ would start to get very messy to deal with. 
 
 A better approach would be to use stack frames. A stack frame is a frame of data that is put on top of the stack. In the case of function calls it means putting all the arguments onto a the stack, then ensuring they are popped off in the correct order.   
-%TODO Find better reference than stack overflow %
 
 If we look at what happens if we were to call a function that takes in 2 arguments we can see that both arguments get pushed onto the stack before calling the function, this is shown below.
 
@@ -459,7 +458,7 @@ The bits we are interested in for handling concurrency are the types;
 
 \begin{itemize}
 \item $[Channel]$
-\item $(Seq$ $GoRoutine,$ $Int)$  %This could become ST (Seq GoRoutine) %
+\item $(Seq$ $GoRoutine,$ $Int)$  
 \item $EndParam$
 \end{itemize} 
 
@@ -557,7 +556,7 @@ You can see here how $subRoutsHandler$ will be called and how the different valu
 
 This code also show how $KILL$ simply removes all running subroutines and $WAIT$ stops until there are no more processes left to run, as every time a subroutine is finished running it is removed from the list.
 
-There are a few limitations in my implementation of concurrency. Specifically you are  not allowed to call functions in a concurrent process and you are not allowed to use global variables within a concurrent process.
+There are a few limitations in my implementation of concurrency. Specifically you are  not allowed to call functions in a concurrent process and you are not allowed to use global variables within a concurrent process. You cannot call functions due to the nature of my function executor it will not allow functions to run concurrently. I decided against allowing the use of global variables in subroutines to force the user to use channels, which are much safer to use when passing data around concurrent processes.
 
 To summarize a sequence of subroutines are handled by a separate executor at each step in my executor, this separate executor executes several commands before returning the updated information of the subroutines. The current subroutine being executed is kept track of using a counter. 
 
@@ -566,7 +565,7 @@ To summarize a sequence of subroutines are handled by a separate executor at eac
 
 There are a few areas to build on with respect too how I handle concurrency. Primarily what causes a context switch and how frequently that happens. 
 
-Currently in my virtual machine a context switch occurs every time a subroutine hits a $JUMP$, $JUMPZ$ or is waiting on a channel. There are several reasons for this but my primary reasons were trying to implement as fair a scheduler as possible and to make it easy for the user to understand how there concurrent programs will behave with each over. If we look at the code generated from our example program at the very beginning in figure \ref{fig:goalExample} specifically looking at the $ping()$ function. This can be seen in figure \ref{fig:pingCode}.
+Currently in my virtual machine a context switch occurs every time a subroutine hits a $JUMP$, $JUMPZ$ or is waiting on a channel. There are several reasons for this but my primary reasons were trying to implement as fair a scheduler as possible and to make it easy for the user to understand how their concurrent programs will behave with each over. If we look at the code generated from our example program at the very beginning in figure \ref{fig:goalExample} specifically looking at the $ping()$ function. This can be seen in figure \ref{fig:pingCode}.
 
 \begin{figure}[h]
 \centering
@@ -598,17 +597,15 @@ Currently in my virtual machine a context switch occurs every time a subroutine 
 
 What this shows is that once a program starts looping there are often a very limited number of steps between jump commands and therefore a limited number of steps between context switches. Of course looking at one example does not prove that this is the fairest way to implement context switches, but it does help to highlight the points I was making.
 
-Firstly it is clear to see exactly where your context switches will happen in your code, it also helps to highlight how, if you run multiple instances of the same process, you will always switch in the same location. It also shows the frequency of the jump command in must functions. Any function that contains a loop will have at least 2 jump commands on which to allow context switches. Then for every if statement involved at least one more jump command will have to be added. This means that any concurrent process with multiple loops or conditions will have several places for a context switch to happen.
+Firstly it is clear to see exactly where your context switches will happen in your code, it also helps to highlight how, if you run multiple instances of the same process, you will always switch in the same location. It also shows the frequency of the jump command in most functions. Any function that contains a loop will have at least 2 jump commands on which to allow context switches. Then for every if statement involved at least one more jump command will have to be added. This means that any concurrent process with multiple loops or conditions will have several places for a context switch to happen.
 
 Also allowing for a context switch every time a process is waiting on an empty channel helps us to stop deadlock, meaning you are not stuck in one process waiting for things to happen. You instead immediately move onto another process which will hopefully free up the process that is waiting. After a process is done waiting for a channel it will always execute the next command straight away, to ensure it immediately makes use of the available channel.  It is important to note that deadlock will not occur only if the concurrent program is written well. For example the following code;
-
-\newpage
 
 \begin{lstlisting}
 	WaitChan(c);
 	if(a > b){
 		j = <-c;
-		l += j
+		l += j;
 	};
 \end{lstlisting}     
 
@@ -618,7 +615,7 @@ Is dangerous because the use of the if statement will cause a context switch imm
 	WaitChan(c);
 	j = <-c;
 	if(a > b){	
-		l += j
+		l += j;
 	};
 \end{lstlisting}
 

@@ -1,13 +1,12 @@
 
 func main() {
-    l = ack(4,3);
+    l = ack(4,2);
     Show(l);
-    Print("it worked");
 };
 
 func ack(m int, n int) int {
-    Show(n);
     Show(m);
+    Show(n);
     if (m == 0){
         return (n+1);
     };

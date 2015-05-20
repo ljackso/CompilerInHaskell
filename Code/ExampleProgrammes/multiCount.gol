@@ -2,6 +2,7 @@
 
 func main() {
 	var c chan = Make(chan int);
+    
     count = 20;
     loops = 20;
     
@@ -9,15 +10,11 @@ func main() {
         go count(count);
     };
     Wait();
-    
-    outputCount(count, 20);
+    outputCount(count, loops);
 };
 
 func count(t int) {
     for (t > 0){
-        if(False){
-            Print("panic");
-        };
         c <- t;
         t--;
     };    

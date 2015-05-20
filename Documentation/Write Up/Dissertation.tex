@@ -1,6 +1,10 @@
 
 \documentclass{report}
 
+\usepackage{breakcites}
+
+\usepackage{pdfpages}
+
 \usepackage[margin=1.5in]{geometry}
 
 \usepackage[utf8]{inputenc}
@@ -20,6 +24,7 @@
 
 \begin{document}
 
+
 \maketitle
 
 \begin{abstract}
@@ -35,6 +40,28 @@ Creating a compiler and virtual machine in Haskell to run Goal, a simple concurr
 \include{Execution}
 \include{Testing}
 \include{ClosingStatements}
+
+\newpage
+
+\appendix
+
+\chapter{Goal Documentation}
+\includepdf[pages={1-7}]{GoalDocumentation.pdf}
+
+\chapter{Referenced Code}
+\section{Parsing.lhs}
+\lstinputlisting[basicstyle=\tiny,]{Parsing.lhs}
+
+\chapter{My Code}
+
+\section{GoalCompiler.lhs}
+\lstinputlisting[basicstyle=\tiny,]{GoalCompiler.lhs}
+
+\section{GoalParser.lhs}
+\lstinputlisting[basicstyle=\tiny,]{GoalParser.lhs}
+
+\section{GoalMachine.lhs}
+\lstinputlisting[basicstyle=\tiny, breaklines=true,]{GoalMachine.lhs}
 
 \bibliographystyle{plainnat}
 \bibliography{Bibliography}

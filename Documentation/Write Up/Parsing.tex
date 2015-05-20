@@ -105,15 +105,12 @@ My parser implementation was focused around using monadic parser combinators. As
 
 Then it was simply a question of building up parsers to handle more restrictive rules. A good way to understand this is to walk through a simple example of parsing comparative expressions. 
 
-Although this section gives a walk through of how I used parser combinators, it should not be considered a standalone introduction. 
-
 \newpage
 
 \subsection{Example of Parser Implementation}
 
 If we first start with defining the data structure, also known as the intermediate representation we wish to parse down to, we can then look to define the language which we are parsing;
 
-%TODO check all code works
 \begin{lstlisting}
 data Expr 	= CompExpr Op Expr Expr | Val Number
 	
@@ -122,10 +119,9 @@ data Op		= EQU | NEQ
 type Number	= Int 
 \end{lstlisting}
 
-This is a pretty simple data structure representing two types of conditional expressions. We now need to define a grammar that is acceptable for our language. A grammar, or formal grammar, is a set of rules by which valid sentences (or in our case commands and expressions) in a language are constructed \footnotemark[1].  In this case when we talk about a language we are not talking about a programming language in the typical sense, instead we define a language as a set of strings made of symbols that our limited by rules that are specific to that language \footnotemark[2]. 
+This is a pretty simple data structure representing two types of conditional expressions. We now need to define a grammar that is acceptable for our language. A grammar, or formal grammar, is a set of rules by which valid sentences (or in our case commands and expressions) in a language are constructed \footnotemark[1].  In this case when we talk about a language we are not talking about a programming language in the typical sense, instead we define a language as a set of strings made of symbols that our limited by rules that are specific to that language \cite[p.~28]{IntroComp1990}]. 
 
 \footnotetext[1]{\url{http://dragonbook.stanford.edu/lecture-notes/Stanford-CS143/06-Formal-Grammars.pdf}}
-\footnotetext[2]{\url{http://en.wikipedia.org/wiki/Formal_language}}
 
 To define our grammar it is good to look at some examples of what is acceptable in our little language, if we say we are only interested at looking at conditionals where you use $==$ to signify equals and $!=$ to signify two values being not equal;
 
@@ -191,11 +187,11 @@ Making use of this we can use of Haskell's do notation we can also generate a pa
 
 Using parse combinators means we can combine multiple parsers. Using this approach we can now create code to evaluate conditional expressions allowed in our language;
 
-%TODO check all this code
+
 \begin{lstlisting}
 
 evalCompExpr    :: String -> Expr
-evalCompExpr xs = case (parse compExpr xs) of
+evalCompExpr xs = case (parse parseComp xs) of
                     [(e,[])]  -> e
                     [(_,o)]   -> error ("unused "++ o)
                     []        -> error "invalid"
@@ -204,11 +200,10 @@ parseComp        :: Parser Expr
 parseComp        = do n1 <- natural
                       o  <- parseOp 
                       n2 <- natural
-                      return (CompOp o n1 n2)  
+                      return (CompExpr o (Val n1) (Val n2))  
 \end{lstlisting}
 
-This example shows how you build a simple parser using monadic parser combinators and the Haskell script provided %TODO cite grahams paper %
-. It shows the the process of building up a grammar to define your language and also begins to show the process of combing parsers. 
+This example shows how you build a simple parser using monadic parser combinators and the Haskell script provided. It shows the the process of building up a grammar to define your language and also begins to show the process of combing parsers. 
 
 
 \subsection{Analysis and Expansion of Parser Example}
@@ -224,10 +219,10 @@ parseComp        :: Parser Expr
 parseComp        = do n1 <- natural
                       do symbol "==" 
                          n2 <- natural
-                         return (CompOp EQU n1 n2)
+                         return (CompExpr EQU (Val n1) (Val n2))
                        +++ do symbol "!="
                               n3 <- natural
-                              return (CompOp NEQ n1 n3)
+                              return (CompExpr NEQ (Val n1) (Val n3))
 \end{lstlisting}
 
 But because of the creation of our $parseOp$ function not only were we able to have a much cleaner implementation, we also made it  much easier to expand our parser to include more comparison operations.

@@ -1,0 +1,17 @@
+
+func main() {
+    if (trueF() || falseF()) {
+        Print("testFifteen : success");
+    } else {
+        Print("testFifteen : fail");
+    };       
+
+};
+
+func trueF() bool {
+    return (True || False);
+};
+
+func falseF() bool {
+    return (False || False);
+};

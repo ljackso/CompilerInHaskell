@@ -1,0 +1,19 @@
+
+func main() {
+    j = 2;
+    i = 0;
+    l = True;  
+    for(l){       
+        j = square(j);
+        i++;
+        if(j > 1000) {
+            l = False;
+        };
+    };
+    Show(i);
+};
+ 
+func square(n int) int {
+    return n*n;
+};
+

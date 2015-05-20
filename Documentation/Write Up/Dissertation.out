@@ -56,3 +56,10 @@
 \BOOKMARK [0][-]{chapter.7}{Closing Statements}{}% 56
 \BOOKMARK [1][-]{section.7.1}{Conclusion}{chapter.7}% 57
 \BOOKMARK [1][-]{section.7.2}{Reflection}{chapter.7}% 58
+\BOOKMARK [0][-]{appendix.A}{Goal Documentation}{}% 59
+\BOOKMARK [0][-]{appendix.B}{Referenced Code}{}% 60
+\BOOKMARK [1][-]{section.B.1}{Parsing.lhs}{appendix.B}% 61
+\BOOKMARK [0][-]{appendix.C}{My Code}{}% 62
+\BOOKMARK [1][-]{section.C.1}{GoalCompiler.lhs}{appendix.C}% 63
+\BOOKMARK [1][-]{section.C.2}{GoalParser.lhs}{appendix.C}% 64
+\BOOKMARK [1][-]{section.C.3}{GoalMachine.lhs}{appendix.C}% 65

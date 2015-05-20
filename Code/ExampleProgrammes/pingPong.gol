@@ -2,8 +2,9 @@
 func main() { 
     var c chan = Make(chan int);
     go pong();
-    go ping(20);
+    go ping(100);
     WaitOn(ping);
+    Kill();
 };
 
 func ping(n int) {

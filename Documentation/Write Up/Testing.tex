@@ -9,7 +9,6 @@ In my introduction I explained that the way I approached implementing this proje
 
 This process was very constructive in the first stages of my development, but became a bit frustrating as the project developed. Specifically when I started making changes to existing features in my intermediate representation. This was because a lot of my initial tests were wrote testing my back-end of my compiler, ensuring correct code generation and that programs ran correctly on my virtual machine. Therefor a lot of initial test programs where constructed using my IR. 
 
-
 \begin{figure}[h]
 \centering
 \begin{lstlisting}
@@ -36,7 +35,7 @@ whileTest_3  =
 
 The problem this caused was if I made any changes to the structure of my IR it could make many of my old tests redundant. The same problem could be seen when I moved on to making a parser. Where any changes in my languages syntax forced me to go back and update all previous tests.
 
-To handle this problem that using TDD in an iterative process causes, I would when updating tests ensure that every test I created was still necessary. For example there was no point worrying about maintaining the $ifTest_2$ in figure \ref{fig:egEarlyTests} if my parser was now working and I was able to just write a program to test in Goal. 
+To handle this problem that using TDD in an iterative process causes, I would when updating tests ensure that every test I created was still necessary. For example there was no point worrying about maintaining the $ifTest\_2$ in figure \ref{fig:egEarlyTests} if my parser was now working and I was able to just write a program to test in Goal. 
 
 This meant that over time my tests changed from Haskell data structures, to simply writing an example program in Goal that I wanted my compiler to handle. Eventually this left me testing code by having numerous Goal source files my compiler had to run. Which led to the creation of my test suite.   
 
@@ -112,9 +111,7 @@ This was because I felt that it was better to use a test suite to test the main 
 
 \section{Bugs} 
 
-As with any large scale project testing through up some interesting bugs within my code. Rather than outline every bug I discovered I will go over two of the more interesting problems I came across and how I solved them.
-
-Specifically I will talk about two bugs that caused me problems that I felt although I was able to provide solutions for, I maybe could have tackled better.
+As with any large scale project testing brought to light some interesting bugs within my code. Rather than outline every bug I discovered I will go over two of the more interesting problems I came across and how I solved them.
 
 
 \subsection{Haskell's Lazy Evaluation}
@@ -150,7 +147,7 @@ Instead I had to solve this problem by forcing my virtual machine to perform a s
 
 \subsection{Output}
 
-Another problem I had was getting my virtual machine to provide output. Ther are two commands that need to be dealt with in this respect;
+Another problem I had was getting my virtual machine to provide output. There are two commands that need to be dealt with in this respect;
 
 \begin{itemize}
 \item $SHOW$, Which will take the item on top o the stack, pop it and output it.
@@ -168,4 +165,4 @@ SHOW -> trace (getNumberAsString (head s))
               (exec' c (pc+1) (pop s) m g ncs (ngs, ngc) ) 
 \end{lstlisting}  
 
-Although this does solve the problem of providing output for my virtual machine it is something I would have liked to revisit. 
+Although this does solve the problem of providing output for my virtual machine it is something I would have liked to revisit.  

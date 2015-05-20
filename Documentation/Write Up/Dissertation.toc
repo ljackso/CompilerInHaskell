@@ -33,9 +33,9 @@
 \contentsline {subsection}{\numberline {4.1.2}Example Creating an Intermediate Representation}{22}{subsection.4.1.2}
 \contentsline {subsection}{\numberline {4.1.3}Analysis and Expansion of Creating an IR Example}{24}{subsection.4.1.3}
 \contentsline {subsection}{\numberline {4.1.4}My Intermediate Representation of Goal}{25}{subsection.4.1.4}
-\contentsline {section}{\numberline {4.2}Code Generation}{26}{section.4.2}
-\contentsline {subsection}{\numberline {4.2.1}Brief Introduction to Target Language Instruction Set}{26}{subsection.4.2.1}
-\contentsline {subsection}{\numberline {4.2.2}Example Code Generation}{26}{subsection.4.2.2}
+\contentsline {section}{\numberline {4.2}Code Generation}{25}{section.4.2}
+\contentsline {subsection}{\numberline {4.2.1}Brief Introduction to Target Language Instruction Set}{25}{subsection.4.2.1}
+\contentsline {subsection}{\numberline {4.2.2}Example Code Generation}{27}{subsection.4.2.2}
 \contentsline {subsection}{\numberline {4.2.3}Analysis and Expansion of Code Generation Example}{29}{subsection.4.2.3}
 \contentsline {chapter}{\numberline {5}Code Execution using a Stack Based Virtual Machine}{30}{chapter.5}
 \contentsline {section}{\numberline {5.1}Introduction to Stack Based Virtual Machines}{30}{section.5.1}
@@ -51,14 +51,21 @@
 \contentsline {subsection}{\numberline {5.3.3}Implementing Concurrency}{40}{subsection.5.3.3}
 \contentsline {subsubsection}{How Goal Handles Concurrency}{40}{section*.5}
 \contentsline {subsubsection}{How my Virtual Machine Handles Concurrency}{40}{section*.6}
-\contentsline {subsection}{\numberline {5.3.4}Justifying How I handle Concurrency}{42}{subsection.5.3.4}
+\contentsline {subsection}{\numberline {5.3.4}Justifying How I handle Concurrency}{43}{subsection.5.3.4}
 \contentsline {chapter}{\numberline {6}Testing}{45}{chapter.6}
 \contentsline {section}{\numberline {6.1}Using Test Driven Development}{45}{section.6.1}
 \contentsline {section}{\numberline {6.2}Test Suite}{45}{section.6.2}
 \contentsline {section}{\numberline {6.3}Quickcheck}{46}{section.6.3}
 \contentsline {section}{\numberline {6.4}Bugs}{47}{section.6.4}
-\contentsline {subsection}{\numberline {6.4.1}Haskell's Lazy Evaluation}{48}{subsection.6.4.1}
+\contentsline {subsection}{\numberline {6.4.1}Haskell's Lazy Evaluation}{47}{subsection.6.4.1}
 \contentsline {subsection}{\numberline {6.4.2}Output}{48}{subsection.6.4.2}
 \contentsline {chapter}{\numberline {7}Closing Statements}{50}{chapter.7}
 \contentsline {section}{\numberline {7.1}Conclusion}{50}{section.7.1}
-\contentsline {section}{\numberline {7.2}Reflection}{50}{section.7.2}
+\contentsline {section}{\numberline {7.2}Reflection}{51}{section.7.2}
+\contentsline {chapter}{\numberline {A}Goal Documentation}{52}{appendix.A}
+\contentsline {chapter}{\numberline {B}Referenced Code}{60}{appendix.B}
+\contentsline {section}{\numberline {B.1}Parsing.lhs}{60}{section.B.1}
+\contentsline {chapter}{\numberline {C}My Code}{62}{appendix.C}
+\contentsline {section}{\numberline {C.1}GoalCompiler.lhs}{62}{section.C.1}
+\contentsline {section}{\numberline {C.2}GoalParser.lhs}{64}{section.C.2}
+\contentsline {section}{\numberline {C.3}GoalMachine.lhs}{72}{section.C.3}

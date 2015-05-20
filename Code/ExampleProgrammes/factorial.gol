@@ -7,7 +7,9 @@ func main() {
 func facRunner() {
     fa = facA(5);
     fb = facB(5);
+    Print("head");
     Show(fa);
+    Print("tail");
     Show(fb);
 };
 
@@ -19,7 +21,7 @@ func facAHelper(n int, a int) int {
     if (n == 1){
         return a;
     };
-    return facAHelper( (n-1), a * n); 
+    return facAHelper((n-1), a * n); 
 };
 
 func facB(n int) int {
