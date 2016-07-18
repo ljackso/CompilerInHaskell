@@ -1,4 +1,4 @@
-# GoalCompilerInHaskell
+# CompilerInHaskell
 
 Created Goal, a programming language which is based on a subset of features from Go. 
 
